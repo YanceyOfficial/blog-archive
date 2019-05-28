@@ -1,11 +1,11 @@
-# Articles for preparing interview
+# 文章归档
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)](https://github.com/YanceyOfficial/interview/pulls)
 
 ## 说明
 
-这个 repo 是我准备面试时写的一系列文章，整个工程会涉及 HTML / CSS / JavaScript / HTTP / 前端框架 / 工程化 等方面。项目持续更新中，欢迎 Star。文章在我的个人网站 [Yancey Official Blog](https://yanceyleo.com) 和掘金 [@YanceyOfficial](https://juejin.im/user/5bc82522f265da0af1617021) 同步推送，同时欢迎关注我的微信公众号：「进击的前端」。
+这个 repo 是我写过的一些文章的归档仓库，整个工程会涉及 HTML / CSS / JavaScript / HTTP / 前端框架 / 工程化 等方面。项目持续更新中，欢迎 Star。文章在我的个人网站 [Yancey Official Blog](https://yanceyleo.com) 和掘金 [@YanceyOfficial](https://juejin.im/user/5bc82522f265da0af1617021) 同步推送，同时欢迎关注我的微信公众号：「进击的前端」。
 
 ![进击的前端](https://camo.githubusercontent.com/fcaf0826a063e724d7038ae5dd7bb8ad57d71f32/68747470733a2f2f757365722d676f6c642d63646e2e786974752e696f2f323031392f342f32312f313661336538393634643433343836633f773d33343426683d33343426663d6a70656726733d38313735)
 
@@ -40,6 +40,8 @@
   - [你可能不知道的 Object.defineProperty()](<https://github.com/YanceyOfficial/interview/blob/master/JavaScript/%E4%BD%A0%E5%8F%AF%E8%83%BD%E4%B8%8D%E7%9F%A5%E9%81%93%E7%9A%84%20Object.defineProperty().md>)
 
   - [防抖和节流](https://github.com/YanceyOfficial/interview/blob/master/JavaScript/%E9%98%B2%E6%8A%96%E5%92%8C%E8%8A%82%E6%B5%81.md)
+
+  - [深浅拷贝](https://github.com/YanceyOfficial/interview/blob/master/JavaScript/%E6%B7%B1%E6%B5%85%E6%8B%B7%E8%B4%9D.md)
 
 - HTTP
 
