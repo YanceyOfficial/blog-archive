@@ -45,9 +45,9 @@
 
 - HTTP
 
-  - [[HTTP 系列] 第 1 篇 —— 从 TCP/UDP 到 DNS 解析](./HTTP/[HTTP 系列] 第 1 篇 —— 从 TCP/UDP 到 DNS 解析.md)
+  - [\[HTTP 系列\] 第 1 篇 —— 从 TCP/UDP 到 DNS 解析](./HTTP/\[HTTP 系列\] 第 1 篇 —— 从 TCP/UDP 到 DNS 解析.md)
 
-  - [[HTTP 系列] 第 2 篇 —— HTTP 协议那些事](./HTTP/[HTTP 系列] 第 2 篇 —— HTTP 协议那些事)
+  - [\[HTTP 系列\] 第 2 篇 —— HTTP 协议那些事](./HTTP/\[HTTP 系列\] 第 2 篇 —— HTTP 协议那些事)
 
 - 前端工程化
 
