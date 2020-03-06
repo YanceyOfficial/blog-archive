@@ -29,7 +29,7 @@
 
   - [也谈 JavaScript 的 this](./JavaScript/%E4%B9%9F%E8%B0%88%20JavaScript%20%E7%9A%84%20this.md)
 
-  - [从 JavaScript 编译原理到作用域(链)及闭包](./JavaScript/%E4%BB%8E%20JavaScript%20%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86%E5%88%B0%E4%BD%9C%E7%94%A8%E5%9F%9F(%E9%93%BE)%E5%8F%8A%E9%97%AD%E5%8C%85.md)
+  - [从 JavaScript 编译原理到作用域(链)及闭包](<./JavaScript/%E4%BB%8E%20JavaScript%20%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86%E5%88%B0%E4%BD%9C%E7%94%A8%E5%9F%9F(%E9%93%BE)%E5%8F%8A%E9%97%AD%E5%8C%85.md>)
 
   - [从感性角度学习原型和原型链](./JavaScript/%E4%BB%8E%E6%84%9F%E6%80%A7%E8%A7%92%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%8E%9F%E5%9E%8B%E5%92%8C%E5%8E%9F%E5%9E%8B%E9%93%BE.md)
 
@@ -37,7 +37,7 @@
 
   - [深入理解并手写遵循 Promise A+ 规范的 Promise](./JavaScript/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E5%B9%B6%E6%89%8B%E5%86%99%E9%81%B5%E5%BE%AA%20Promise%20A%2B%20%E8%A7%84%E8%8C%83%E7%9A%84%20Promise.md)
 
-  - [你可能不知道的 Object.defineProperty()](./JavaScript/%E4%BD%A0%E5%8F%AF%E8%83%BD%E4%B8%8D%E7%9F%A5%E9%81%93%E7%9A%84%20Object.defineProperty().md)
+  - [你可能不知道的 Object.defineProperty()](<./JavaScript/%E4%BD%A0%E5%8F%AF%E8%83%BD%E4%B8%8D%E7%9F%A5%E9%81%93%E7%9A%84%20Object.defineProperty().md>)
 
   - [防抖和节流](./JavaScript/%E9%98%B2%E6%8A%96%E5%92%8C%E8%8A%82%E6%B5%81.md)
 
@@ -45,9 +45,9 @@
 
 - HTTP
 
-  - [\[HTTP 系列\] 第 1 篇 —— 从 TCP/UDP 到 DNS 解析](./HTTP/\[HTTP 系列\] 第 1 篇 —— 从 TCP/UDP 到 DNS 解析.md)
+  - [「HTTP 系列」 第 1 篇 —— 从 TCP/UDP 到 DNS 解析](./HTTP/「HTTP 系列」 第 1 篇 —— 从 TCP/UDP 到 DNS 解析.md)
 
-  - [\[HTTP 系列\] 第 2 篇 —— HTTP 协议那些事](./HTTP/\[HTTP 系列\] 第 2 篇 —— HTTP 协议那些事)
+  - [「HTTP 系列」 第 2 篇 —— HTTP 协议那些事](./HTTP/「HTTP 系列」 第 2 篇 —— HTTP 协议那些事.md)
 
 - 前端工程化
 
