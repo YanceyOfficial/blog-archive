@@ -13,6 +13,8 @@
 
 - HTML
 
+- [HTML5.2 新特性](./HTML/HTML5.2%20新特性.md)
+
 - CSS
 
   - [Grid Layout](./CSS/Grid%20Layout.md)
