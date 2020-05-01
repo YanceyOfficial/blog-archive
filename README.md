@@ -53,6 +53,8 @@
 
   - [js 遍历数组、对象总结](./JavaScript/js遍历数组、对象总结.md)
 
+  - [JS判断数据类型的多种方式](./JavaScript/JS判断数据类型的多种方式.md)
+
 - HTTP
 
   - [[HTTP 系列] 第 1 篇 —— 从 TCP/UDP 到 DNS 解析](./HTTP/%5BHTTP%20系列%5D%20第%201%20篇%20——%20从%20TCP%20UDP%20到%20DNS%20解析.md)
