@@ -15,7 +15,7 @@
 
   - [HTML5.2 新特性](./HTML/HTML5.2新特性.md)
 
-  - [关于script标签async和defer属性分析](./HTML/关于script标签async和defer属性分析.md)
+  - [关于 script 标签 async 和 defer 属性分析](./HTML/关于script标签async和defer属性分析.md)
 
 - CSS
 
@@ -53,7 +53,7 @@
 
   - [js 遍历数组、对象总结](./JavaScript/js遍历数组、对象总结.md)
 
-  - [JS判断数据类型的多种方式](./JavaScript/JS判断数据类型的多种方式.md)
+  - [JS 判断数据类型的多种方式](./JavaScript/JS判断数据类型的多种方式.md)
 
 - HTTP
 
@@ -73,9 +73,11 @@
 
   - [聊一聊前端上传那些事](./综合/聊一聊前端上传那些事.md)
 
-  - [React配置全局Sass和CSSModule](./综合/React配置全局Sass和CSSModule.md)
+  - [React 配置全局 Sass 和 CSSModule](./综合/React配置全局Sass和CSSModule.md)
 
-  - [React单页应用添加GA埋点](./综合/React单页应用添加GA埋点.md)
+  - [React 单页应用添加 GA 埋点](./综合/React单页应用添加GA埋点.md)
+
+  - [Natsuha-用 Taro 写个天气微信小程序](./综合/Natsuha-用Taro写个天气微信小程序.md)
 
 - Poems
 
