@@ -85,6 +85,8 @@
 
   - [聊一聊TypeScript的工程引用](./综合/聊一聊TypeScript的工程引用.md)
 
+  - [React练习——汇率计算器](./综合/React练习——汇率计算器.md)
+
 - Poems
 
   - [离殇赋](./Poems/离殇赋.md)
