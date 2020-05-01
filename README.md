@@ -81,6 +81,8 @@
 
   - [Natsuha-用 Taro 写个天气微信小程序](./综合/Natsuha-用Taro写个天气微信小程序.md)
 
+  - [聊一聊TypeScript的工程引用](./综合/聊一聊TypeScript的工程引用.md)
+
 - Poems
 
   - [离殇赋](./Poems/离殇赋.md)
