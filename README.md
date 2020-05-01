@@ -15,6 +15,8 @@
 
   - [HTML5.2 新特性](./HTML/HTML5.2新特性.md)
 
+  - [关于script标签async和defer属性分析](./HTML/关于script标签async和defer属性分析.md)
+
 - CSS
 
   - [Grid Layout](./CSS/Grid%20Layout.md)
