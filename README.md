@@ -27,6 +27,8 @@
 
   - [弹性布局](./CSS/%E5%BC%B9%E6%80%A7%E5%B8%83%E5%B1%80.md)
 
+  - [关于 css 优先级](./CSS/关于css优先级.md)
+
 - JavaScript
 
   - [JavaScript 七大继承全解析](./JavaScript/JavaScript%20%E4%B8%83%E5%A4%A7%E7%BB%A7%E6%89%BF%E5%85%A8%E8%A7%A3%E6%9E%90.md)
