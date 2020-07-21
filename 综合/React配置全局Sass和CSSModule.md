@@ -12,14 +12,10 @@
 
 在`src`目录下创建`assets`文件夹，然后在`assets`文件夹里创建一个`styles`文件夹，添加一个 sass 文件叫`_color.scss`，里面先简单加几个颜色变量，以备测试：
 
-```
+```scss
 $white: #fff;
 $black: #000;
 $gray: #666;
-
-
-
-
 ```
 
 下面先说怎么做 CSS Module，然后再往全局 Sass 迁移。
@@ -30,26 +26,18 @@ $gray: #666;
 
 首先安装依赖:
 
-```
+```js
 yarn add node-sass
-
-
-
-
 ```
 
 使用`create-react-app`默认会创建一个`App.js`和`App.css`，我们需要将`App.css`**重命名为**`App.module.css`，
 
-<mark>这点非常关键，只要想做`CSS Module`，css 文件必须要改成`*.module.css`的形式。</mark>
+**这点非常关键，只要想做`CSS Module`，css 文件必须要改成`*.module.css`的形式。**
 
 然后打开`App.js`文件，引入`App.module.css`，可以发现引入 css 的方式也和以前不一样了，下面的`styles`名字随便起，看你个人喜好了：
 
-```
-import styles from './App.module.css';
-
-
-
-
+```js
+import styles from "./App.module.css";
 ```
 
 这里我建议在 class 命名的时候，要以下划线的形式连接每个单词，比如`App_common_logo`，这也是[鹅厂 aotu 实验室推荐的的命名方式](https://guide.aotu.io/docs/name/classname.html)，其实这样对使用 CSS Module 也有好处，一会儿会说到。
@@ -74,32 +62,24 @@ import styles from './App.module.css';
 
 在使用 CSS Module 的过程中相信你一定会遇到其他的问题，比如一个标签如果有多个 class，以前可以写成`className="App_icon App_select"`，但是 CSS Module 是不允许的，所以需要安装依赖`yarn add classnames`，使用方式如下：
 
-```
+```js
 import cs from 'classnames';
 
 className={cs(styles.social_media_motto, styles.no_user_select)}
-
-
-
-
 ```
 
 此外，如果你的模块里不得不操作 DOM，如果继续用`className={styles.App_intro}`的方式，`document.querySelector('.App_intro')`将不会如你所愿，因为此时的 App_intro 已经被被 hash 所“污染，因此你还是需要命名为`className="App_intro"这种形式`。
 
 但是新的问题来了，你在`App.mudule.css`中给`App_intro`定义的任何样式将不会起作用，所以需要在 css 里做写文章：
 
-```
+```scss
 :global(.App_intro) {
-    outline: none;
-    border-radius: 50%;
-  }
-
-
-
-
+  outline: none;
+  border-radius: 50%;
+}
 ```
 
-## Sass 全局变量、函数、Mixin...
+## Sass 全局变量、函数、Mixin
 
 如果定义了一个关于颜色变量的 Sass 文件，按以前的做法，那就得在每个模块的 Sass 文件中`@import '../assets/styles/_color.scss'`，显然这种方式很不(e)科(xin)学。尤其在写移动端的时候，肯定得定义一些全局的函数，要是每个文件都要引一次，天啦噜...
 
@@ -111,7 +91,7 @@ className={cs(styles.social_media_motto, styles.no_user_select)}
 
 下面把代码贴出来，注意一定是`../src/assets/styles/_colors.scss'`，网上教程坑得一逼，全给写成`./src/assets/styles/_colors.scss'`，结果一直报错。
 
-```
+```js
 use: [{
   loader: require.resolve('style-loader'),
 },
@@ -130,10 +110,6 @@ use: [{
     resources: [path.resolve(__dirname, '../src/assets/styles/_colors.scss'), path.resolve(__dirname, '../src/assets/styles/_function.scss')],
   }
 }],
-
-
-
-
 ```
 
 因为我们做了 CSS Module，所以我们也要为 CSS Module 支持引入全局 Sass 变量。
@@ -142,17 +118,13 @@ use: [{
 
 这时我们将上面的`App.mudule.css`重命名为`App.mudule.scss`，然后随便找个 class 添加个颜色，发现生效了：
 
-```
+```scss
 .App_header {
   display: flex;
   align-items: center;
   justify-content: center;
   color: $gray;
 }
-
-
-
-
 ```
 
 ## 最后
