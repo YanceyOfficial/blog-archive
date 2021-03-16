@@ -1,13 +1,4 @@
-# 文章归档
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)](https://github.com/YanceyOfficial/interview/pulls)
-
-## 说明
-
-这个 repo 是我写过的一些文章的归档仓库，整个工程会涉及 HTML / CSS / JavaScript / HTTP / 前端框架 / 工程化 等方面。项目持续更新中，欢迎 Star。文章在我的个人网站 [Yancey Official Blog](https://yanceyleo.com) 和掘金 [@YanceyOfficial](https://juejin.im/user/5bc82522f265da0af1617021) 同步推送，同时欢迎关注我的微信公众号：「进击的前端」。
-
-![进击的前端](https://camo.githubusercontent.com/fcaf0826a063e724d7038ae5dd7bb8ad57d71f32/68747470733a2f2f757365722d676f6c642d63646e2e786974752e696f2f323031392f342f32312f313661336538393634643433343836633f773d33343426683d33343426663d6a70656726733d38313735)
+# 备份
 
 ## 目录
 
