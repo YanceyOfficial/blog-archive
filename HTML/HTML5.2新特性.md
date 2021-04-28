@@ -73,7 +73,7 @@ document.getElementById("close").addEventListener("click", () => {
 
 \<dialog>标签已经被 Chrome 支持（Chrome 大法好！！！），火狐也立了梗马上要支持了。
 
-![Data on support for the dialog feature across the major browsers]https://static.yancey.app/caniuse-dialog.png)
+![Data on support for the dialog feature across the major browsers](https://static.yancey.app/caniuse-dialog.png)
 
 _注：鄙人在 2 月 8 号测试时，火狐以及火狐开发者版本都木有支持 dialog 标签_
 
