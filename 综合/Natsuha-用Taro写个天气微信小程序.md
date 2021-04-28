@@ -10,7 +10,7 @@
 
 ![Scan the QR Code by WeChat](https://static.yancey.app/natsuha_344.jpg)
 
-![效果图](//static.yancey.app/barcelona.jpg)
+![效果图]https://static.yancey.app/barcelona.jpg)
 
 项目的技术栈是 `Taro + mobx + TypeScript`，接口来自 [Yahoo Weather API](https://developer.yahoo.com/weather/documentation.html)，当然设计也是参 (chao) 考 (xi) 的 [Yahoo Weather](https://www.yahoo.com/news/weather/china/beijing/beijing-2151330)
 
@@ -44,7 +44,7 @@
 
 首先在根目录的 `project.config.json` 文件里添加 `"cloudfunctionRoot": "functions/"`，然后在根目录创建文件夹 `functions`. 并点击右键创建一个新的云函数，比如我们叫 `getRegion`。
 
-![云函数开发](//static.yancey.app/Jietu20190309-114128%402x.jpg)
+![云函数开发]https://static.yancey.app/Jietu20190309-114128%402x.jpg)
 
 因为我们的目标是**通过云函数请求一个未 bei an 的接口**，所以为了更方便的处理异步请求，我们引入 `request-promise` 这个库。
 
@@ -147,7 +147,7 @@ export const httpClient = (url: string, data: any) => new Promise((resolve, reje
 
 文字有些累，直接看图。
 
-![授权图解](//static.yancey.app/%E6%9C%AA%E5%91%BD%E5%90%8D_meitu_1.jpg)
+![授权图解]https://static.yancey.app/%E6%9C%AA%E5%91%BD%E5%90%8D_meitu_1.jpg)
 
 #### 无法用传统方式清空文本框文字
 
@@ -240,4 +240,4 @@ ts 肯定会报错。
 
 ## 最后
 
-![老子再也不写小程序了！](//static.yancey.app/FD200112FC037CDE3AC366B45288EA61.jpg)
+![老子再也不写小程序了！]https://static.yancey.app/FD200112FC037CDE3AC366B45288EA61.jpg)

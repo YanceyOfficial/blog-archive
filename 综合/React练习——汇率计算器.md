@@ -26,7 +26,7 @@
 
 ## 功能实现
 
-![组件分割示意图](//static.yancey.app/23001024-d8f4-43e7-a976-73337b65591f.png)
+![组件分割示意图]https://static.yancey.app/23001024-d8f4-43e7-a976-73337b65591f.png)
 
 既然 React 的卖点是组件化（话说昨天面试小姐姐问 React 除了组件化还有什么，我居然忘了**声明式**，悔しい）。上图是自己的划分思路：
 
@@ -413,7 +413,7 @@ class CountryChoice extends React.Component {
 
 至于为什么当时想到了做一个汇率计算器，可能就是下图吧：
 
-![哦](//static.yancey.app/cc96791d-d215-47b3-8b75-24d4840008ee.jpeg)
+![哦]https://static.yancey.app/cc96791d-d215-47b3-8b75-24d4840008ee.jpeg)
 
 以上、よろしく。
 
