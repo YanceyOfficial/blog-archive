@@ -184,7 +184,11 @@ logArgs("a", "b", "c");
 
 ## Avoid polymorphism
 
-如果你的一个方法会处理不同元素类型的数组, 它可能会导致多态操作, 这样会比操作单一元素类型的代码要慢. 举个例子来讲, 你自己写了个数组迭代器, 这个迭代器可以传入一个纯数字类型的数组, 也可以是其他烂七八糟类型的数组, 这样就是多态操作. 当然需要注意的是, 数组内建的原型方法在引擎内部已经做了优化, 不在我们的考虑范围.
+如果你的一个方法会处理不同元素类型的数组, 它可能会导致多态操作, 这样会比操作单一元素类型的代码要慢. 举个例子来讲, 你自己写了个数组迭代器, 这个迭代器可以传入一个纯数字类型的数组, 也可以是其他乱七八糟类型的数组, 这样就是多态操作. 当然需要注意的是, 数组内建的原型方法在引擎内部已经做了优化, 不在我们的考虑范围.
+
+下面这个例子中, each 方法先传入了 `PACKED_ELEMENTS` 类型的数组, 于是 V8 使用内联缓存(inline cache, 简称 IC) 来记住这个特定的类型. 此时 V8 会"乐观的"假定 `array.length` 和 `array[index]` 在 each 内部访问函数是**单调的**(即只有一种类型的元素). 因此如果后续传入该方法的数组仍是 `PACKED_ELEMENTS`, V8 可以复用这些先前生成的代码.
+
+但在后面分别传入了 `PACKED_DOUBLE_ELEMENTS`, `PACKED_SMI_ELEMENTS` 类型的数组, 就会导致 `array.length` 和 `array[index]` 在 each 内部访问函数被标记为**多态的**. V8 在每次调用 each 时需要额外的检查一次 `PACKED_ELEMENTS`, 并添加一个新的 `PACKED_DOUBLE_ELEMENTS`, 这就会造成潜在的性能问题.
 
 ```ts
 const each = (array, callback) => {
@@ -195,35 +199,11 @@ const each = (array, callback) => {
 };
 const doSomething = (item) => console.log(item);
 
-each([], () => {});
+each(["a", "b", "c"], doSomething); // PACKED_ELEMENTS
 
-each(["a", "b", "c"], doSomething);
-// `each` is called with `PACKED_ELEMENTS`. V8 uses an inline cache
-// (or “IC”) to remember that `each` is called with this particular
-// elements kind. V8 is optimistic and assumes that the
-// `array.length` and `array[index]` accesses inside the `each`
-// function are monomorphic (i.e. only ever receive a single kind
-// of elements) until proven otherwise. For every future call to
-// `each`, V8 checks if the elements kind is `PACKED_ELEMENTS`. If
-// so, V8 can re-use the previously-generated code. If not, more work
-// is needed.
+each([1.1, 2.2, 3.3], doSomething); // PACKED_DOUBLE_ELEMENTS
 
-each([1.1, 2.2, 3.3], doSomething);
-// `each` is called with `PACKED_DOUBLE_ELEMENTS`. Because V8 has
-// now seen different elements kinds passed to `each` in its IC, the
-// `array.length` and `array[index]` accesses inside the `each`
-// function get marked as polymorphic. V8 now needs an additional
-// check every time `each` gets called: one for `PACKED_ELEMENTS`
-// (like before), a new one for `PACKED_DOUBLE_ELEMENTS`, and one for
-// any other elements kinds (like before). This incurs a performance
-// hit.
-
-each([1, 2, 3], doSomething);
-// `each` is called with `PACKED_SMI_ELEMENTS`. This triggers another
-// degree of polymorphism. There are now three different elements
-// kinds in the IC for `each`. For every `each` call from now on, yet
-// another elements kind check is needed to re-use the generated code
-// for `PACKED_SMI_ELEMENTS`. This comes at a performance cost.
+each([1, 2, 3], doSomething); // PACKED_SMI_ELEMENTS
 ```
 
 ## Avoid creating holes
