@@ -1,4 +1,4 @@
-# 探索 React Scheduler 的调度原理
+# 详解 React Scheduler 的调度原理
 
 > summarysummarysummarysummarysummarysummary
 
