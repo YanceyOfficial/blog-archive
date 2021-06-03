@@ -1,14 +1,14 @@
-# 详解"时间管理大师" —— React Scheduler
+# 深入"时间管理大师" —— React Scheduler
 
-> 本
+> 众所周知 React 的愿景就是快速响应用户, 让用户觉得够快, 不能阻塞用户的交互. 而 Scheduler 作为 React 的调度中枢, 通过划分优先级, 时间切片, 可中断、可恢复任务等策略来保证高优任务先被执行, 以提高性能. 可谓"时间管理大师", 罗志祥本祥了.
 
 ## 什么是 Scheduler
 
-[Scheduler](https://github.com/facebook/react/tree/master/packages/scheduler) 是内置于 React 项目下的一个包, 你只需要将任务以及任务的优先级交给它, 它就可以帮你进行任务的协调调度. 目前 Scheduler 只被用于 React, 但团队的愿景是希望它能够更通用化.
+[Scheduler](https://github.com/facebook/react/tree/master/packages/scheduler) 是内置于 React 项目下的一个包, **你只需要将任务以及任务的优先级交给它, 它就可以帮你进行任务的协调调度**. 目前 Scheduler 只被用于 React, 但团队的愿景是希望它能够更通用化.
 
 ## Scheduler 用来做什么
 
-对于多个任务, Scheduler 根据优先级来安排执行顺序; 而对于单个任务, 需要被"有节制"的执行. 什么是"有节制"呢? 我们知道 JavaScript 是单线程的, 如果一个同步任务占用时间很长, 就会导致掉帧和卡顿. 因此需要把一个耗时的任务及时中断掉, 去执行更重要的任务(比如用户交互), 后续再接着执行该耗时任务, 如此往复. Scheduler 就是用这样的模式, 将任务细粒度切分, 来避免一直占用有限的资源执行耗时较长的任务, 实现更快的响应.
+Scheduler 从宏观和微观对任务进行管控. 宏观上, 也就是对于多个任务, Scheduler 根据优先级来安排执行顺序; 而对于单个任务(微观上), 需要"有节制"的执行. 什么是"有节制"呢? 我们知道 JavaScript 是单线程的, 如果一个同步任务占用时间很长, 就会导致掉帧和卡顿. 因此需要把一个耗时的任务及时中断掉, 去执行更重要的任务(比如用户交互), 后续再执行该耗时任务, 如此往复. Scheduler 就是用这样的模式, 将任务细粒度切分, 来避免一直占用有限的资源执行耗时较长的任务, 实现更快的响应.
 
 ## 原理综述
 
@@ -16,7 +16,7 @@
 
 ### 多个任务的管理
 
-在 Scheduler 中, 任务被分成了两种: **未过期的任务**和**已过期的任务**, 分别存在 `timerQueue` 和 `taskQueue` 两个队列中.
+在 Scheduler 中, 任务被分成了两种: **未过期的任务**和**已过期的任务**, 分别存储在 `timerQueue` 和 `taskQueue` 两个队列中.
 
 ### 如何区分两种任务
 
@@ -29,9 +29,11 @@
 
 即便是区分了 `timerQueue` 和 `taskQueue`, 但每个队列中的任务也是有不同优先级的, 因此在入队时需要根据**紧急程度**将紧急的任务排在前面. 老版本的 React Scheduler 使用循环链表来串联, 代码比较难懂, 这里不展开.
 
-目前源码中使用[**小顶堆**](https://algorithm.yanceyleo.com/data-structure/tree/binary-heap)这个数据结构实现, 堆是[优先队列](https://algorithm.yanceyleo.com/data-structure/queue/priority-queue)的底层实现, 它在插入或者删除元素的时候, 通过"上浮"和"下沉"操作来使元素自动排序(优先队列经常用来解决算法中的 [topK](https://algorithm.yanceyleo.com/leetcode/lcof/40-get-least-numbers) 问题). 回到源码, 这意味着 `timerQueue` 和 `taskQueue` 里的元素是从小到大排序的.
+目前源码中使用[**小顶堆**](https://algorithm.yanceyleo.com/data-structure/tree/binary-heap)这个数据结构实现, 堆是[优先队列](https://algorithm.yanceyleo.com/data-structure/queue/priority-queue)的底层实现, 它在插入或者删除元素的时候, 通过"上浮"和"下沉"操作来使元素自动排序(优先队列经常用来解决算法中 [topK](https://algorithm.yanceyleo.com/leetcode/lcof/40-get-least-numbers) 问题). 需要注意的是, 堆的元素存储在数组中, 而非链式结构. 关于二叉堆相关的逻辑本文不去展开, 有兴趣可以参考我学习[数据结构与算法](https://algorithm.yanceyleo.com)的仓库.
 
-![优先队列](https://static.yancey.app/cer2n7v558-1622000665011)
+![小顶堆](https://static.yancey.app/lld7yvf9th-1622692950075)
+
+回到源码, 当我们插入任务时, `timerQueue` 和 `taskQueue` 能保证元素是从小到大排序的. 那排序的依据是什么呢?
 
 - timerQueue 中, 依据任务的开始时间(startTime)排序, 开始时间越早, 说明会越早开始, 开始时间小的排在前面. 任务进来的时候, 开始时间默认是当前时间, 如果进入调度的时候传了延迟时间, 开始时间则是当前时间与延迟时间的和.
 - taskQueue 中, 依据任务的过期时间(expirationTime)排序, 过期时间越早, 说明越紧急, 过期时间小的排在前面. 过期时间根据任务优先级计算得出, 优先级越高, 过期时间越早.
@@ -45,11 +47,13 @@
 
 ### 单个任务的中断及恢复
 
-其实将任务挂起与恢复并不是一个新潮的概念, 它有一个名词叫做[**协程**](https://en.wikipedia.org/wiki/Coroutine), ES6 之后的生成器, 就可以用 yield 关键字来.
+在循环 taskQueue 执行每一个任务时, 如果某个任务执行时间过长, 达到了时间片限制的时间, 那么该任务必须中断, 以便于让位给更重要的事情(如浏览器绘制), 等高优过期任务完成了, 再恢复执行该任务. Scheduler 要实现这样的调度效果需要两个角色: **任务的调度者**, **任务的执行者**. 调度者调度一个执行者, 执行者去循环 taskQueue, 逐个执行任务. 当某个任务的执行时间比较长, 执行者会根据时间片中断任务执行, 然后告诉调度者: 我现在正执行的这个任务被中断了, 还有一部分没完成, 但现在必须让位给更重要的事情, 你再调度一个执行者吧, 好让这个任务能在之后被继续执行完(任务的恢复). 于是, 调度者知道了任务还没完成, 需要继续做, 它会再调度一个执行者去继续完成这个任务. 通过执行者和调度者的配合, 可以实现任务的中断和恢复. 其实将任务挂起与恢复并不是一个新潮的概念, 它有一个名词叫做[**协程**](https://en.wikipedia.org/wiki/Coroutine), ES6 之后的生成器, 就可以用 yield 关键字来模拟协程的概念.
+
+![time slice](https://static.yancey.app/hrn331c8no-1622697039929)
 
 ## 源码解析
 
-以上就是 Scheduler 的核心原理, 不过真正想要搞懂, 还是得深入源码才行. 读完下面的内容, 还可以参考 GitHub 上更详细的[源码解读](https://github.com/learn-frame/react/blob/feature/learn-react/packages/scheduler/src/forks/SchedulerDOM.js), 想必会有更整体的认识.
+以上就是 Scheduler 的核心原理, talk is cheap, 想要真正搞懂, 还是得深入源码才行. 我切了个分支专门来读[React 源码](https://github.com/learn-frame/react/blob/feature/learn-react/packages/scheduler/src/forks/SchedulerDOM.js), 看完下面的内容可以再去 GayHub 上整体复习下.
 
 ### React 和 Scheduler 优先级的转换
 
@@ -601,7 +605,7 @@ function workLoop(hasTimeRemaining, initialTime) {
   if (currentTask !== null) {
     return true;
   } else {
-    // 若任务完成!!!，去 timerQueue 中找需要最早开始执行的那个任务
+    // 若任务完成!!!, 去 timerQueue 中找需要最早开始执行的那个任务
     // 进行 requestHostTimeout 调度那一套
     const firstTimer = peek(timerQueue);
     if (firstTimer !== null) {
@@ -657,8 +661,62 @@ function shouldYieldToHost() {
 }
 ```
 
+### 取消调度
+
+在 workLoop 的代码中有一段是 `currentTask.callback = null;`, 也就是 Scheduler 以 callback 是否为 null 来判断任务被取消(或者完成了).
+
+```ts
+function unstable_cancelCallback(task) {
+  if (enableProfiling) {
+    if (task.isQueued) {
+      const currentTime = getCurrentTime();
+      markTaskCanceled(task, currentTime);
+      task.isQueued = false;
+    }
+  }
+
+  // Null out the callback to indicate the task has been canceled. (Can't
+  // remove from the queue because you can't remove arbitrary nodes from an
+  // array based heap, only the first one.)
+  task.callback = null;
+}
+```
+
+### 自定义的时间切片频率
+
+为了后续 Scheduler 独立成包, 它开放了设置时间切片的大小, 默认为 5ms, 你可以根据实际情况调整到 0 ~ 125 之间. 不过怎么把握这个度, 咱也不知道咱也不敢问.
+
+```ts
+function forceFrameRate(fps) {
+  if (fps < 0 || fps > 125) {
+    // Using console['error'] to evade Babel and ESLint
+    console["error"](
+      "forceFrameRate takes a positive int between 0 and 125, " +
+        "forcing frame rates higher than 125 fps is not supported"
+    );
+    return;
+  }
+  if (fps > 0) {
+    yieldInterval = Math.floor(1000 / fps);
+  } else {
+    // reset the framerate
+    yieldInterval = 5;
+  }
+}
+```
+
 ## 最后
 
-以上就是 v17.0.2 版本 Scheduler 的解析了, 洋洋洒洒两万余字, 一大半都是代码... 除此之外还有一些通用逻辑的封装, 一些面向未来的特性文中没有讲到, 有兴趣可以去 GayHub 上翻源码看看. 总之 React 的愿景就是**快速响应用户, 让用户觉得够快, 不能阻塞用户的交互**, 而 Scheduler 通过划分优先级, 细粒度切分时间, 可中断、可恢复任务来保证高优任务先被执行, 可谓"时间管理大师".
+以上全部就是 Scheduler 的源码解析了, 洋洋洒洒两万余字, 一大半都是代码... 除此之外源码中还有一些通用逻辑的封装, 以及一些面向未来的特性文中没有涉及, 有兴趣可以去 GayHub 上翻源码看看. 本文基于 v17.0.2, 未来谁也没法保证它的代码会变成啥样, 先看先享受, 且行且珍惜. 后面如有大的更新, 我会尽力更新文章, 以保证和 master 对齐. 读源码这事儿, 不是一朝一夕的事儿, 也不能只一家之言, 欢迎大家拍砖提意见. 实在是画图苦手, 盗用 shockw4ver 大佬的一张流程图收尾.
 
 ![5scdbn97g8-1622629716400](https://static.yancey.app/5scdbn97g8-1622629716400)
+
+## 参考
+
+- [React 中的优先级管理](https://github.com/7kms/react-illustration-series/blob/master/docs/main/priority.md)
+- [React 调度原理(scheduler)](https://github.com/7kms/react-illustration-series/blob/master/docs/main/scheduler.md)
+- [探索 React 的内在 —— postMessage & Scheduler](https://segmentfault.com/a/1190000022942008)
+- [一篇长文帮你彻底搞懂 React 的调度机制原理](https://segmentfault.com/a/1190000039101758)
+- [这可能是最通俗的 React Fiber(时间分片) 打开方式](https://juejin.cn/post/6844903975112671239)
+
+![齋藤飛鳥](https://static.yancey.app/齋藤飛鳥.gif)
