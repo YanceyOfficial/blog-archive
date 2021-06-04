@@ -52,6 +52,10 @@
 
   - [浅谈 Server-Sent Events](./JavaScript/浅谈%20Server-Send%20Event.md)
 
+  - [聊一聊TypeScript的工程引用](./JavaScript/聊一聊TypeScript的工程引用.md)
+
+  - [聊一聊TypeScript的工程引用](./JavaScript/%E6%B7%B1%E5%85%A5%22%E6%97%B6%E9%97%B4%E7%AE%A1%E7%90%86%E5%A4%A7%E5%B8%88%22%20%E2%80%94%E2%80%94%20React%20Scheduler.md)
+
 - HTTP
 
   - [[HTTP 系列] 第 1 篇 —— 从 TCP/UDP 到 DNS 解析](./HTTP/%5BHTTP%20系列%5D%20第%201%20篇%20——%20从%20TCP%20UDP%20到%20DNS%20解析.md)
@@ -75,8 +79,6 @@
   - [React 单页应用添加 GA 埋点](./综合/React单页应用添加GA埋点.md)
 
   - [Natsuha-用 Taro 写个天气微信小程序](./综合/Natsuha-用Taro写个天气微信小程序.md)
-
-  - [聊一聊TypeScript的工程引用](./综合/聊一聊TypeScript的工程引用.md)
 
   - [React练习——汇率计算器](./综合/React练习——汇率计算器.md)
 
