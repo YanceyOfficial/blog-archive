@@ -759,11 +759,11 @@ f`Hello ${a}!`; // [["Hello ", "!"], world]
 - 语法分析: 把 token 变成抽象语法树 AST.
 - 解释执行: 后序遍历 AST, 执行得出结果.
 
-### 定义四则运算
+#### 定义四则运算
 
 其实比较好理解, 就是诸如 `1 + 3 * 2` 这种.
 
-### 四则运算的词法分析
+#### 四则运算的词法分析
 
 - Token
   - Number: 1 2 3 4 5 6 7 8 9 0 的组合
@@ -771,7 +771,7 @@ f`Hello ${a}!`; // [["Hello ", "!"], world]
 - Whitespace: \<SP>
 - LineTerminator: \<LF> \<CR>
 
-### 四则运算的语法分析
+#### 四则运算的语法分析
 
 大多数语法分析都使用 BNF(Backus-Naur Form) 是描述编程语言的文法. 巴科斯范式是一种用于表示上下文无关文法的语言, 上下文无关文法描述了一类形式语言. 因为加减乘除有优先级, 所以我们可以认为加法是由若干个乘法再由加号或者减号连接成的.
 
@@ -791,7 +791,7 @@ f`Hello ${a}!`; // [["Hello ", "!"], world]
 ></Expression>
 ```
 
-### 词法分析 - 状态机
+#### 词法分析 - 状态机
 
 词法分析有两种方案: 一种是状态机, 一种是正则表达式.
 
@@ -854,6 +854,141 @@ for (const c of input.split("")) {
 }
 
 state(Symbol("EOF"));
+```
+
+### 自动插入分号规则
+
+- 要有换行符, 且下一个符号是不符合语法的, 那么就尝试插入分号.
+- 有换行符, 且语法中规定此处不能有换行符, 那么就自动插入分号.
+- 源代码结束处, 不能形成完整的脚本或者模块结构, 那么就自动插入分号.
+
+下面这个例子中, `let a = 1` 后面没有分号, 但有一个换行符, 且如果连接且下一个符号 void 是不符合语法的, 因此引擎会尝试在 `let a = 1` 后面插入分号.
+
+![引擎会尝试插入分号](https://edge.yancey.app/beg/wfjsjaw7-1644494497462.jpg)
+
+JavaScript 中有一个 `[no LineTerminator here]` 的规则, 来约束下面几种场景不能有换行:
+
+- 变量名 与 ++/-- 之间
+- continue/break 与 label 之间
+- async/return/throw/yield 后面
+- 箭头函数参数括号和 => 之间
+
+![no LineTerminator here 规则](https://edge.yancey.app/beg/mg7w2jim-1644494506671.jpg)
+
+按照这个规则, 下面这个例子中, `a` 和下面的 `++` 不能有换行, 而这个 `++` 可以和 `b` 结合, 同理, `b` 后面的 ++ 可以和 `c` 结合. 最终表现如下面代码所示.
+
+```ts
+var a = 1,
+  b = 1,
+  c = 1;
+a;
+++b;
+++c;
+```
+
+再如下面两个紧挨着的 IIFE, 第一个立即执行函数可以执行, 打印出 1, 第二个就直接报错了. 这段代码看似两个独立执行的函数表达式, 但是其实第三组括号被理解为传参, 导致抛出错误.
+
+![IIFE](https://edge.yancey.app/beg/gdgsgqdv-1644495640642.jpg)
+
+下面这个例子中, 根据 JavaScript 自动插入分号规则, 带换行符的注释也被认为是有换行符, 而恰好的是, return 也有 `[no LineTerminator here]` 规则的要求. 所以这里会自动插入分号.
+
+![return](https://edge.yancey.app/beg/9kd1kxlv-1644495649563.jpg)
+
+因此本意是返回 1, 但 return 后面自动加了分号, 就变成了 `return;`, 也就是 undefined.
+
+```ts
+function f() {
+  return;
+  /*
+        This is a return value.
+    */ 1;
+}
+
+f();
+```
+
+下面列举一些不写分号可能带来的坑:
+
+![不写分号](https://edge.yancey.app/beg/l42bpvro-1644496466568.jpeg)
+
+他们被卷成了下面的形式, 造成出错.
+
+```ts
+var a = [[]] /*这里没有被自动插入分号*/[(3, 2, 1, 0)]
+  .forEach((e) => console.log(e));
+
+var x = 1,
+  g = { test: () => 0 },
+  b = 1 /*这里没有被自动插入分号*/ / a / g.test("abc");
+console.log(RegExp.$1);
+
+var f = function () {
+  return "";
+};
+var g = f/*这里没有被自动插入分号*/ `Template`.match(/(a)/);
+console.log(RegExp.$1);
+```
+
+### 模块的引用
+
+具体看这篇文章, [简析 AMD / CMD / UMD / CommonJS / ES Module](https://www.yanceyleo.com/post/7e95f2ef-adb3-4d1c-a0dc-1b910682dd65), 下面简单复习下.
+
+下面这个例子, b 引用 a, 在 b 中调用方法来改变 a, 发现 a 也随之改变. 因为 esm 相当于是导出的是一个引用, 他们指向的都是同一个地址.
+
+```ts
+/* a.js */
+export var a = 1;
+
+export function modify() {
+  a = 2;
+}
+
+/* b.js */
+
+import { a, modify } from "./a.js";
+
+console.log(a); // 1
+
+modify();
+
+console.log(a); // 2
+```
+
+### 函数提升
+
+好吧, 以前只知道函数提升, 没考虑过判断语句中的提升. 在非严格模式下, 下面这句打出 undefined, 这意味着 foo 函数仍被提升, 只不过被提升成 undefined 了, 否则打印一个不存在的变量直接报错. 这说明 function 在预处理阶段仍然发生了作用, 在作用域中产生了变量, 没有产生赋值, 赋值行为发生在了执行阶段.
+
+```ts
+console.log(foo); // undefined
+if (true) {
+  function foo() {}
+}
+```
+
+再看一下 class, class 是没有任何提升的, 如果在 `class A {}` 之前尝试获取 A, 直接报错, 以下两种都会报错.
+
+```ts
+console.log(c); // 报错
+class c {}
+
+var c = 1;
+function foo() {
+  console.log(c); // 报错
+  class c {}
+}
+foo();
+```
+
+### 指令序言(Directive Prologs)
+
+JavaScript 中唯一的指令序言就是 `"use strict";`, 设计指令序言的目的是, 留给 JavaScript 的引擎和实现者一些统一的表达方式, 在静态扫描时指定 JavaScript 代码的一些特性. 看下面这个例子:
+
+```ts
+"use strict";
+function f() {
+  console.log(this); // 如果不是严格模式, 则打印出 Global 或者 Window; 否则打印出 null
+}
+f.call(null);
 ```
 
 ## 语义化标签
