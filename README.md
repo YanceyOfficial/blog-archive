@@ -20,11 +20,11 @@
 
 - JavaScript
 
-  - [JavaScript 七大继承全解析](./JavaScript/JavaScript%20%E4%B8%83%E5%A4%A7%E7%BB%A7%E6%89%BF%E5%85%A8%E8%A7%A3%E6%9E%90.md)
+  - [JavaScript 七大继承全解析](./JavaScript/JavaScript%20七大继承全解析.md)
 
-  - [也谈 JavaScript 的 this](./JavaScript/%E4%B9%9F%E8%B0%88%20JavaScript%20%E7%9A%84%20this.md)
+  - [也谈 JavaScript 的 this](./JavaScript/也谈%20JavaScript%20的%20this.md)
 
-  - [从 JavaScript 编译原理到作用域(链)及闭包](<./JavaScript/%E4%BB%8E%20JavaScript%20%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86%E5%88%B0%E4%BD%9C%E7%94%A8%E5%9F%9F(%E9%93%BE)%E5%8F%8A%E9%97%AD%E5%8C%85.md>)
+  - [从 JavaScript 编译原理到作用域(链)及闭包](./JavaScript/从%20JavaScript%20编译原理到作用域(链)及闭包.md)
 
   - [从感性角度学习原型和原型链](./JavaScript/%E4%BB%8E%E6%84%9F%E6%80%A7%E8%A7%92%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%8E%9F%E5%9E%8B%E5%92%8C%E5%8E%9F%E5%9E%8B%E9%93%BE.md)
 
@@ -50,9 +50,7 @@
 
   - [浅谈 Server-Sent Events](./JavaScript/浅谈%20Server-Send%20Event.md)
 
-  - [聊一聊TypeScript的工程引用](./JavaScript/聊一聊TypeScript的工程引用.md)
-
-  - [聊一聊TypeScript的工程引用](./JavaScript/%E6%B7%B1%E5%85%A5%22%E6%97%B6%E9%97%B4%E7%AE%A1%E7%90%86%E5%A4%A7%E5%B8%88%22%20%E2%80%94%E2%80%94%20React%20Scheduler.md)
+  - [聊一聊 TypeScript 的工程引用](./JavaScript/聊一聊TypeScript的工程引用.md)
 
 - HTTP
 
@@ -78,7 +76,7 @@
 
   - [Natsuha-用 Taro 写个天气微信小程序](./综合/Natsuha-用Taro写个天气微信小程序.md)
 
-  - [React练习——汇率计算器](./综合/React练习——汇率计算器.md)
+  - [React 练习——汇率计算器](./综合/React练习——汇率计算器.md)
 
   - [WebP 全方位能力检测](./综合/WebP全方位能力检测.md)
 
