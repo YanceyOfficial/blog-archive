@@ -21,11 +21,11 @@
 而对于 HTML, 大致分为以下几个部分:
 
 1. 文档元信息: 通常是出现在 head 标签中的元素, 包含了描述文档自身的一些信息;
-2. 语义相关: 扩展了纯文本, 表达文章结构、不同语言要素的标签;
+2. 语义相关: 扩展了纯文本, 表达文章结构, 不同语言要素的标签;
 3. 链接: 提供到文档内和文档外的链接;
-4. 替换型标签: 引入声音、图片、视频等外部元素替换自身的一类标签;
+4. 替换型标签: 引入声音, 图片, 视频等外部元素替换自身的一类标签;
 5. 表单: 用于填写和提交信息的一类标签;
-6. 表格: 表头、表尾、单元格等表格的结构.
+6. 表格: 表头, 表尾, 单元格等表格的结构.
 
 ## JavaScript
 
@@ -35,7 +35,7 @@ undefiend 在 JavaScript 中是一个**变量**, 而非关键字, 因此执行 `
 
 ### String
 
-String 有最大长度是 2^53 - 1, 即 9007199254740991, 其实和 `Number.MAX_SAFE_INTEGER` 相等. 这个所谓最大长度, 并不完全是你理解中的字符数, 因为 String 的意义并非"字符串", 而是字符串的 UTF16 编码, 我们字符串的操作 charAt、charCodeAt、length 等方法针对的都是 UTF16 编码. 所以, 字符串的最大长度, 实际上是受字符串的编码长度影响的.
+String 有最大长度是 2^53 - 1, 即 9007199254740991, 其实和 `Number.MAX_SAFE_INTEGER` 相等. 这个所谓最大长度, 并不完全是你理解中的字符数, 因为 String 的意义并非"字符串", 而是字符串的 UTF16 编码, 我们字符串的操作 charAt, charCodeAt, length 等方法针对的都是 UTF16 编码. 所以, 字符串的最大长度, 实际上是受字符串的编码长度影响的.
 
 ### Number
 
@@ -267,8 +267,8 @@ console.log(o * 2);
 
 - List 和 Record: 用于描述函数传参过程.
 - Set: 主要用于解释字符集等.
-- Completion Record: 用于描述异常、跳出等语句执行过程.
-- Reference: 用于描述对象属性访问、delete 等.
+- Completion Record: 用于描述异常, 跳出等语句执行过程.
+- Reference: 用于描述对象属性访问, delete 等.
 - Property Descriptor: 用于描述对象的属性.
 - Lexical Environment 和 Environment Record: 用于描述变量和作用域.
 - Data Block: 用于描述二进制数据.
@@ -373,8 +373,8 @@ function myCreate(prototype) {
 - 宿主对象（host Objects）: 由 JavaScript 宿主环境提供的对象, 它们的行为完全由宿主环境决定.
 - 内置对象（Built-in Objects）: 由 JavaScript 语言提供的对象.
   - 固有对象（Intrinsic Objects ）: 由标准规定, 随着 JavaScript 运行时创建而自动创建的对象实例.
-  - 原生对象（Native Objects）: 可以由用户通过 Array、RegExp 等内置构造器或者特殊语法创建的对象.
-  - 普通对象（Ordinary Objects）: 由对象字面量、Object 构造器或者 class 关键字定义类创建的对象, 它能够被原型继承.
+  - 原生对象（Native Objects）: 可以由用户通过 Array, RegExp 等内置构造器或者特殊语法创建的对象.
+  - 普通对象（Ordinary Objects）: 由对象字面量, Object 构造器或者 class 关键字定义类创建的对象, 它能够被原型继承.
 
 #### 宿主对象
 
@@ -404,7 +404,7 @@ function myCreate(prototype) {
 
 函数对象的定义是: 具有[[call]]私有字段的对象, 构造器对象的定义是: 具有私有字段[[construct]]的对象. 任何对象只需要实现[[call]], 它就是一个函数对象, 可以去作为函数被调用. 而如果它能实现[[construct]], 它就是一个构造器对象, 可以作为构造器被调用.
 
-但对于宿主和内置对象来说, 它们实现[[call]]（作为函数被调用）和[[construct]]（作为构造器被调用）不总是一致的. 再比如基本类型（String、Number、Boolean）, 它们的构造器被当作函数调用, 则产生类型转换(装箱)的效果.
+但对于宿主和内置对象来说, 它们实现[[call]]（作为函数被调用）和[[construct]]（作为构造器被调用）不总是一致的. 再比如基本类型（String, Number, Boolean）, 它们的构造器被当作函数调用, 则产生类型转换(装箱)的效果.
 
 值得一提的是, 箭头函数不能被用做构造器.
 
@@ -767,7 +767,7 @@ f`Hello ${a}!`; // [["Hello ", "!"], world]
 
 - Token
   - Number: 1 2 3 4 5 6 7 8 9 0 的组合
-  - Operator: + 、-、 \*、 / 之一
+  - Operator: + , -, \*, / 之一
 - Whitespace: \<SP>
 - LineTerminator: \<LF> \<CR>
 
@@ -991,6 +991,201 @@ function f() {
 f.call(null);
 ```
 
+### 语句
+
+在 JavaScript 标准中, 语句分成**声明**和**语句**. 我们又可以基于此划分为普通语句和声明型语句.
+
+![普通语句](https://edge.yancey.app/beg/7cxfus22-1644548676745.webp)
+
+![声明型语句](https://edge.yancey.app/beg/pd4uwy0o-1644548684667.webp)
+
+语句块很简单, 就是用大括号包裹, 当然这会产生块级作用域, 这和 Rust 表现是一致的.
+
+```ts
+{
+  let x = 1;
+}
+
+console.log(x); // 报错
+```
+
+`for...in` 语句用来遍历部署了 `{enumerable: true}` 的对象, 值得注意的是它还会遍历原型链上的属性.
+
+```ts
+let o = {
+  a: 10,
+  b: 20,
+};
+
+// 会遍历到原型上的
+o.__proto__.sayHi = function sayHi() {};
+
+// 但不会遍历到"不可枚举"的属性
+Object.defineProperty(o, "c", {
+  enumerable: false,
+  value: 30,
+});
+
+for (let p in o) console.log(p);
+// 10
+// 20
+// sayHi
+```
+
+`for of` 循环和 `for await of` 循环用于遍历部署了 iterator 的对象, 常见的比如数组, NodeList. 当然你也可以手动给一个对象添加 iterator 属性.
+
+```ts
+let o = {
+  [Symbol.iterator]: () => ({
+    _value: 0,
+    next() {
+      if (this._value == 10)
+        return {
+          done: true,
+        };
+      else
+        return {
+          value: this._value++,
+          done: false,
+        };
+    },
+  }),
+};
+
+for (let e of o) {
+  console.log(e);
+}
+```
+
+在实际中, 生成器也可以使用 `for of`.
+
+```ts
+function* foo() {
+  yield 0;
+  yield 1;
+  yield 2;
+  yield 3;
+}
+
+for (let e of foo()) {
+  console.log(e);
+}
+```
+
+此外, JavaScript 还为异步生成器函数配备了异步的 for of. 下面这段代码定义了一个异步生成器函数, 异步生成器函数每隔一秒生成一个数字, 这是一个无限的生成器. 接下来, 我们使用 for await of 来访问这个异步生成器函数的结果, 我们可以看到, 这形成了一个每隔一秒打印一个数字的无限循环. 但是因为我们这个循环是异步的, 并且有时间延迟, 所以, 这个无限循环的代码可以用于显示时钟等有意义的操作.
+
+```ts
+function sleep(duration) {
+  return new Promise(function (resolve, reject) {
+    setTimeout(resolve, duration);
+  });
+}
+async function* foo() {
+  i = 0;
+  while (true) {
+    await sleep(1000);
+    yield i++;
+  }
+}
+
+for await (let e of foo()) {
+  console.log(e);
+}
+```
+
+break 语句和 continue 语句没啥可说的, break 语句用于跳出循环语句或者 switch 语句, continue 语句用于结束本次循环并继续循环. 不过这俩都可以使用"标签"语法.
+
+```ts
+outer: for (let i = 0; i < 100; i++) {
+  inner: for (let j = 0; j < 100; j++)
+    if (i == 50 && j == 50) {
+      break outer;
+    }
+}
+
+outer: for (let i = 0; i < 100; i++) {
+  inner: for (let j = 0; j < 100; j++) {
+    if (i >= 50 && j == 50) {
+      continue outer;
+    }
+  }
+}
+```
+
+with 语句基本不用, 是个设计错误, 它用于把对象的属性在它内部的作用域内变成变量.
+
+```ts
+let o = { a: 1, b: 2 };
+with (o) {
+  console.log(a, b);
+}
+```
+
+let 和 const, 这俩没啥可说的, 不过下面这个例子还是值得学习的, 在 if 的作用域中, 变量 a 声明执行到之前, 我们访问了变量 a, 这时会抛出一个错误, 这说明 const 声明仍然是有预处理机制的. 在执行到 const 语句前, 我们的 JavaScript 引擎就已经知道后面的代码将会声明变量 a, 从而不允许我们访问外层作用域中的 a.
+
+```ts
+const a = 2;
+if (true) {
+  console.log(a); //抛错
+  const a = 1;
+}
+```
+
+#### 表达式语句
+
+PrimaryExpression(主要表达式), 它是表达式的最小单位, 它所涉及的语法结构也是优先级最高的, 也包括直接量, 函数, 类, 数组, 正则表达式等等.
+
+```ts
+"abc";
+123;
+null;
+true;
+false;
+(class {});
+[];
+/abc/g;
+this;
+```
+
+MemberExpression(成员表达式), 就是访问对象成员的, 比如对象和数组.
+
+```ts
+function F() {
+  // new.target 用于判断该函数的调用是被 new 出来的, 还是直接当做普通函数调用的
+  console.log(new.target);
+}
+
+F(); // undefined
+new F(); // F
+
+// super 则是构造函数中, 用于访问父类的属性的语法
+super.b;
+
+// 带函数名的模板表示把模板的各个部分算好后传递给一个函数
+function ff(...args) {
+  console.log(args); // [["a", "b"], 2];
+}
+undefined;
+ff`a${1 + 1}b`;
+```
+
+此外还有 NewExpression (NEW 表达式) 和 Call Expression (调用表达式) 统称 LeftHandSideExpression(左值表达式). 直观地讲, 左值表达式就是可以放到等号左边的表达式. 左值表达式最经典的用法是用于构成 AssignmentExpression (赋值表达式).
+
+```ts
+a = b;
+// 连续赋值
+a = b = c = d;
+
+// *=, /=, %=, +=, -=, <<=, >>=, >>>=, &=, ^=, |=, **=
+a += b
+```
+
+赋值表达式可以构成 Expression 表达式的一部分, 在 JavaScript 中, 表达式就是用逗号运算符连接的赋值表达式. 比赋值运算优先级更低的就是逗号运算符.
+
+```ts
+a = b, b = 1, null;
+```
+
 ## 语义化标签
 
 - 语义类标签对开发者更为友好, 使用语义类标签增强了可读
@@ -1002,7 +1197,6 @@ f.call(null);
   <h2>我们需要模拟类吗？</h2>
 </hgroup>
 <p>balah balah</p>
-......
 ```
 
 section 标签不仅仅是一个"有语义的 div", 它会改变 h1-h6 的语义. section 的嵌套会使得其中的 h1-h6 下降一级, 因此, 在 HTML5 以后, 我们只需要 section 和 h1 就足以形成文档的树形结构:
@@ -1534,7 +1728,7 @@ a#b .cls {
 
 ## 小谈排版
 
-浏览器又可以支持元素和文字的混排, 元素被定义为占据长方形的区域, 还允许边框、边距和留白, 这个就是所谓的盒模型. 在正常流的基础上, 浏览器还支持两类元素: 绝对定位元素和浮动元素. 绝对定位元素把自身从正常流抽出, 直接由 top 和 left 等属性确定自身的位置, 不参加排版计算, 也不影响其它元素. 绝对定位元素由 position 属性控制. 浮动元素则是使得自己在正常流的位置向左或者向右移动到边界, 并且占据一块排版空间. 浮动元素由 float 属性控制. 除了正常流, 浏览器还支持其它排版方式, 比如现在非常常用的 Flex 排版, 这些排版方式由外部元素的 display 属性来控制(注意, display 同时还控制元素在正常流中属于 inline 等级还是 block 等级).
+浏览器又可以支持元素和文字的混排, 元素被定义为占据长方形的区域, 还允许边框, 边距和留白, 这个就是所谓的盒模型. 在正常流的基础上, 浏览器还支持两类元素: 绝对定位元素和浮动元素. 绝对定位元素把自身从正常流抽出, 直接由 top 和 left 等属性确定自身的位置, 不参加排版计算, 也不影响其它元素. 绝对定位元素由 position 属性控制. 浮动元素则是使得自己在正常流的位置向左或者向右移动到边界, 并且占据一块排版空间. 浮动元素由 float 属性控制. 除了正常流, 浏览器还支持其它排版方式, 比如现在非常常用的 Flex 排版, 这些排版方式由外部元素的 display 属性来控制(注意, display 同时还控制元素在正常流中属于 inline 等级还是 block 等级).
 
 ## 渲染 & 合成 & 绘制
 
@@ -1548,7 +1742,7 @@ DOM 渲染到页面上指的是把模型变成位图的过程, 这里的位图�
 
 合成是一种优化策略, 合成的目标就是提高性能, 根据这个目标, 我们建立的原则就是最大限度减少绘制次数原则. 看两个极端例子, 假如所有的元素都合成, 那么一旦改变了任何一个 CSS 属性, 这个合成的位图就废了; 假如不做合成, 每次我们都必须要重新绘制所有的元素, 这显然是性能不好的. 因此, 好的合成策略是"猜测"可能变化的元素, 把它排除到合成之外. 典型的像 transform 这些会触发合成层. css3 还有一个属性 `will-change` 可以主动告知引擎进行合成.
 
-绘制是把"位图最终绘制到屏幕上, 变成肉眼可见的图像"的过程. 我们已经得到了每个元素的位图, 并且对它们部分进行了合成, 那么绘制过程, 实际上就是按照 z-index 把它们依次绘制到屏幕上. 计算机图形学中, 使用的方案就是"脏矩形"算法, 也就是把屏幕均匀地分成若干矩形区域. 当鼠标移动、元素移动或者其它导致需要重绘的场景发生时, 我们只重新绘制它所影响到的几个矩形区域就够了. 比矩形区域更小的影响最多只会涉及 4 个矩形, 大型元素则覆盖多个矩形. 设置合适的矩形区域大小, 可以很好地控制绘制时的消耗. 设置过大的矩形会造成绘制面积增大, 而设置过小的矩形则会造成计算复杂.
+绘制是把"位图最终绘制到屏幕上, 变成肉眼可见的图像"的过程. 我们已经得到了每个元素的位图, 并且对它们部分进行了合成, 那么绘制过程, 实际上就是按照 z-index 把它们依次绘制到屏幕上. 计算机图形学中, 使用的方案就是"脏矩形"算法, 也就是把屏幕均匀地分成若干矩形区域. 当鼠标移动, 元素移动或者其它导致需要重绘的场景发生时, 我们只重新绘制它所影响到的几个矩形区域就够了. 比矩形区域更小的影响最多只会涉及 4 个矩形, 大型元素则覆盖多个矩形. 设置合适的矩形区域大小, 可以很好地控制绘制时的消耗. 设置过大的矩形会造成绘制面积增大, 而设置过小的矩形则会造成计算复杂.
 
 TIPS: 重排涉及到排版; 重绘, 涉及到渲染合成绘制.
 
@@ -1719,7 +1913,7 @@ CSSOM View 这一部分的 API, 可以视为 DOM API 的扩展, 它在原本的 
 - scrollHeight 元素的属性, 表示元素内部的滚动内容的高度, 一般来说会大于等于元素高度.
 - scroll(x, y) 使得元素滚动到特定的位置, 有别名 scrollTo, 支持传入配置型参数 {top, left}.
 - scrollBy(x, y) 使得元素滚动到特定的位置, 支持传入配置型参数 {top, left}.
-- scrollIntoView(arg) 滚动元素所在的父元素, 使得元素滚动到可见区域, 可以通过 arg 来指定滚到中间、开始或者就近.
+- scrollIntoView(arg) 滚动元素所在的父元素, 使得元素滚动到可见区域, 可以通过 arg 来指定滚到中间, 开始或者就近.
 
 ### 布局 API
 
