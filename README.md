@@ -54,6 +54,8 @@
 
   - [原生 JS 实现轮播图效果](./JavaScript/原生JS实现轮播图效果.md)
 
+  - [\[WIP] JavaScript 核心原理解析](./JavaScript/wip-JavaScript 核心原理解析.md)
+
 - HTTP
 
   - [[HTTP 系列] 第 1 篇 —— 从 TCP/UDP 到 DNS 解析](./HTTP/%5BHTTP%20系列%5D%20第%201%20篇%20——%20从%20TCP%20UDP%20到%20DNS%20解析.md)
