@@ -553,8 +553,183 @@ new o.bar(); // 👌
 
 ### 谈一谈构造器
 
-在 ECMAScript 6 之后，函数可以简单地分为三个大类:
+在 ECMAScript 6 之后, 函数可以简单地分为三个大类:
 
 - 类: 只可以做 new 运算;
 - 方法: 只可以做调用运算;
 - 一般函数: (除部分函数有特殊限制外, 如箭头函数, 生成器函数不能做构造函数), 同时可以做 new 和调用运算.
+
+---
+
+### ES5 构造函数与 ES6 Class 的区别
+
+Class 类中不存在变量提升.
+
+```ts
+// ES5
+var bar = new Bar(); // 可行
+function Bar() {
+  this.bar = 42;
+}
+//ES6
+const foo = new Foo(); // Uncaught ReferenceError
+class Foo {
+  constructor() {
+    this.foo = 42;
+  }
+}
+```
+
+Class 内部会启用严格模式
+
+```ts
+// ES5
+function Bar() {
+  baz = 23; // ok
+}
+var bar = new Bar();
+
+// ES6
+class Foo {
+  constructor() {
+    this.foo = 42;
+    foo = 12; // Uncaught ReferenceError: foo is not defined
+  }
+}
+```
+
+Class 内部不能重写类名(修改类名)
+
+```ts
+// ES5
+function Bar() {
+  Bar = 'Baz';
+  this.bar = 42;
+}
+var bar = new Bar();
+console.log(bar);// Bar {bar: 42}
+console.log(Bar);// 'Baz'
+// ES6
+class Foo {
+  constructor() {
+    this.foo = 42;
+    Foo = 'Fol'; // Uncaught TypeError: Assignment to constant variable.
+  }
+}
+let foo = new Foo();
+Foo = 'Fol';// it's ok
+```
+
+Class 必须使用 new 调用, 不能直接当函数调用.
+
+```ts
+// ES5
+function Bar() { }
+var bar = Bar();// it's ok;
+// ES6
+class Foo {
+}
+let foo = Foo();// Uncaught TypeError: Class constructor Foo cannot be invoked without 'new'
+```
+
+Class 中的所有方法不可枚举
+
+```ts
+// ES5
+function Bar() { }
+Bar.getName = function () { };
+Bar.prototype.say = function () { };
+console.log(Object.keys(Bar)); // ["getName"]
+console.log(Object.keys(Bar.prototype)); // ["say"]
+
+// ES6
+class Foo {
+  constructor() { }
+  static answer() { }
+  print() { }
+}
+console.log(Object.keys(Foo));// []
+console.log(Object.keys(Foo.prototype));// []
+
+```
+
+Class 的继承有两条继承链
+
+一条是: 子类的 `__proto__` 指向父类; 另一条是: 子类的 prototype 属性的 `__proto__` 指向父类的 prototype 属性; ES6 子类通过 `__proto__` 属性找到父类, 而 ES5 子类通过 `__proto__` 找到 `Function.prototype`.
+
+```ts
+// ES5
+function Father() { }
+function Child() { }
+Child.prototype = new Father();
+Child.prototype.constructor = Child;
+console.log(Child.__proto__ === Function.prototype); // true
+
+// ES6
+class Father { }
+class Child extends Father { }
+console.log(Child.__proto__ === Father); // true
+```
+
+ES5 与 ES6子类this的生成顺序不同
+
+ES5 继承是先建立子类实例对象this, 再调用父类构造函数修饰子类实例; ES6 继承是先建立父类实例对象this, 再调用子类构造函数修饰this. 即在子类构造函数中先调用 super() 方法, 之后再能使用this. 因此所有 ES5 不能继承原生的构造函数, 而 ES6 可以继承. 此外, 既然 this 是祖先类创建的, 也就意味着在刚刚进入构造方法时, this 引用其实是没有值的, 因此必须采用继承父类的行为的技术, 让父类以及祖先类先把 this 构造出来才行.
+
+### 浅谈 super
+
+实现 super 这个关键字的核心, 在于为每一个方法添加一个它所属的类这样的性质, 这个性质被称为主对象 (HomeObject).
+
+- 在类声明中, 如果是类静态声明, 也就是使用 static 声明的方法, 那么主对象就是这个类.
+- 对于一般声明, 那么该方法的主对象就是该类所使用的原型, 也就是 AClass.prototype.
+- 第三种情况, 如果是对象声明, 那么方法的主对象就是对象本身.
+
+super.xxx 在语言内核上是一个规范类型中的引用, 它被标记成 Super Reference, 并且为这个引用专门添加了一个 thisValue 域, ECMAScript 约定了优先取 Super 引用中的 thisValue 值, 然后再取函数上下文中的. 这个 thisValue 是在执行引擎发现 super 这个标识符(GetIdentifierReference)的时候, 就从当前环境中取出来并绑定给 super 引用的. 因此:
+
+- super 关键字所代表的父类对象, 是通过当前方法的 `[[HomeObject]]` 的原型链来查找的;
+- this 引用是从当前环境所绑定的 this 中抄写过来, 并绑定给 super 的.
+
+```ts
+class Parent {
+  constructor(id) { // <- [[HomeObject]]指向MyClass.prototype}
+    this.id = id;
+  }
+
+  say() {
+    console.log(this);
+  }
+}
+
+class Child extends Parent {
+  constructor() {
+    super("1");
+  }
+
+  bark() {
+    super.say(); // this 指向的是 Child
+    console.log("bark");
+  }
+}
+```
+
+关于 constructor, 如果你在 class 中没声明 constructor, 引擎会帮你插进去.
+
+```ts
+
+// 如果在class声明中有extends XXX
+class MyClass extends XXX {
+  // 自动插入的缺省构造方法
+  constructor(...args) {
+    super(...args);
+  }
+}
+ 
+// 如果在class声明中没有声明extends
+class MyClass {
+  // 自动插入的缺省构造方法
+  constructor() {}
+}
+```
+
+## 谈一谈 JavaScript 的对象
+
+JavaScript 中的对象, 在本质上就是关联数组(Associative array, 对应于不可索引的块). 数组在本质上就是索引数组(Index array, 对应于可索引的块).
