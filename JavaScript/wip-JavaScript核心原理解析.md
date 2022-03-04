@@ -511,7 +511,7 @@ let tor = foo3();
 
 当 tor.next() 执行时, tor 所包括的 context 信息被压到栈顶执行, 当 tor.next() 退出时, 这个 context 就被从栈上移除.
 
-## 扩展: yield*
+## 扩展: yield\*
 
 ```ts
 function* g1() {
@@ -534,7 +534,6 @@ console.log(iterator.next()); // { value: 3, done: false }
 console.log(iterator.next()); // { value: 4, done: false }
 console.log(iterator.next()); // { value: 5, done: false }
 console.log(iterator.next()); // { value: undefined, done: true }
-
 ```
 
 ## 关于 JavaScript OOP 的漫谈
@@ -544,17 +543,21 @@ console.log(iterator.next()); // { value: undefined, done: true }
 ```ts
 const o = {
   foo() {},
-  bar: class A{}
-}
+  bar: class A {},
+};
 
 new o.foo(); // Uncaught TypeError: o.foo is not a constructor
 new o.bar(); // 👌
 ```
 
-### 谈一谈构造器
-
-在 ECMAScript 6 之后，函数可以简单地分为三个大类:
+在 ECMAScript 6 之后, 函数可以简单地分为三个大类:
 
 - 类: 只可以做 new 运算;
 - 方法: 只可以做调用运算;
 - 一般函数: (除部分函数有特殊限制外, 如箭头函数, 生成器函数不能做构造函数), 同时可以做 new 和调用运算.
+
+对于方法:
+
+- 具有一个名为主对象 `[[HomeObject]]` 的内部槽;
+- 没有名为构造器 `[[Construct]]` 的内部槽;
+- 没有名为 prototype 的属性.
