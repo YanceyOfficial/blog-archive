@@ -490,9 +490,32 @@ x[Symbol.iterator] = foo; // default `x` is 5
 console.log(...x); // 4 3 2 1 0
 ```
 
+## 环境和上下文
+
+环境是 JavaScript 在语言系统中的静态组件, 而上下文是它在执行系统中的动态组件.
+
+### 环境
+
+JavaScript 中, 环境可以细分为四种, 并由两个类别的基础环境组件构成. 这四种环境是: 全局(Global), 函数(Function), 模块(Module)和 Eval 环境; 两个基础组件的类别分别是: 声明环境(Declarative Environment)和对象环境(Object Environment).
+
+这些环境有分为两种类别:
+
+- **声明环境**就是名字表, 可以是引擎内核用任何方式来实现的一个**名字 -> 数据**的对照表;
+- **对象环境**是 JavaScript 的一个对象, 用来**模拟 / 映射**成上述的对照表的一个结果.
+
+因此, 所有的**环境**本质上只有一个功能, 就是用来管理**名字 -> 数据**的对照表; **对象环境**只为全局环境的 global 对象, 或 `with (obj)` 语句中的对象 obj 创建, 其他情况下创建的环境, 都必然是**声明环境**.
+
+而对于 var, 会发生变量提升, 也就是在一个变量赋值前就能访问它. 因此, 自 ECMAScript 5 开始约定, ECMAScript 的执行上下文将有两个环境, 一个称为词法环境(Lexical Environment), 另一个就称为变量环境(Variable Environment), 所有传统风格的 var 声明和函数声明通过变量环境来管理. 而在内核上, 全局上下文的词法环境和变量环境指向是一样的. 也就意味着词法变量和 var 变量共用一个名字表, 因此你声明了 var 变量, 那么就不能声明同名的 let/const 变量.
+
+```ts
+var x = 100;
+let x = 200;
+// SyntaxError: Identifier 'x' has already been declared
+```
+
 ### 执行上下文
 
-上下文指的是一个外部的, 内部的或由全局 / 模块入口映射成的函数.
+上下文指的是一个外部的, 内部的或由全局 / 模块入口映射成的函数. JavaScript 的执行系统由一个执行栈和一个执行队列构成. 在执行队列中保存的是待执行的任务, 称为 Job. 每一个执行上下文都需要关联到一个对照表. 这个对照表, 就称为**词法环境(Lexical Environment)**.
 
 **模块入口**是所有模块的顶层代码的顺序组合, 它们被封装为一个称为顶层模块执行(TopLevelModule Evaluation Job)的函数中来作为模块加载的第一个执行上下文创建. 一般 **.js 文件**也会创建一个脚本执行(Script Evaluation Job) 的函数, 这也是文件加载中所有全局代码块被称为 script 块的原因. **eval** 也是会开启一个执行上下文, JavaScript 为 eval() 所分配的这个执行上下文, 与调用 eval() 时的函数上下文享有同一个环境(包括词法环境和变量环境等等), 并在退出 eval() 时释放它的引用, 以确保同一个环境中同时只有一个逻辑在执行.
 
@@ -604,54 +627,52 @@ Class 内部不能重写类名(修改类名)
 ```ts
 // ES5
 function Bar() {
-  Bar = 'Baz';
+  Bar = "Baz";
   this.bar = 42;
 }
 var bar = new Bar();
-console.log(bar);// Bar {bar: 42}
-console.log(Bar);// 'Baz'
+console.log(bar); // Bar {bar: 42}
+console.log(Bar); // 'Baz'
 // ES6
 class Foo {
   constructor() {
     this.foo = 42;
-    Foo = 'Fol'; // Uncaught TypeError: Assignment to constant variable.
+    Foo = "Fol"; // Uncaught TypeError: Assignment to constant variable.
   }
 }
 let foo = new Foo();
-Foo = 'Fol';// it's ok
+Foo = "Fol"; // it's ok
 ```
 
 Class 必须使用 new 调用, 不能直接当函数调用.
 
 ```ts
 // ES5
-function Bar() { }
-var bar = Bar();// it's ok;
+function Bar() {}
+var bar = Bar(); // it's ok;
 // ES6
-class Foo {
-}
-let foo = Foo();// Uncaught TypeError: Class constructor Foo cannot be invoked without 'new'
+class Foo {}
+let foo = Foo(); // Uncaught TypeError: Class constructor Foo cannot be invoked without 'new'
 ```
 
 Class 中的所有方法不可枚举
 
 ```ts
 // ES5
-function Bar() { }
-Bar.getName = function () { };
-Bar.prototype.say = function () { };
+function Bar() {}
+Bar.getName = function () {};
+Bar.prototype.say = function () {};
 console.log(Object.keys(Bar)); // ["getName"]
 console.log(Object.keys(Bar.prototype)); // ["say"]
 
 // ES6
 class Foo {
-  constructor() { }
-  static answer() { }
-  print() { }
+  constructor() {}
+  static answer() {}
+  print() {}
 }
-console.log(Object.keys(Foo));// []
-console.log(Object.keys(Foo.prototype));// []
-
+console.log(Object.keys(Foo)); // []
+console.log(Object.keys(Foo.prototype)); // []
 ```
 
 Class 的继承有两条继承链
@@ -660,21 +681,21 @@ Class 的继承有两条继承链
 
 ```ts
 // ES5
-function Father() { }
-function Child() { }
+function Father() {}
+function Child() {}
 Child.prototype = new Father();
 Child.prototype.constructor = Child;
 console.log(Child.__proto__ === Function.prototype); // true
 
 // ES6
-class Father { }
-class Child extends Father { }
+class Father {}
+class Child extends Father {}
 console.log(Child.__proto__ === Father); // true
 ```
 
-ES5 与 ES6子类this的生成顺序不同
+ES5 与 ES6 子类 this 的生成顺序不同
 
-ES5 继承是先建立子类实例对象this, 再调用父类构造函数修饰子类实例; ES6 继承是先建立父类实例对象this, 再调用子类构造函数修饰this. 即在子类构造函数中先调用 super() 方法, 之后再能使用this. 因此所有 ES5 不能继承原生的构造函数, 而 ES6 可以继承. 此外, 既然 this 是祖先类创建的, 也就意味着在刚刚进入构造方法时, this 引用其实是没有值的, 因此必须采用继承父类的行为的技术, 让父类以及祖先类先把 this 构造出来才行.
+ES5 继承是先建立子类实例对象 this, 再调用父类构造函数修饰子类实例; ES6 继承是先建立父类实例对象 this, 再调用子类构造函数修饰 this. 即在子类构造函数中先调用 super() 方法, 之后再能使用 this. 因此所有 ES5 不能继承原生的构造函数, 而 ES6 可以继承. 此外, 既然 this 是祖先类创建的, 也就意味着在刚刚进入构造方法时, this 引用其实是没有值的, 因此必须采用继承父类的行为的技术, 让父类以及祖先类先把 this 构造出来才行.
 
 ### 浅谈 super
 
@@ -691,7 +712,8 @@ super.xxx 在语言内核上是一个规范类型中的引用, 它被标记成 S
 
 ```ts
 class Parent {
-  constructor(id) { // <- [[HomeObject]]指向MyClass.prototype}
+  constructor(id) {
+    // <- [[HomeObject]]指向MyClass.prototype}
     this.id = id;
   }
 
@@ -715,7 +737,6 @@ class Child extends Parent {
 关于 constructor, 如果你在 class 中没声明 constructor, 引擎会帮你插进去.
 
 ```ts
-
 // 如果在class声明中有extends XXX
 class MyClass extends XXX {
   // 自动插入的缺省构造方法
@@ -723,7 +744,7 @@ class MyClass extends XXX {
     super(...args);
   }
 }
- 
+
 // 如果在class声明中没有声明extends
 class MyClass {
   // 自动插入的缺省构造方法
@@ -741,11 +762,22 @@ undefined 用于表达一个值/数据不存在, 也就是**非值(non-value)**,
 
 任何一个对象 x 都可以通过 `Object.setPrototype(x, null)` 语法变成原子对象, 它可以被理解为关联数组; 并且, 如果它有一个称为 `length` 的属性, 那么它就可以被理解为索引数组.
 
-### 隐式类型转换
+### 隐式类型转换(拆箱)
 
-`[]` 拆箱的话会先执行 `[].valueOf()`, 得到的是 `[]`, 并不是原始值, 就执行 `[].toString()`, 得到的结果是 `''`.
-`{}` 拆箱会先执行 `{}.valueOf()`, 得到的是 `{}`, 并不是原始值, 于是执行 `toString()`, 得到的结果是 `[object Object]`.
-`[] + {}` 就相当于 `"" + "[object Object]"`, 结果就是 `[object Object]`.
-`{} + []` 的话, js 会把开头的 `{}` 理解成代码块, 所以这句话就相当于 `+[]`, 也就是等于 `+""`, 将空字符串转换为数字类型, 结果就是 0.
-`{} + {}` 的话, 也是和上面一样的道理, 相当于 `+"[object Object]"`, 将字符串转化为数字类型, 结果是 NaN.
-`[] + []` 就相当于 `"" + ""`, 所以结果还是 `""`.
+如果一个运算无法确定类型, 那么在类型转换前, 它的运算数将被预设为 number. 预设类型在 ECMAScript 称为 PreferredType. 比如下面的 `[] + {}`, 加号无法判别两个操作数的预期类型, 因此将被预设为 number. 而被预设为 number 的直接后果是优先调用 valueOf, 如果调用了 valueOf 还是对象的话, 那么就会再去调用 toString. 当然如果能够被预设为 string 的话, 那么就直接调用 toString 即可.
+
+`[]` 拆箱的话会先执行 `[].valueOf()`, 得到的是 `[]`, 并不是原始值, 就执行 `[].toString()`, 得到的结果是 `''`. `{}` 拆箱会先执行 `{}.valueOf()`, 得到的是 `{}`, 并不是原始值, 于是执行 `toString()`, 得到的结果是 `[object Object]`.
+
+- `[] + {}` 就相当于 `"" + "[object Object]"`, 结果就是 `[object Object]`.
+- `{} + []` 的话, js 会把开头的 `{}` 理解成代码块, 这是因为有自动分号插入(ASI), 变成了 `{}; + []`, 所以这句话就相当于 `+[]`, 也就是等于 `+""`, 将空字符串转换为数字类型, 结果就是 0.
+- `{} + {}` 的话, 也是和上面一样的道理, 相当于 `+"[object Object]"`, 将字符串转化为数字类型, 结果是 NaN.
+- `[] + []` 就相当于 `"" + ""`, 所以结果还是 `""`.
+
+下面是一段小的总结:
+
+1. 加号运算中, 不能确定左, 右操作数的类型
+2. 等值(`==`)运算中, 不能确定左, 右操作数的类型, JavaScript 认为, 如果左, 右操作数之一为 string, number, bigint 和 symbol 四种基础类型之一, 而另一个操作数是对象类型(x), 那么就需要将对象类型转换成基础类型 `ToPrimitive(x)` 来进行比较. 操作数将尽量转换为数字来进行比较, 即最终结果将等效于: Number(x) == Number(y).
+3. `new Date(x)` 中, 如果 x 是一个非 `Date()` 实例的对象, 那么将尝试把 x 转换为基础类型 x1; 如果 x1 是字符串, 尝试从字符串中 parser 出日期值; 否则尝试 `x2 = Number(x1)`, 如果能得到有效的数字值, 则用 x2 来创建日期对象. 与上述拆箱相反, Date 的预设类型优先是 string, 因此会先调用 toString(), 再去调用 valueOf().
+
+## 严格模式是怎么被触发的
+
