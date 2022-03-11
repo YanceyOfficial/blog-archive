@@ -1,10 +1,10 @@
 # [HTTP 系列] 第 3 篇 —— HTTP 缓存那些事
 
-> 这里是《写给前端工程师的 HTTP 系列》，记得有位大佬曾经说过：“大厂前端面试对 HTTP 的要求比 CSS 还要高”，由此可见 HTTP 的重要程度不可小视。文章写作计划如下，视情况可能有一定的删减，本篇是该系列的第 3 篇 —— 《深入理解 HTTP 的缓存机制》。
+> 这里是《写给前端工程师的 HTTP 系列》, 记得有位大佬曾经说过: **大厂前端面试对 HTTP 的要求比 CSS 还要高**, 由此可见 HTTP 的重要程度不可小视. 文章写作计划如下, 视情况可能有一定的删减, 本篇是该系列的第 3 篇 —— 《深入理解 HTTP 的缓存机制》.
 
 ## 从一张图片的响应头说起
 
-![一个响应头的例子](https://static.yancey.app/Jietu20190507-164837%402x.jpg)
+![一个响应头的例子](https://edge.yancey.app/beg/Jietu20190507-164837%402x.jpg)
 
 下面是一张图片的响应头, 我们复习一下各个字段:
 
@@ -26,13 +26,13 @@
 
 ## 什么是 HTTP 缓存
 
-当客户端项服务端请求资源时, 会先访问浏览器缓存, 如果浏览器有"要请求资源"的副本, 就可以直接从浏览器缓存中提取, 而不是从原始服务器中提取这个资源.
+当客户端向服务端请求资源时, 会先访问浏览器缓存, 如果浏览器有"要请求资源"的副本, 就可以直接从浏览器缓存中提取, 而不是从原始服务器中提取这个资源.
 
 HTTP 缓存都是在第二次请求开始的. 第一次请求资源时, 服务器返回资源, 并在响应头中回传资源的缓存参数; 后续请求中, 浏览器判断这些请求参数, 命中强缓存就直接 200 from cache, 否则就把请求参数加到请求头中回传给服务器, 看是否命中协商缓存, 命中则返回 304, 并使用浏览器缓存, 否则服务器会返回新的资源.
 
 根据是否需要向服务器重新发起请求来分类, 可分为**强制缓存**和**协商缓存**; 根据是否可以被单个或者多个用户使用来分类, 可分为**私有缓存**和**共享缓存**. 这篇文章我们主要来聊**强制缓存**和**协商缓存**.
 
-![强缓存和协商缓存](https://static.yancey.app/4845448-ab0e961921da5694.png)
+![强缓存和协商缓存](https://edge.yancey.app/beg/4845448-ab0e961921da5694.png)
 
 ## 强缓存
 
@@ -66,13 +66,13 @@ HTTP 缓存都是在第二次请求开始的. 第一次请求资源时, 服务�
 
 如果服务器端的资源没有修改, 就返回 304, 那么浏览器可以使用缓存中的数据, 否则直接返回 200 和新的资源. 跟协商缓存相关的头部属性有 `ETag/If-Not-Match` 和 `Last-Modified/If-Modified-Since`, 他们是成对出现的. 其中 `ETag` 和 `Last-Modified` 是请求头中的字段, 而 `If-Not-Match` 和 `If-Modified-Since` 是响应头中的字段, 下图是对两者的比较.
 
-![ETag/If-Not-Match 和 Last-Modified/If-Modified-Since 对比](https://static.yancey.app/4845448-a22cef109d00aa79-2.jpeg)
+![ETag/If-Not-Match 和 Last-Modified/If-Modified-Since 对比](https://edge.yancey.app/beg/4845448-a22cef109d00aa79-2.jpeg)
 
 协商缓存的流程是这样的: 当浏览器第一次向服务器发送请求时, 会在响应头中返回协商缓存的头属性: ETag 和 Last-Modified, 其中 ETag 返回的是一个 hash 值, Last-Modified 返回的是 GMT 格式的最后修改时间; 在后续的请求中, 会在请求头上带上 If-Not-Match 和 If-Modified-Since, 服务器在接收到这两个参数后会做比较, 如果返回的是 304 状态码, 则说明请求的资源没有修改, 浏览器可以直接在缓存中取数据, 否则, 服务器会直接返回数据.
 
-![协商缓存请求头](https://static.yancey.app/4845448-c2d84719d423f269.jpeg)
+![协商缓存请求头](https://edge.yancey.app/beg/4845448-c2d84719d423f269.jpeg)
 
-![协商缓存响应头](https://static.yancey.app/4845448-45287e60a17830db.png)
+![协商缓存响应头](https://edge.yancey.app/beg/4845448-45287e60a17830db.png)
 
 为什么有了 Last-Modified 还需要 ETag 呢? ETag/If-Not-Match 是在 HTTP/1.1 出现的, 主要是修正 Last-Modified 一些不准确的问题:
 
@@ -100,7 +100,7 @@ HTML 设置缓存:
 
 所谓用户行为对浏览器缓存的影响, 指的就是用户在浏览器如何操作时, 会触发怎样的缓存策略. 主要有 3 种:
 
-- 打开网页, 地址栏输入地址: 查找 disk cache 中是否有匹配. 如有则使用；如没有则发送网络请求.
+- 打开网页, 地址栏输入地址: 查找 disk cache 中是否有匹配. 如有则使用;如没有则发送网络请求.
 
 - 普通刷新(Command + R): 因为 TAB 并没有关闭, 因此 memory cache 是可用的, 会被优先使用(如果匹配的话). 其次才是 disk cache.
 
@@ -108,7 +108,7 @@ HTML 设置缓存:
 
 ## 私有缓存和共享缓存
 
-私有缓存(浏览器级缓存): 私有缓存只能用于单独用户. 你可能已经见过浏览器设置中的“缓存”选项. 浏览器缓存拥有用户通过 HTTP 下载的所有文档. 这些缓存为浏览过的文档提供向后/向前导航, 保存网页, 查看源码等功能, 可以避免再次向服务器发起多余的请求. 它同样可以提供缓存内容的离线浏览, 并且只能用于单独的用户.
+私有缓存(浏览器级缓存): 私有缓存只能用于单独用户. 你可能已经见过浏览器设置中的**缓存**选项. 浏览器缓存拥有用户通过 HTTP 下载的所有文档. 这些缓存为浏览过的文档提供向后/向前导航, 保存网页, 查看源码等功能, 可以避免再次向服务器发起多余的请求. 它同样可以提供缓存内容的离线浏览, 并且只能用于单独的用户.
 
 ```html
 Cache-Control: Private
@@ -128,13 +128,13 @@ Cache-Control: Public
 
 ## 加餐: keep-alive
 
-在 http 早期, 每个 http 请求都要求打开一个 tpc socket 连接, 并且使用一次之后就断开这个 tcp 连接.
+在 http 早期, 每个 http 请求都要求打开一个 tcp socket 连接, 并且使用一次之后就断开这个 tcp 连接.
 
 使用 keep-alive 可以改善这种状态, 即在一次 TCP 连接中可以持续发送多份数据而不会断开连接. 通过使用 keep-alive 机制, 可以减少 tcp 连接建立次数, 也意味着可以减少 TIME_WAIT 状态连接, 以此提高性能和提高 httpd 服务器的吞吐率.
 
 但是, keep-alive 并不是银弹, 长时间的 tcp 连接容易导致系统资源无效占用. 配置不当的 keep-alive, 有时比重复利用连接带来的损失还更大. 所以, 正确地设置 `keep-alive timeout` 时间非常重要.
 
-### keep-alvie timeout
+### keep-alive timeout
 
 Httpd 守护进程, 一般都提供了 keep-alive timeout 时间设置参数. 比如 nginx 的 keepalive_timeout, 和 Apache 的 KeepAliveTimeout. 这个 keepalive_timout 时间值意味着: 一个 http 产生的 tcp 连接在传送完最后一个响应后, 还需要 hold 住 keepalive_timeout 秒后, 才开始关闭这个连接.
 
@@ -144,7 +144,7 @@ Httpd 守护进程, 一般都提供了 keep-alive timeout 时间设置参数. �
 
 最后用一张图总结缓存机制:
 
-![缓存机制](https://static.yancey.app/6.jpg)
+![缓存机制](https://edge.yancey.app/beg/6.jpg)
 
 ## 参考
 
@@ -154,8 +154,8 @@ Httpd 守护进程, 一般都提供了 keep-alive timeout 时间设置参数. �
 
 [【前端词典】从输入 URL 到展现涉及哪些缓存环节(非常详细)](https://juejin.im/post/5c6e77da6fb9a049db73bb07)
 
-[HTTP Keep-Alive 是什么？如何工作？](http://www.nowamagic.net/academy/detail/23350305)
+[HTTP Keep-Alive 是什么? 如何工作?](http://www.nowamagic.net/academy/detail/23350305)
 
-[一文读懂 http 缓存（超详细）](https://www.jianshu.com/p/227cee9c8d15)
+[一文读懂 http 缓存(超详细)](https://www.jianshu.com/p/227cee9c8d15)
 
 [深入理解浏览器的缓存机制](https://www.jianshu.com/p/54cc04190252)
