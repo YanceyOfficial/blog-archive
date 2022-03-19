@@ -14,13 +14,13 @@ HTTP 的本质是对实际传输的数据(entity)做了一层包装, 加上一�
 
 抛去一些复杂的层面, 浏览器开发者只需要一个 TCP 库就可以搞定浏览器的网络通讯部分. 我们可以用 `telnet` 来做个实验. 首先连接到 `yanceyleo.com` 的主机.
 
-```http
+```bash
 telnet yanceyleo.com 80
 ```
 
 此时, 三次握手完成, TCP 连接已经建立. 输入下面内容, 并 **双击回车**, 就可以得到服务端响应的内容. 下面的报文中, 第一行的开头 `GET` 为请求访问服务器的类型, 称为 `方法 (method)`; 后面的 `/` 指明了请求访问的资源对象, 也叫做请求 URI (request-URI); 最后为 HTTP 版本号, 用来表示客户端使用的 HTTP 版本. 第二行则是请求的主机名.
 
-```http
+```bash
 GET / HTTP/1.1
 Host: yanceyleo.com
 ```
@@ -56,9 +56,9 @@ cookie 在请求头中有一个 `cookie` 字段, 在响应头里有一个 `set-c
 cookie 本身就是用来保存一些隐私性的字段, 基于安全性的考量, 必须要保证它是 **不可跨域的**. 我们可以做个实验: 先打开 `https://google.com`, 然后在开发者工具中输入以下代码:
 
 ```js
-document.cookie = 'hello=world;path=/;domain=.baidu.com';
+document.cookie = "hello=world;path=/;domain=.baidu.com";
 
-document.cookie = 'world=hello;path=/;domain=.google.com';
+document.cookie = "world=hello;path=/;domain=.google.com";
 ```
 
 打开 Application 选项卡, 在侧边栏找到 Cookies, 可以发现只有 domain 为 `.google.com` 的被成功添加.
@@ -81,28 +81,28 @@ document.cookie = 'world=hello;path=/;domain=.google.com';
 
 <p>登录状态: <span id="result"></span></p>
 <script>
-  const userName = document.getElementById('userName');
-  const userPwd = document.getElementById('userPwd');
-  const loginBtn = document.getElementById('loginBtn');
-  const result = document.getElementById('result');
+  const userName = document.getElementById("userName");
+  const userPwd = document.getElementById("userPwd");
+  const loginBtn = document.getElementById("loginBtn");
+  const result = document.getElementById("result");
 
-  loginBtn.addEventListener('click', function() {
+  loginBtn.addEventListener("click", function () {
     const data = {
       userName: userName.value,
-      userPwd: userPwd.value
+      userPwd: userPwd.value,
     };
 
-    fetch('/login', {
-      method: 'POST',
+    fetch("/login", {
+      method: "POST",
       headers: new Headers({
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       }),
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     })
-      .then(res => {
+      .then((res) => {
         return res.json();
       })
-      .then(json => {
+      .then((json) => {
         result.innerHTML = json.msg;
       });
   });
@@ -112,19 +112,19 @@ document.cookie = 'world=hello;path=/;domain=.google.com';
 当用户名和密码匹配时 (假设用户名和密码都是 `yancey`), 返回给客户端一个 cookie 以及登录成功的 json; 否则返回登录失败的 json. 下面是模拟服务端登录的接口.
 
 ```js
-router.post('/login', (req, res, next) => {
+router.post("/login", (req, res, next) => {
   const body = req.body;
-  if (body.userName === 'yancey' && body.userPwd === 'yancey') {
+  if (body.userName === "yancey" && body.userPwd === "yancey") {
     // 设置 cookie
-    res.cookie('yancey', 'success');
+    res.cookie("yancey", "success");
     res.json({
       success: true,
-      msg: '登录成功'
+      msg: "登录成功",
     });
   } else {
     res.status(401).json({
       success: false,
-      msg: '用户名或密码错误'
+      msg: "用户名或密码错误",
     });
   }
 });
@@ -141,7 +141,7 @@ router.post('/login', (req, res, next) => {
 该属性给 cookie 设置 `域名`, 默认为当前网站的域名, 下面的例子将 domain 设为 **yanceyleo.com**, 由于前端页面是 `127.0.0.1`, 根据同源策略, 该条 cookie 不会生效.
 
 ```js
-res.cookie('domain', 'domian', { domain: 'yanceyleo.com' });
+res.cookie("domain", "domian", { domain: "yanceyleo.com" });
 ```
 
 #### expires / maxAge
@@ -153,8 +153,8 @@ res.cookie('domain', 'domian', { domain: 'yanceyleo.com' });
 下面这个例子是创建一条 cookie, 并将该 cookie 的过期时间设为一天后.
 
 ```js
-res.cookie('expires', 'expires', {
-  expires: new Date(Date.now() + 24 * 60 * 60 * 1000)
+res.cookie("expires", "expires", {
+  expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
 });
 ```
 
@@ -163,16 +163,16 @@ res.cookie('expires', 'expires', {
 接着给该条 cookie 设置一个 **负数**, 那么这条 cookie 就被清除了.
 
 ```js
-res.cookie('expires', 'expires', {
-  expires: new Date(Date.now() - 8 * 60 * 60 * 1000)
+res.cookie("expires", "expires", {
+  expires: new Date(Date.now() - 8 * 60 * 60 * 1000),
 });
 ```
 
 maxAge 的用法同理, 它直接传递一个 `过期时间` 的毫秒数即可. 下面的例子是将该条 cookie 的过期时间设为 7 天后.
 
 ```js
-res.cookie('maxAge', 'maxAge', {
-  maxAge: 7 * 24 * 60 * 60 * 1000
+res.cookie("maxAge", "maxAge", {
+  maxAge: 7 * 24 * 60 * 60 * 1000,
 });
 ```
 
@@ -183,9 +183,9 @@ res.cookie('maxAge', 'maxAge', {
 当该属性设为 true 时, `document.cookie` 将无法获取该条 cookie, 但服务端可以照常获得. 该属性可以有效的避免跨站脚本攻击 (XSS). 关于网络安全方面的话题, 后面会专门写一篇文章去讲.
 
 ```js
-res.cookie('httpOnly', 'httpOnly', {
+res.cookie("httpOnly", "httpOnly", {
   // 只能被 web server 访问到, 也就是说在浏览器输入 document.cookie 无法取到该条 cookie, 目的是防止 xss
-  httpOnly: true
+  httpOnly: true,
 });
 ```
 
@@ -194,8 +194,8 @@ res.cookie('httpOnly', 'httpOnly', {
 该属性给 `指定的路径` 添加此 cookie, 默认为 `/`. 如下代码就是给 `users` 这个路由设置 cookie (即便在服务端该路径不存在也会被添加上).
 
 ```js
-res.cookie('path', 'path', {
-  path: '/users'
+res.cookie("path", "path", {
+  path: "/users",
 });
 ```
 
@@ -206,8 +206,8 @@ res.cookie('path', 'path', {
 只有当连接是 HTTPS 协议, 该 cookie 才会被添加. 该属性默认为 fasle. 因为我本地的 express 是 HTTP 协议, 因此该条 cookie 不会生效.
 
 ```js
-res.cookie('secure', 'secure', {
-  secure: true
+res.cookie("secure", "secure", {
+  secure: true,
 });
 ```
 
@@ -218,14 +218,14 @@ res.cookie('secure', 'secure', {
 首先给 `cookieParser` 传入一个 secret.
 
 ```js
-app.use(cookieParser('forcabarca'));
+app.use(cookieParser("forcabarca"));
 ```
 
 然后返回一个 sign 后的 cookie.
 
 ```js
-res.cookie('signed', 'signed', {
-  signed: true
+res.cookie("signed", "signed", {
+  signed: true,
 });
 ```
 
@@ -257,11 +257,11 @@ Cookie 上限只有 4kb;
 关于 cookie 就说这么多, 最后附赠一个 `document.cookie` 字符串转对象的函数, 如果你有更好的实现方式, 请在下面留言.
 
 ```js
-const formatCookie = cookies => {
+const formatCookie = (cookies) => {
   const o = {};
   cookies
-    .split(';')
-    .forEach(value => (o[value.split('=')[0]] = value.split('=')[1]));
+    .split(";")
+    .forEach((value) => (o[value.split("=")[0]] = value.split("=")[1]));
   return o;
 };
 ```
@@ -304,7 +304,7 @@ session 是服务端使用的一种记录客户端状态的机制, 与 cookie �
 3. 版本号: 表示报文使用的 HTTP 协议版本.
 
 ```ts
-GET / HTTP/1.1
+GET / HTTP / 1.1;
 ```
 
 状态行有三部分构成:
@@ -321,7 +321,7 @@ HTTP 协议中有一种被称为 `内容编码` 的功能, 可以有效的压缩
 
 - compress (UNIX 系统的标准压缩)
 
-- gzip (GNU zip, 最常见)
+- gzip (GNU zip, 最常见, 对文本压缩率较高, 对图片, 音视频等二进制数据压缩率较低, 甚至会变大)
 
 - deflate (zlib)
 
@@ -395,7 +395,7 @@ Connection 用于控制不再转发给代理的首部字段, 还可以管理持�
 
 Date 表示创建报文的日期和时间, 它的格式如下.
 
-```http
+```bash
 date: Sun, 05 May 2019 02:05:37 GMT
 ```
 
@@ -405,13 +405,20 @@ date: Sun, 05 May 2019 02:05:37 GMT
 
 #### Transfer-Encoding
 
-用于分块传输编码, 即在响应报文里用头字段 `Transfer-Encoding: chunked` 来表示，
+用于分块传输编码, 即在响应报文里用头字段 `Transfer-Encoding: chunked` 来表示, `Transfer-Encoding: chunked` 和 `Content-Length` 这两个字段是互斥的, 也就是说响应报文里这两个字段不能同时出现, 一个响应报文的传输要么是长度已知, 要么是长度未知的.
+
+1. 每个分块包含两个部分, 长度头和数据块;
+2. 长度头是以 CRLF(回车换行, 即 `\r\n`)结尾的一行明文, 用 16 进制数字表示长度;
+3. 数据块紧跟在长度头后, 最后也用 CRLF 结尾, 但数据不包含 CRLF;
+4. 最后用一个长度为 0 的块表示结束, 即 `0\r\n\r\n`;
+
+![Transfer-Encoding](https://edge.yancey.app/beg/pbn7zomq-1647237094634.webp)
 
 #### Upgrade
 
 该字段用于检测 HTTP 协议或者其他协议是否可以使用更高的版本通信, 该字段要和 Connection 字段一起使用. 下面的例子是询问是否可以使用 TLS/1.0 协议. 对于附有 Upgrade 字段的请求, 服务端可返回 101 的状态码.
 
-```http
+```bash
 connection: upgrade
 upgrade: TLS/1.0
 ```
@@ -426,7 +433,7 @@ upgrade: TLS/1.0
 
 该字段通知服务器, 用户代理能够处理的媒体类型及媒体类型的相对优先级, 或者说叫做内容协商, 即客户端用 Accept 头告诉服务器希望接收什么样的数据, 而服务器用 Content 头告诉客户端实际发送了什么样的数据. 其中用 q 表示权重. 下面的例子表示客户端可以接受纯文本类型或者 HTML, 以及两种图片类型, 并且接收纯文本类型的意愿 (权重)为 0.3. 相应的, 服务器会在响应报文里用头字段 Content-Type 告诉实体数据的真实类型.
 
-```http
+```bash
 Accept: text/plain; q=0.3, text/html, image/webp, image/png
 ```
 
@@ -436,7 +443,7 @@ Accept: text/plain; q=0.3, text/html, image/webp, image/png
 
 该字段通知服务器, 用户代理支持的字符集及字符集的相对优先级. 该字段应用于内容协商机制的服务器驱动协商. 如果服务器不能提供该字段的任何字符集, 会报 406 错误, 因此尽量不去使用该字段 (我试验了几个网站, 都没有此字段). 下面的例子表示客户端支持 utf-8 和 iso-8859-1, 且优先使用 utf-8.
 
-```http
+```bash
 Accept-Charset: utf-8, iso-8859-1;q=0.5
 ```
 
@@ -444,7 +451,7 @@ Accept-Charset: utf-8, iso-8859-1;q=0.5
 
 该字段告知服务端, 客户端可使用的头部压缩算法. 上面 `压缩报文` 已经介绍了几种压缩方式, 这里不在赘述.
 
-```http
+```bash
 Accept-Encoding: gzip, deflate, br
 ```
 
@@ -452,7 +459,7 @@ Accept-Encoding: gzip, deflate, br
 
 该字段用于告知服务器, 用户代理的认证信息. 下面是我博客后台管理系统的一个场景, 在请求一个需要认证的接口时, 需要在请求头上附带认证信息.
 
-```http
+```bash
 Authorization: Bearer JWT_TOKEN
 ```
 
@@ -462,7 +469,7 @@ Authorization: Bearer JWT_TOKEN
 
 该字段跟状态码 100 息息相关, 等待状态码 100 响应的客户端在发生请求时, 需要指定 `Expext: 100-continue`. 该状态码的用途主要是允许客户端发送带请求体的请求前, 判断服务器是否愿意接收请求.
 
-```http
+```bash
 Expect: 100-continue
 ```
 
@@ -474,7 +481,7 @@ Expect: 100-continue
 
 当以单台服务器分配多个域名的虚拟主机时, Host 字段就可以用来确定相应的主机. 它属于请求字段, 只能出现在请求头里, 它同时也是唯一一个 HTTP/1.1 规范里要求必须出现的字段.
 
-```http
+```bash
 Host: www.abc.com
 ```
 
@@ -484,7 +491,7 @@ Host: www.abc.com
 
 服务器会比对 If-Match 的字段值和资源的 ETag 值, 仅当两者一致时, 才会执行请求, 否则返回 412 状态码. 当 If-Match 的字段值为 `*` 时, 服务器会忽略 ETag 值, 只要资源存在就处理请求.
 
-```http
+```bash
 If-Match: W/"pqxe5g29m4"
 ```
 
@@ -498,7 +505,7 @@ If-Match: W/"pqxe5g29m4"
 
 该字段值和响应首部字段的 Last-Modifie 字段做比较, 下面的例子中显然最后修改时间要新于 If-Modified-Since 的时间, 因此会响应新的资源.
 
-```http
+```bash
 // 请求首部字段
 If-Modified-Since: Fri, 01 May 2019 11:20:04 GMT
 
@@ -516,10 +523,70 @@ Last-Modified: Fri, 03 May 2019 11:20:04 GMT
 
 #### Range
 
-对于只需获取部分资源的范围请求, 包含首部字段 Range 即可告知服务器资源的指定范围. 接收到附带 Range 字段的请求的服务器, 会在处理请求之后返回状态码为 206 的响应. 当无法处理该范围请求时, 返回 200 状态码及全部资源.
+对于只需获取部分资源的范围请求, 包含首部字段 Range 即可告知服务器资源的指定范围. 接收到附带 Range 字段的请求的服务器, 会在处理请求之后返回状态码为 206 的响应. 当无法处理该范围请求时, 返回 200 状态码及全部资源. 请求头 Range 是 HTTP 范围请求的专用字段, 格式是**bytes=x-y**, 其中的 x 和 y 是以字节为单位的数据范围. x, y 表示的是**偏移量**, 如**0-10**实际上是前 11 个字节.
 
-```http
-Range: bytes=5001-10000
+Range 的格式也很灵活, 起点 x 和终点 y 可以省略, 能够很方便地表示正数或者倒数的范围. 假设文件是 100 个字节, 那么:
+
+- **0-**表示从文档起点到文档终点, 相当于**0-99**, 即整个文件;
+- **10-**是从第 10 个字节开始到文档末尾, 相当于**10-99**;
+- **-1**是文档的最后一个字节, 相当于**99-99**;
+- **-10**是从文档末尾倒数 10 个字节, 相当于**90-99**.
+
+服务器收到 Range 字段后, 需要做四件事:
+
+1. 查范围是否合法, 比如文件只有 100 个字节, 但请求 200-300, 这就是范围越界了, 返回 **416 Requested Range Not Satisfiable**
+2. 如果范围正确, 服务器就可以根据 Range 头计算偏移量, 读取文件的片段了, 返回状态码 **206 Partial Content**
+3. 服务器要添加一个响应头字段 Content-Range, 告诉片段的实际偏移量和资源的总大小, 格式为 **bytes x-y/z**, 其中 x 和 y 是片段的起点和终点, z 是资源的总大小.
+4. 片段用 TCP 发给客户端
+
+```bash
+# 请求头
+GET / HTTP/1.1
+Host: www.yanceyleo.com
+Range: bytes=0-31
+
+# 响应头
+HTTP/1.1 206 Partial Content
+Content-Length: 32
+Accept-Ranges: bytes
+Content-Range: bytes 0-31/96
+```
+
+不仅看视频的拖拽进度需要范围请求, 常用的下载工具里的多段下载, 断点续传也是基于它实现的, 要点是:
+
+- 先发个 HEAD, 看服务器是否支持范围请求, 同时获取文件的大小;
+- 开 N 个线程, 每个线程使用 Range 字段划分出各自负责下载的片段, 发请求传输数据;
+- 下载意外中断也不怕, 不必重头再来一遍, 只要根据上次的下载记录, 用 Range 请求剩下的那一部分就可以了.
+
+范围不仅一次只获取一个片段, 其实它还支持在 Range 头里使用多个 **x-y**, 一次性获取多个片段数据. 这种情况需要使用一种特殊的 MIME 类型：**multipart/byteranges**, 表示报文的 body 是由多段字节序列组成的, 并且还要用一个参数 **boundary=xxx** 给出段之间的分隔标记.
+
+![多个范围](https://edge.yancey.app/beg/1jz88ww9-1647244905799.webp)
+
+每一个分段必须以 **--boundary** 开始, 之后要用 **Content-Type** 和 **Content-Range** 标记这段数据的类型和所在范围, 然后就像普通的响应头一样以回车换行结束, 再加上分段数据, 最后用一个 **--boundary--** 表示所有的分段结束.
+
+```bash
+# 请求头
+GET /16-2 HTTP/1.1
+Host: www.chrono.com
+Range: bytes=0-9, 20-29
+
+# 响应头
+HTTP/1.1 206 Partial Content
+Content-Type: multipart/byteranges; boundary=00000000001
+Content-Length: 189
+Connection: keep-alive
+Accept-Ranges: bytes
+
+
+--00000000001
+Content-Type: text/plain
+Content-Range: bytes 0-9/96
+
+--00000000001
+Content-Type: text/plain
+Content-Range: bytes 20-29/96
+
+--00000000001--
 ```
 
 #### Proxy-Authorization
@@ -530,7 +597,7 @@ Range: bytes=5001-10000
 
 告知服务器请求的 URI 是从哪儿发起的. 比如在我的博客 www.yanceyleo.com 请求了 AliOSS 上的一张图片, 那么请求 AliOSS 服务器的那个请求头就会附上:
 
-```http
+```bash
 Referer: https://www.yanceyleo.com
 ```
 
@@ -540,7 +607,7 @@ Referer: https://www.yanceyleo.com
 
 该字段会告知服务端, 客户端能够处理响应的传输编码方式及相对优先级. 它类似于 Accept-Encoding, 但用于传输编码. 除了指定传输编码, 还可以指定伴随 trailer 字段的分块传输编码方式.
 
-```http
+```bash
 TE: gzip, delate;q=0.5
 
 TE: trailers
@@ -550,7 +617,7 @@ TE: trailers
 
 这个字段再不认识直接回炉重造吧, 这里不去赘述, 直接看例子.
 
-```http
+```bash
 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36
 ```
 
@@ -558,9 +625,9 @@ User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (
 
 #### Accept-Ranges
 
-该字段用于告知客户端, 服务器是否能处理范围请求, 可处理时指定为 `bytes`, 否则为 `none`.
+该字段用于告知客户端, 服务器是否能处理范围请求, 可处理时指定为 `bytes`, 否则为 `none`. 范围请求不是 Web 服务器必备的功能, 可以实现也可以不实现, 所以服务器必须在响应头里使用字段 **Accept-Ranges: bytes**, 明确告知客户端是支持范围请求的. 如果不支持的话, 服务器可以发送 **Accept-Ranges: none**, 或者干脆不发送 **Accept-Ranges**字段, 这样客户端就认为服务器没有实现范围请求功能, 只能老老实实地收发整块文件了.
 
-```http
+```bash
 Accept-Ranges: bytes
 ```
 
@@ -568,7 +635,7 @@ Accept-Ranges: bytes
 
 该字段用于告知客户端, 源服务器在多久前创建了响应, 字段值的单位为秒. 若创建该响应的服务器是缓存服务器, Age 值指的是缓存后的响应再次发起认证到认证完成的时间值 (CDN).
 
-```http
+```bash
 Age: 500
 ```
 
@@ -580,21 +647,21 @@ ETag 有 `强 Etag 值` 和 `弱 Etag 值` 之分. 前者是指无论实体发�
 
 下面的代码是一张图片的 ETag, 显然一张图片改变意味着资源的彻底改变, 因此使用了强 ETag.
 
-```http
+```bash
 ETag: "F8F155B13C6DA43723EEDE3EDBBB4D28"
 ```
 
 下面的代码是请求一个数据接口的 ETag, 大多数情况不会发生根本性的改变, 因此使用弱 ETag.
 
-```http
+```bash
 etag: W/"300af-7JrdwEcHHeXMqn/UCrMO0zsO0SY"
 ```
 
 #### Location
 
-Location 字段可以将响应接收方引导至某个与请求 URI 位置不同的资源, 该字段一般会配合 3xx 的状态码使用.
+Location 字段标记了服务器要求重定向的 URI, 该字段一般会配合 3xx 的状态码使用.
 
-```http
+```bash
 Location: https://yanceyleo.com
 ```
 
@@ -606,7 +673,7 @@ Location: https://yanceyleo.com
 
 该字段告知客户端应该在多久之后再次发送请求. 当服务器出错报 503 时, 如果服务端知道什么时候可以恢复, 那么就应该通过该字段告知客户端. 该字段的字段值可以是具体的日期时间, 也可以是创建响应后的秒数.
 
-```http
+```bash
 Retry-After: Sat, 04 May 2019 11:26:52 GMT
 ```
 
@@ -614,7 +681,7 @@ Retry-After: Sat, 04 May 2019 11:26:52 GMT
 
 该字段也是一个常见字段, 用于告知客户端, Web 服务器的名称. 比如我使用了 cloudflare 的 CDN, 因此服务器如下所示.
 
-```http
+```bash
 server: cloudflare
 ```
 
@@ -622,7 +689,7 @@ server: cloudflare
 
 该字段可用于对缓存进行控制, 它的字段值接收一系列其他首部字段名.
 
-```http
+```bash
 vary: Accept-Encoding,Cookie
 ```
 
@@ -638,7 +705,7 @@ vary: Accept-Encoding,Cookie
 
 该字段会告知客户端所支持的所有 HTTP 请求方法, 当服务端接收到不支持的 HTTP 方法时, 会返回 405 状态码, 并将所有能支持的 HTTP 方法写入首部字段.
 
-```http
+```bash
 Allow: GET, PUT
 ```
 
@@ -646,7 +713,7 @@ Allow: GET, PUT
 
 告知客户端服务器使用的内容编码方式.
 
-```http
+```bash
 content-encoding: br
 ```
 
@@ -654,7 +721,7 @@ content-encoding: br
 
 告知客户端实体主体使用的自然语言. 与之配套的客户端请求头是 Accept-Language.
 
-```http
+```bash
 content-language: zh-CN
 ```
 
@@ -662,7 +729,7 @@ content-language: zh-CN
 
 该字段表明了实体主体部分的大小, 单位是字节.
 
-```http
+```bash
 Content-Length: 4871261
 ```
 
@@ -670,7 +737,7 @@ Content-Length: 4871261
 
 该字段用于检查报文主体在传输过程中是否保持完整性, 以及确认传输到达. 服务端对报文主体执行 MD5 算法, 获取一个 128 位的二进制数, 再通过 base64 编码后将结果写入 Content-MD5 字段值. 因为 HTTP 首部无法记录二进制值, 因此需要通过 Base64 进行处理. 客户端在接收到响应后再对报文主体执行一次相同的 MD5 算法. 将计算值于该字段值比较, 即可判断出报文主体的准确性.
 
-```http
+```bash
 Content-MD5: +PFVsTxtpDcj7t4+27tNKA==
 ```
 
@@ -682,7 +749,7 @@ Content-MD5: +PFVsTxtpDcj7t4+27tNKA==
 
 非常常见的字段, 用来说明实体主体内对象的媒体类型.
 
-```http
+```bash
 content-type: application/json; charset=utf-8
 ```
 
@@ -699,38 +766,38 @@ content-type: application/json; charset=utf-8
 ### 头部字段的几个注意点
 
 1. 字段名不区分大小写, 例如**Host**也可以写成**host**, 但首字母大写的可读性更好;
-2. 字段名里不允许出现空格, 可以使用连字符 **-**, 但不能使用下划线 **_**. 例如, **test-name** 是合法的字段名, 而 **test name** 和 **test_name** 是不正确的字段名;
+2. 字段名里不允许出现空格, 可以使用连字符 **-**, 但不能使用下划线 **\_**. 例如, **test-name** 是合法的字段名, 而 **test name** 和 **test_name** 是不正确的字段名;
 3. 字段名后面必须紧接着 **:**, 不能有空格, 而 **:** 后的字段值前可以有多个空格;
 4. 字段的顺序是没有意义的, 可以任意排列不影响语义;
 5. 字段原则上不能重复, 除非这个字段本身的语义允许, 例如 Set-Cookie.
 
 ## HTTP 方法
 
-| 方法名  | 描述                                                                                                                                                                                                                                                                                                                                           |
-| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GET     | GET 请求会显示请求指定的资源. 一般来说 GET 方法应该只用于数据的读取, 而不应当用于会产生副作用的非幂等的操作中. 它期望的应该是而且应该是安全的和幂等的. 这里的安全指的是, 请求不会影响到资源的状态. 此外, GET 还可以搭配 URI 和其他头字段就能实现对资源更精细的操作. 比如搭配 # 可以用作锚点, 与 If-Modified-Since 字段就变成了**有条件的请求**, 仅当资源被修改时才会执行获取动作; 使用 Range 字段就是**范围请求**, 只获取资源的一部分数据      .                                                                                                                                 |
-| HEAD    | HEAD 方法与 GET 方法一样, 都是向服务器发出指定资源的请求. 但是, 服务器在响应 HEAD 请求时不会回传资源的响应主体, 而只返回头部. 这样, 我们可以不传输全部内容的情况下, 就可以获取服务器的响应头信息. HEAD 方法常被用于客户端查看服务器的性能.                                                                                                     |
-| PUT     | PUT 请求会身向指定资源位置上传其最新内容, PUT 方法是幂等的方法. 通过该方法客户端可以将指定资源的最新数据传送给服务器取代指定的资源的内容.                                                                                                                                                                                                      |
-| POST    | POST 请求会 向指定资源提交数据, 请求服务器进行处理, 如: 表单数据提交, 文件上传等, 请求数据会被包含在请求体中. POST 方法是非幂等的方法, 因为这个请求可能会创建新的资源或/和修改现有资源.                                                                                                                                                        |
-| TRACE   | TRACE 请求服务器回显其收到的请求信息, 该方法主要用于 HTTP 请求的测试或诊断.                                                                                                                                                                                                                                                                    |
-| OPTIONS | OPTIONS 请求与 HEAD 类似, 一般也是用于客户端查看服务器的性能.  这个方法会请求服务器返回该资源所支持的所有 HTTP 请求方法, 该方法会用'\*'来代替资源名称, 向服务器发送 OPTIONS 请求, 可以测试服务器功能是否正常. JavaScript 的 XMLHttpRequest 对象进行 CORS 跨域资源共享时, 就是使用 OPTIONS 方法发送嗅探请求, 以判断是否有对指定资源的访问权限.  |
-| DELETE  | DELETE 请求用于请求服务器删除所请求 URI(统一资源标识符, Uniform Resource Identifier)所标识的资源. DELETE 请求后指定资源会被删除, DELETE 方法也是幂等的.                                                                                                                                                                                      |
-| PATCH   | PATCH 方法出现的较晚, 它在 2010 年的 RFC 5789 标准中被定义. PATCH 请求与 PUT 请求类似, 同样用于资源的更新. 二者有以下两点不同: 1.PATCH 一般用于资源的部分更新, 而 PUT 一般用于资源的整体更新. 2.当资源不存在时, PATCH 会创建一个新的资源, 而 PUT 只会对已在资源进行更新.                                                                       |
-| CONNECT | CONNECT 方法是 HTTP/1.1 协议预留的, 能够将连接改为管道方式的代理服务器. 通常用于 SSL 加密服务器的链接与非加密的 HTTP 代理服务器的通信.                                                                                                                                                                                                         |
+| 方法名  | 描述                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET     | GET 请求会显示请求指定的资源. 一般来说 GET 方法应该只用于数据的读取, 而不应当用于会产生副作用的非幂等的操作中. 它期望的应该是而且应该是安全的和幂等的. 这里的安全指的是, 请求不会影响到资源的状态. 此外, GET 还可以搭配 URI 和其他头字段就能实现对资源更精细的操作. 比如搭配 # 可以用作锚点, 与 If-Modified-Since 字段就变成了**有条件的请求**, 仅当资源被修改时才会执行获取动作; 使用 Range 字段就是**范围请求**, 只获取资源的一部分数据 . |
+| HEAD    | HEAD 方法与 GET 方法一样, 都是向服务器发出指定资源的请求. 但是, 服务器在响应 HEAD 请求时不会回传资源的响应主体, 而只返回头部. 这样, 我们可以不传输全部内容的情况下, 就可以获取服务器的响应头信息. HEAD 方法常被用于客户端查看服务器的性能.                                                                                                                                                                                                  |
+| PUT     | PUT 请求会身向指定资源位置上传其最新内容, PUT 方法是幂等的方法. 通过该方法客户端可以将指定资源的最新数据传送给服务器取代指定的资源的内容.                                                                                                                                                                                                                                                                                                   |
+| POST    | POST 请求会 向指定资源提交数据, 请求服务器进行处理, 如: 表单数据提交, 文件上传等, 请求数据会被包含在请求体中. POST 方法是非幂等的方法, 因为这个请求可能会创建新的资源或/和修改现有资源.                                                                                                                                                                                                                                                     |
+| TRACE   | TRACE 请求服务器回显其收到的请求信息, 该方法主要用于 HTTP 请求的测试或诊断.                                                                                                                                                                                                                                                                                                                                                                 |
+| OPTIONS | OPTIONS 请求与 HEAD 类似, 一般也是用于客户端查看服务器的性能. 这个方法会请求服务器返回该资源所支持的所有 HTTP 请求方法, 该方法会用'\*'来代替资源名称, 向服务器发送 OPTIONS 请求, 可以测试服务器功能是否正常. JavaScript 的 XMLHttpRequest 对象进行 CORS 跨域资源共享时, 就是使用 OPTIONS 方法发送嗅探请求, 以判断是否有对指定资源的访问权限.                                                                                                |
+| DELETE  | DELETE 请求用于请求服务器删除所请求 URI(统一资源标识符, Uniform Resource Identifier)所标识的资源. DELETE 请求后指定资源会被删除, DELETE 方法也是幂等的.                                                                                                                                                                                                                                                                                     |
+| PATCH   | PATCH 方法出现的较晚, 它在 2010 年的 RFC 5789 标准中被定义. PATCH 请求与 PUT 请求类似, 同样用于资源的更新. 二者有以下两点不同: 1.PATCH 一般用于资源的部分更新, 而 PUT 一般用于资源的整体更新. 2.当资源不存在时, PATCH 会创建一个新的资源, 而 PUT 只会对已在资源进行更新.                                                                                                                                                                    |
+| CONNECT | CONNECT 方法是 HTTP/1.1 协议预留的, 能够将连接改为管道方式的代理服务器. 通常用于 SSL 加密服务器的链接与非加密的 HTTP 代理服务器的通信.                                                                                                                                                                                                                                                                                                      |
 
 GET, HEAD, PUT 和 DELETE 是幂等方法, 而 POST 不是幂等的.
 
 ### GET 和 POST 的区别
 
-数据传输方式不同: GET请求通过URL传输数据, 而POST的数据通过请求体传输.
+数据传输方式不同: GET 请求通过 URL 传输数据, 而 POST 的数据通过请求体传输.
 
-安全性不同: POST的数据因为在请求主体内, 所以有一定的安全性保证, 而GET的数据在URL中, 通过历史记录, 缓存很容易查到数据信息.
+安全性不同: POST 的数据因为在请求主体内, 所以有一定的安全性保证, 而 GET 的数据在 URL 中, 通过历史记录, 缓存很容易查到数据信息.
 
-数据类型不同: GET只允许 ASCII 字符, 而POST无限制
+数据类型不同: GET 只允许 ASCII 字符, 而 POST 无限制
 
-GET无害:  刷新, 后退等浏览器操作GET请求是无害的, POST可能重复提交表单
+GET 无害: 刷新, 后退等浏览器操作 GET 请求是无害的, POST 可能重复提交表单
 
-特性不同: GET是安全(这里的安全是指只读特性, 就是使用这个方法不会引起服务器状态变化)且幂等(幂等的概念是指同一个请求方法执行多次和仅执行一次的效果完全相同), 而POST是非安全非幂等
+特性不同: GET 是安全(这里的安全是指只读特性, 就是使用这个方法不会引起服务器状态变化)且幂等(幂等的概念是指同一个请求方法执行多次和仅执行一次的效果完全相同), 而 POST 是非安全非幂等
 
 其他: GET 和 POST 本质上就是 TCP 链接, 并无差别. 但是由于 HTTP 的规定和浏览器/服务器 的限制, 导致他们在应用过程中体现出一些不同. GET 产生一个 TCP 数据包;POST 产生两个 TCP 数据包.
 
@@ -746,10 +813,10 @@ HTTP 状态码负责表示客户端 HTTP 请求的返回结果, 标记服务器�
 
 ### 1xx 信息类状态码
 
-| 状态码 | 状态码英文名称      | 描述                                     |
-| ------ | ------------------- | ---------------------------------------- |
-| 100    | Continue            | 服务器收到请求的初始部分, 请客户端继续.  |
-| 101    | Switching Protocols | 服务器根据客户端请求切换协议             |
+| 状态码 | 状态码英文名称      | 描述                                    |
+| ------ | ------------------- | --------------------------------------- |
+| 100    | Continue            | 服务器收到请求的初始部分, 请客户端继续. |
+| 101    | Switching Protocols | 服务器根据客户端请求切换协议            |
 
 1xx 的状态码表示一个临时的响应, 仅由状态行和可选头构成, 由空行结尾. 对该类状态码, 不需要头部. 该类状态码在 HTTP/1.1 引入, 因此服务器禁止向 HTTP1.0 的客户端响应 1xx 状态码.
 
@@ -759,15 +826,15 @@ HTTP 状态码负责表示客户端 HTTP 请求的返回结果, 标记服务器�
 
 ### 2xx 成功状态码
 
-| 状态码 | 状态码英文名称                | 描述                                                                                                                                                                 |
-| ------ | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 200    | OK                            | 请求成功, 响应主体包含了具体的数据. 最常见, 一般 GET 和 POST 请求会返回此状态码.                                                                                     |
-| 201    | Created                       | 已创建, 一般 PUT 请求会返回此状态码.                                                                                                                                 |
-| 202    | Accepted                      | 服务器已接收到请求, 但还未处理完成.                                                                                                                                  |
-| 203    | Non-Authoritative Information | 非授权信息. 请求成功, 但元信息不在原始服务器上, 而是资源的一个副本. 若中间节点上有一份资源副本, 但无法或没有对它发出的与资源有关的元信息进行验证, 就会出现这种情况.  |
-| 204    | No Content                    | 响应报文中无主体部分. 一般 DELETE 请求会返回此状态码.                                                                                                                |
-| 205    | Reset Content                 | 负责告知浏览器清除当前页面中所有 HTML 元素.                                                                                                                          |
-| 206    | Partial Content               | 成功执行一个部分或 Range 请求. 客户端可以在首部中指定请求某个范围内的文件. 该状态响应头部必须包含 Content-Range, Date, 以及 ETag 或 Content-Location.                |
+| 状态码 | 状态码英文名称                | 描述                                                                                                                                                                |
+| ------ | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 200    | OK                            | 请求成功, 响应主体包含了具体的数据. 最常见, 一般 GET 和 POST 请求会返回此状态码.                                                                                    |
+| 201    | Created                       | 已创建, 一般 PUT 请求会返回此状态码.                                                                                                                                |
+| 202    | Accepted                      | 服务器已接收到请求, 但还未处理完成.                                                                                                                                 |
+| 203    | Non-Authoritative Information | 非授权信息. 请求成功, 但元信息不在原始服务器上, 而是资源的一个副本. 若中间节点上有一份资源副本, 但无法或没有对它发出的与资源有关的元信息进行验证, 就会出现这种情况. |
+| 204    | No Content                    | 响应报文中无主体部分. 一般 DELETE 请求会返回此状态码.                                                                                                               |
+| 205    | Reset Content                 | 负责告知浏览器清除当前页面中所有 HTML 元素.                                                                                                                         |
+| 206    | Partial Content               | 成功执行一个部分或 Range 请求. 客户端可以在首部中指定请求某个范围内的文件. 该状态响应头部必须包含 Content-Range, Date, 以及 ETag 或 Content-Location.               |
 
 206 状态码一般是在下载大文件时会遇到, 它表示请求已成功, 并且主体包含所请求的数据区间, 该数据区间是在请求的 Range 首部指定. 下图中, 我的博客在获取音频文件时返回了 206 状态码.
 
@@ -775,19 +842,20 @@ HTTP 状态码负责表示客户端 HTTP 请求的返回结果, 标记服务器�
 
 ### 3xx 重定向状态码
 
-| 状态码 | 状态码英文名称     | 描述                                                                                                                       |
-| ------ | ------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| 300    | Multiple Choices   | 客户端请求实际指向多个资源的 URL. 客户端可以在响应中找到资源列表.                                                          |
-| 301    | Moved Permanently  | 永久重定向, 请求的 URL 已被移除. 响应的 Location 首部包含现在所处的位置.                                                               |
-| 302    | Found              | 与 301 类似, 客户端本次应使用响应中的临时 URL, 将来的请求任使用以前的 URL. 响应的 Location 首部包含现在所处的位置. 浏览器看到这个 302 就知道这只是暂时的情况, 不会做缓存优化, 第二天还会访问原来的地址.                                                  |
-| 303    | See Other          | 告知客户端使用另一个 URL 来获取资源. 其主要目的是, 允许 POST 请求的响应将客户端定向的某一个资源上去.                       |
-| 304    | Not Modified       | 若客户端发起一个有条件的 GET 请求, 而资源未被修改, 可以使用该状态码说明资源未被修改.                                       |
-| 305    | Use Proxy          | 必须通过代理来访问这一资源, 代理有 Location 首部给出. 需要知道的是, 客户端接收到这一状态时, 不应该假定所有请求都经过代理.  |
-| 307    | Temporary Redirect | 和 302 相同.                                                                                                               |
+| 状态码 | 状态码英文名称     | 描述                                                                                                                                                                                                    |
+| ------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 300    | Multiple Choices   | 返回一个有多个链接选项的页面, 用户自行选择要跳转的页面. (啊我想到的某站, 好涩                                                                                                                           |
+| 301    | Moved Permanently  | 永久重定向, 请求的 URL 已被移除. 响应的 Location 首部包含现在所处的位置.                                                                                                                                |
+| 302    | Found              | 与 301 类似, 客户端本次应使用响应中的临时 URL, 将来的请求任使用以前的 URL. 响应的 Location 首部包含现在所处的位置. 浏览器看到这个 302 就知道这只是暂时的情况, 不会做缓存优化, 第二天还会访问原来的地址. |
+| 303    | See Other          | 告知客户端使用另一个 URL 来获取资源. 其主要目的是, 允许 POST 请求的响应将客户端定向的某一个资源上去.                                                                                                    |
+| 304    | Not Modified       | 若客户端发起一个有条件的 GET 请求, 而资源未被修改, 可以使用该状态码说明资源未被修改.                                                                                                                    |
+| 305    | Use Proxy          | 必须通过代理来访问这一资源, 代理有 Location 首部给出. 需要知道的是, 客户端接收到这一状态时, 不应该假定所有请求都经过代理.                                                                               |
+| 307    | Temporary Redirect | 和 302 相同, 但重定向后请求里的方法和实体不允许变动, 含义比 302 更明确                                                                                                                                  |
+| 308    | Permanent Redirect | 不允许重定向后的请求变动, 但它是 301 永久重定向的含义                                                                                                                                                   |
 
 ### 4xx 客户端错误状态码
 
-| 状态码  | 状态码英文名称                                   | 描述                                                                              |
+| 状态码 | 状态码英文名称                                   | 描述                                                                              |
 | ------ | ------------------------------------------------ | --------------------------------------------------------------------------------- |
 | 400    | Bad Request                                      | 告知客户端它发送了一个错误的请求.                                                 |
 | 401    | Unauthorized                                     | 与适当首部一同返回, 告知客户端在请求之前先进行认证.                               |
@@ -811,15 +879,15 @@ HTTP 状态码负责表示客户端 HTTP 请求的返回结果, 标记服务器�
 
 ### 5xx 服务端错误状态码
 
-| 状态码  | 状态码英文名称            | 描述                                                                                                |
-| ------ | ------------------------ | -------------------------------------------------------------------------------------------- |
-| 500    | Internal Server Error    | 服务器遇到一个妨碍它提供服务的错误.                                                                 |
-| 501    | Not Implemented          | 客户端发起的请求超出服务器能力范围, 如使用了不支持的方法.                                           |
-| 502    | Bad Gateway              | 无效网关. 通常不是这上游服务器关闭, 而是使用了上游服务器不同意协议交换数据.                         |
-| 503    | Service Unavailable      | 服务器暂时无法提供服务. 若服务器知道服务什么时间可以使用, 可以在响应头中加入 Retry-After 首部说明.  |
-| 504    | Gateway Timeout          | 于 408 类似, 只是这里的响应来自一个网关或代理, 它们在等待另一个服务器响应对其请求响应时超时.        |
-| 505    | HTTP Version Not Support | 服务器收到的请求使用了它无法支持的协议版本.                                                         |
-|        |                          |                                                                                               |
+| 状态码 | 状态码英文名称           | 描述                                                                                               |
+| ------ | ------------------------ | -------------------------------------------------------------------------------------------------- |
+| 500    | Internal Server Error    | 服务器遇到一个妨碍它提供服务的错误.                                                                |
+| 501    | Not Implemented          | 客户端发起的请求超出服务器能力范围, 如使用了不支持的方法.                                          |
+| 502    | Bad Gateway              | 无效网关. 通常不是这上游服务器关闭, 而是使用了上游服务器不同意协议交换数据.                        |
+| 503    | Service Unavailable      | 服务器暂时无法提供服务. 若服务器知道服务什么时间可以使用, 可以在响应头中加入 Retry-After 首部说明. |
+| 504    | Gateway Timeout          | 于 408 类似, 只是这里的响应来自一个网关或代理, 它们在等待另一个服务器响应对其请求响应时超时.       |
+| 505    | HTTP Version Not Support | 服务器收到的请求使用了它无法支持的协议版本.                                                        |
+|        |                          |                                                                                                    |
 
 ## MIME
 
