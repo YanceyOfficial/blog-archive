@@ -14,13 +14,13 @@ HTTP 的本质是对实际传输的数据(entity)做了一层包装, 加上一�
 
 抛去一些复杂的层面, 浏览器开发者只需要一个 TCP 库就可以搞定浏览器的网络通讯部分. 我们可以用 `telnet` 来做个实验. 首先连接到 `yanceyleo.com` 的主机.
 
-```bash
+```shell
 telnet yanceyleo.com 80
 ```
 
 此时, 三次握手完成, TCP 连接已经建立. 输入下面内容, 并 **双击回车**, 就可以得到服务端响应的内容. 下面的报文中, 第一行的开头 `GET` 为请求访问服务器的类型, 称为 `方法 (method)`; 后面的 `/` 指明了请求访问的资源对象, 也叫做请求 URI (request-URI); 最后为 HTTP 版本号, 用来表示客户端使用的 HTTP 版本. 第二行则是请求的主机名.
 
-```bash
+```shell
 GET / HTTP/1.1
 Host: yanceyleo.com
 ```
@@ -252,7 +252,7 @@ Cookie 上限只有 4kb;
 
 同一个域名下的所有请求, 都会携带 Cookie, 这意味着大量不需要 Cookie 传输的 HTTP 请求都被迫携带 Cookie, 造成极大的性能浪费.
 
-### `document.cookie` 字符串转对象的函数
+### document.cookie 字符串转对象的函数
 
 关于 cookie 就说这么多, 最后附赠一个 `document.cookie` 字符串转对象的函数, 如果你有更好的实现方式, 请在下面留言.
 
@@ -395,7 +395,7 @@ Connection 用于控制不再转发给代理的首部字段, 还可以管理持�
 
 Date 表示创建报文的日期和时间, 它的格式如下.
 
-```bash
+```shell
 date: Sun, 05 May 2019 02:05:37 GMT
 ```
 
@@ -418,7 +418,7 @@ date: Sun, 05 May 2019 02:05:37 GMT
 
 该字段用于检测 HTTP 协议或者其他协议是否可以使用更高的版本通信, 该字段要和 Connection 字段一起使用. 下面的例子是询问是否可以使用 TLS/1.0 协议. 对于附有 Upgrade 字段的请求, 服务端可返回 101 的状态码.
 
-```bash
+```shell
 connection: upgrade
 upgrade: TLS/1.0
 ```
@@ -433,7 +433,7 @@ upgrade: TLS/1.0
 
 该字段通知服务器, 用户代理能够处理的媒体类型及媒体类型的相对优先级, 或者说叫做内容协商, 即客户端用 Accept 头告诉服务器希望接收什么样的数据, 而服务器用 Content 头告诉客户端实际发送了什么样的数据. 其中用 q 表示权重. 下面的例子表示客户端可以接受纯文本类型或者 HTML, 以及两种图片类型, 并且接收纯文本类型的意愿 (权重)为 0.3. 相应的, 服务器会在响应报文里用头字段 Content-Type 告诉实体数据的真实类型.
 
-```bash
+```shell
 Accept: text/plain; q=0.3, text/html, image/webp, image/png
 ```
 
@@ -443,7 +443,7 @@ Accept: text/plain; q=0.3, text/html, image/webp, image/png
 
 该字段通知服务器, 用户代理支持的字符集及字符集的相对优先级. 该字段应用于内容协商机制的服务器驱动协商. 如果服务器不能提供该字段的任何字符集, 会报 406 错误, 因此尽量不去使用该字段 (我试验了几个网站, 都没有此字段). 下面的例子表示客户端支持 utf-8 和 iso-8859-1, 且优先使用 utf-8.
 
-```bash
+```shell
 Accept-Charset: utf-8, iso-8859-1;q=0.5
 ```
 
@@ -451,7 +451,7 @@ Accept-Charset: utf-8, iso-8859-1;q=0.5
 
 该字段告知服务端, 客户端可使用的头部压缩算法. 上面 `压缩报文` 已经介绍了几种压缩方式, 这里不在赘述.
 
-```bash
+```shell
 Accept-Encoding: gzip, deflate, br
 ```
 
@@ -459,7 +459,7 @@ Accept-Encoding: gzip, deflate, br
 
 该字段用于告知服务器, 用户代理的认证信息. 下面是我博客后台管理系统的一个场景, 在请求一个需要认证的接口时, 需要在请求头上附带认证信息.
 
-```bash
+```shell
 Authorization: Bearer JWT_TOKEN
 ```
 
@@ -469,7 +469,7 @@ Authorization: Bearer JWT_TOKEN
 
 该字段跟状态码 100 息息相关, 等待状态码 100 响应的客户端在发生请求时, 需要指定 `Expext: 100-continue`. 该状态码的用途主要是允许客户端发送带请求体的请求前, 判断服务器是否愿意接收请求.
 
-```bash
+```shell
 Expect: 100-continue
 ```
 
@@ -481,7 +481,7 @@ Expect: 100-continue
 
 当以单台服务器分配多个域名的虚拟主机时, Host 字段就可以用来确定相应的主机. 它属于请求字段, 只能出现在请求头里, 它同时也是唯一一个 HTTP/1.1 规范里要求必须出现的字段.
 
-```bash
+```shell
 Host: www.abc.com
 ```
 
@@ -491,7 +491,7 @@ Host: www.abc.com
 
 服务器会比对 If-Match 的字段值和资源的 ETag 值, 仅当两者一致时, 才会执行请求, 否则返回 412 状态码. 当 If-Match 的字段值为 `*` 时, 服务器会忽略 ETag 值, 只要资源存在就处理请求.
 
-```bash
+```shell
 If-Match: W/"pqxe5g29m4"
 ```
 
@@ -505,7 +505,7 @@ If-Match: W/"pqxe5g29m4"
 
 该字段值和响应首部字段的 Last-Modifie 字段做比较, 下面的例子中显然最后修改时间要新于 If-Modified-Since 的时间, 因此会响应新的资源.
 
-```bash
+```shell
 // 请求首部字段
 If-Modified-Since: Fri, 01 May 2019 11:20:04 GMT
 
@@ -539,7 +539,7 @@ Range 的格式也很灵活, 起点 x 和终点 y 可以省略, 能够很方便�
 3. 服务器要添加一个响应头字段 Content-Range, 告诉片段的实际偏移量和资源的总大小, 格式为 **bytes x-y/z**, 其中 x 和 y 是片段的起点和终点, z 是资源的总大小.
 4. 片段用 TCP 发给客户端
 
-```bash
+```shell
 # 请求头
 GET / HTTP/1.1
 Host: www.yanceyleo.com
@@ -564,7 +564,7 @@ Content-Range: bytes 0-31/96
 
 每一个分段必须以 **--boundary** 开始, 之后要用 **Content-Type** 和 **Content-Range** 标记这段数据的类型和所在范围, 然后就像普通的响应头一样以回车换行结束, 再加上分段数据, 最后用一个 **--boundary--** 表示所有的分段结束.
 
-```bash
+```shell
 # 请求头
 GET /16-2 HTTP/1.1
 Host: www.chrono.com
@@ -597,7 +597,7 @@ Content-Range: bytes 20-29/96
 
 告知服务器请求的 URI 是从哪儿发起的. 比如在我的博客 www.yanceyleo.com 请求了 AliOSS 上的一张图片, 那么请求 AliOSS 服务器的那个请求头就会附上:
 
-```bash
+```shell
 Referer: https://www.yanceyleo.com
 ```
 
@@ -607,7 +607,7 @@ Referer: https://www.yanceyleo.com
 
 该字段会告知服务端, 客户端能够处理响应的传输编码方式及相对优先级. 它类似于 Accept-Encoding, 但用于传输编码. 除了指定传输编码, 还可以指定伴随 trailer 字段的分块传输编码方式.
 
-```bash
+```shell
 TE: gzip, delate;q=0.5
 
 TE: trailers
@@ -617,7 +617,7 @@ TE: trailers
 
 这个字段再不认识直接回炉重造吧, 这里不去赘述, 直接看例子.
 
-```bash
+```shell
 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36
 ```
 
@@ -627,7 +627,7 @@ User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (
 
 该字段用于告知客户端, 服务器是否能处理范围请求, 可处理时指定为 `bytes`, 否则为 `none`. 范围请求不是 Web 服务器必备的功能, 可以实现也可以不实现, 所以服务器必须在响应头里使用字段 **Accept-Ranges: bytes**, 明确告知客户端是支持范围请求的. 如果不支持的话, 服务器可以发送 **Accept-Ranges: none**, 或者干脆不发送 **Accept-Ranges**字段, 这样客户端就认为服务器没有实现范围请求功能, 只能老老实实地收发整块文件了.
 
-```bash
+```shell
 Accept-Ranges: bytes
 ```
 
@@ -635,7 +635,7 @@ Accept-Ranges: bytes
 
 该字段用于告知客户端, 源服务器在多久前创建了响应, 字段值的单位为秒. 若创建该响应的服务器是缓存服务器, Age 值指的是缓存后的响应再次发起认证到认证完成的时间值 (CDN).
 
-```bash
+```shell
 Age: 500
 ```
 
@@ -647,13 +647,13 @@ ETag 有 `强 Etag 值` 和 `弱 Etag 值` 之分. 前者是指无论实体发�
 
 下面的代码是一张图片的 ETag, 显然一张图片改变意味着资源的彻底改变, 因此使用了强 ETag.
 
-```bash
+```shell
 ETag: "F8F155B13C6DA43723EEDE3EDBBB4D28"
 ```
 
 下面的代码是请求一个数据接口的 ETag, 大多数情况不会发生根本性的改变, 因此使用弱 ETag.
 
-```bash
+```shell
 etag: W/"300af-7JrdwEcHHeXMqn/UCrMO0zsO0SY"
 ```
 
@@ -661,7 +661,7 @@ etag: W/"300af-7JrdwEcHHeXMqn/UCrMO0zsO0SY"
 
 Location 字段标记了服务器要求重定向的 URI, 该字段一般会配合 3xx 的状态码使用.
 
-```bash
+```shell
 Location: https://yanceyleo.com
 ```
 
@@ -673,7 +673,7 @@ Location: https://yanceyleo.com
 
 该字段告知客户端应该在多久之后再次发送请求. 当服务器出错报 503 时, 如果服务端知道什么时候可以恢复, 那么就应该通过该字段告知客户端. 该字段的字段值可以是具体的日期时间, 也可以是创建响应后的秒数.
 
-```bash
+```shell
 Retry-After: Sat, 04 May 2019 11:26:52 GMT
 ```
 
@@ -681,7 +681,7 @@ Retry-After: Sat, 04 May 2019 11:26:52 GMT
 
 该字段也是一个常见字段, 用于告知客户端, Web 服务器的名称. 比如我使用了 cloudflare 的 CDN, 因此服务器如下所示.
 
-```bash
+```shell
 server: cloudflare
 ```
 
@@ -689,7 +689,7 @@ server: cloudflare
 
 该字段可用于对缓存进行控制, 它的字段值接收一系列其他首部字段名.
 
-```bash
+```shell
 vary: Accept-Encoding,Cookie
 ```
 
@@ -713,7 +713,7 @@ vary: Accept-Encoding,Cookie
 
 该字段会告知客户端所支持的所有 HTTP 请求方法, 当服务端接收到不支持的 HTTP 方法时, 会返回 405 状态码, 并将所有能支持的 HTTP 方法写入首部字段.
 
-```bash
+```shell
 Allow: GET, PUT
 ```
 
@@ -721,7 +721,7 @@ Allow: GET, PUT
 
 告知客户端服务器使用的内容编码方式.
 
-```bash
+```shell
 content-encoding: br
 ```
 
@@ -729,7 +729,7 @@ content-encoding: br
 
 告知客户端实体主体使用的自然语言. 与之配套的客户端请求头是 Accept-Language.
 
-```bash
+```shell
 content-language: zh-CN
 ```
 
@@ -737,7 +737,7 @@ content-language: zh-CN
 
 该字段表明了实体主体部分的大小, 单位是字节.
 
-```bash
+```shell
 Content-Length: 4871261
 ```
 
@@ -745,7 +745,7 @@ Content-Length: 4871261
 
 该字段用于检查报文主体在传输过程中是否保持完整性, 以及确认传输到达. 服务端对报文主体执行 MD5 算法, 获取一个 128 位的二进制数, 再通过 base64 编码后将结果写入 Content-MD5 字段值. 因为 HTTP 首部无法记录二进制值, 因此需要通过 Base64 进行处理. 客户端在接收到响应后再对报文主体执行一次相同的 MD5 算法. 将计算值于该字段值比较, 即可判断出报文主体的准确性.
 
-```bash
+```shell
 Content-MD5: +PFVsTxtpDcj7t4+27tNKA==
 ```
 
@@ -757,7 +757,7 @@ Content-MD5: +PFVsTxtpDcj7t4+27tNKA==
 
 非常常见的字段, 用来说明实体主体内对象的媒体类型.
 
-```bash
+```shell
 content-type: application/json; charset=utf-8
 ```
 
@@ -950,7 +950,7 @@ Via 字段只解决了客户端和源服务器判断是否存在代理的问题,
 
 因此就出现了一个专门的**代理协议**(The PROXY protocol), 它由知名的代理软件 HAProxy 所定义. **代理协议**有 v1 和 v2 两个版本, v1 和 HTTP 差不多, 也是明文, 而 v2 是二进制格式. 以 v1 为例, 它相当于在 HTTP 报文头前又加了一个头. 例如下面的这个例子, 在 GET 请求行前多出了 PROXY 信息行, IP 地址类型是 TCP4, 客户端的真实 IP 地址是 1.1.1.1, 端口号是 55555; 而代理服务器的 IP 地址是 2.2.2.2, 端口号是 80.
 
-```bash
+```shell
 PROXY TCP4 1.1.1.1 2.2.2.2 55555 80\r\n
 GET / HTTP/1.1\r\n
 Host: www.xxx.com\r\n

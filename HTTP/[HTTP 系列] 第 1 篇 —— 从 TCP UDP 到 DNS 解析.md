@@ -224,7 +224,7 @@ URI 不完全等同于网址, 它包含有 URL 和 URN 两个部分, 在 HTTP �
 
 下图展示了一台电脑内网 IP 和 MAC 地址. 在终端 (MAC OS 环境) 输入 `ifconfig`, 找到 `en0`, 便可查找本地以太网的信息.
 
-![内网IP / MAC地址](https://edge.yancey.app/beg/%3AUsers%3Ayanceyleo%3ADownloads%3AJietu20190422-141257.jpg)
+![内网IP / MAC地址](https://edge.yancey.app/beg/t3m4u7g7-1648001081671.jpg)
 
 那么什么是 MAC 地址呢? 我们知道 IP 地址是可变的, 可以通过各种方式分配 IP 地址给一个设备, 比如 DHCP, PPP, 静态 IP 等. 而 MAC 地址一般来讲是不会变的, 设备在生产时就被**烙**上了 `唯一的标识`, 这个 `唯一的标识` 就是 MAC 地址.
 
@@ -252,7 +252,7 @@ URI 不完全等同于网址, 它包含有 URL 和 URN 两个部分, 在 HTTP �
 
 - UDP 不仅支持单播, 还支持多播和广播.
 
-![UDP 头部](https://edge.yancey.app/beg/udps.png)
+![UDP 头部](https://edge.yancey.app/beg/9dtjgkil-1648001170483.jpeg)
 
 基于 UDP 协议的有:
 
