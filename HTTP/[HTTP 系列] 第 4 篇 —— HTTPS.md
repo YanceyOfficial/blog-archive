@@ -2,7 +2,7 @@
 
 > 这里是《写给前端工程师的 HTTP 系列》, 记得有位大佬曾经说过: **大厂前端面试对 HTTP 的要求比 CSS 还要高**, 由此可见 HTTP 的重要程度不可小视. 文章写作计划如下, 视情况可能有一定的删减, 本篇是该系列的第 4 篇 —— HTTPS.
 
-## HTTPS 出现的原因及安全四要素
+## HTTPS 安全四要素
 
 由于 HTTP 天生**明文传输**的特点, 整个传输过程完全透明, 任何人都能够在链路中截获, 修改或者伪造请求或者响应报文, 数据不具有可信性. 通常认为, 如果通信过程具备了四个特性, 就可以认为是**安全**的, 这四个特性是: 机密性, 完整性, 身份认证和不可否认.
 
@@ -127,13 +127,15 @@ ECC(Elliptic Curve Cryptography)是非对称加密里的**后起之秀**, 它基
 
 CA 对公钥的签名认证也是有格式的, 不是简单地把公钥绑定在持有者身份上就完事了, 还要包含序列号, 用途, 颁发者, 有效时间等等, 把这些打成一个包再签名, 完整地证明公钥关联的各种信息, 形成**数字证书**(Certificate).
 
+![CA 证书字段](https://edge.yancey.app/beg/fzhzzodh-1648388697871.jpg)
+
 证书根据等级分为 DV, OV, EV 三种:
 
-| 类型/区别 | 审核内容                             | 颁发周期      | 使用年限    | 浏览器显示形式                         | 适用对象                                                 | 价格                                              |
-| --------- | ------------------------------------ | ------------- | ----------- | -------------------------------------- | -------------------------------------------------------- | ------------------------------------------------- |
-| DV        | 域名所有权                           | 几分钟-几小时 | 1-2 年      | https + 小锁标志                       | 中小型企业网站, 电子商务网站, 电子邮局服务器, 个人网站等 | 免费                                              |
-| OV        | 域名所有权; 企业信息;                | 2-3 个工作日  | 1-2 年      | https + 小锁标志                       | 企业网站, 电子商务网站, 证券, 金融机构等                 | 2,982.40 元/年 <span style="color: red">\*</span> |
-| EV        | 域名所有权; 企业信息; 第三方数据核查 | 5-7 个工作日  | 一 1-2 年年 | https + 小锁标志 + 绿色网址 + 企业名称 | 银行, 保险, 金融机构, 电子商务网站, 大型企业等           | 6,400 元/年 <span style="color: red">\*</span>    |
+| 类型/区别 | 审核内容                             | 颁发周期      | 使用年限    | 浏览器显示形式                         | 适用对象                                                 | 价格                                                |
+| --------- | ------------------------------------ | ------------- | ----------- | -------------------------------------- | -------------------------------------------------------- | --------------------------------------------------- |
+| DV        | 域名所有权                           | 几分钟-几小时 | 1-2 年      | https + 小锁标志                       | 中小型企业网站, 电子商务网站, 电子邮局服务器, 个人网站等 | 免费                                                |
+| OV        | 域名所有权; 企业信息;                | 2-3 个工作日  | 1-2 年      | https + 小锁标志                       | 企业网站, 电子商务网站, 证券, 金融机构等                 | 2,982.40 元/年 <span style=**color: red**>\*</span> |
+| EV        | 域名所有权; 企业信息; 第三方数据核查 | 5-7 个工作日  | 一 1-2 年年 | https + 小锁标志 + 绿色网址 + 企业名称 | 银行, 保险, 金融机构, 电子商务网站, 大型企业等           | 6,400 元/年 <span style=**color: red**>\*</span>    |
 
 > 上述价格节选自阿里云单域名每年的价格, 时间为 2022/03/23, 具体价格以实际购买时的价格为准.
 
@@ -149,16 +151,7 @@ CA 对公钥的签名认证也是有格式的, 不是简单地把公钥绑定在
 
 针对第一种, 开发出了 CRL(证书吊销列表, Certificate revocation list)和 OCSP(在线证书状态协议, Online Certificate Status Protocol), 及时废止有问题的证书. 对于第二种, 因为涉及的证书太多, 就只能操作系统或者浏览器从根上**下狠手**了, 撤销对 CA 的信任, 列入**黑名单**, 这样它颁发的所有证书就都会被认为是不安全的.
 
-## TLS 保障安全性的小结
-
-TLS 通过以下几点来保证机密性, 完整性, 身份认证和不可否认.
-
-- 摘要算法用来实现完整性, 能够为数据生成独一无二的**指纹**, 常用的算法是 SHA-2;
-- 数字签名是私钥对摘要的加密, 可以由公钥解密后验证, 实现身份认证和不可否认;
-- 公钥的分发需要使用数字证书, 必须由 CA 的信任链来验证, 否则就是不可信的;
-- 作为信任链的源头 CA 有时也会不可信, 解决办法有 CRL, OCSP, 还有终止信任.
-
-## TLS 协议的组成
+## ECDHE 详细握手过程
 
 在 HTTP 协议里, 通过三次握手建立连接后, 浏览器会立即发送请求报文. 但现在是 HTTPS 协议, 它需要再用另外一个**握手**过程, 在 TCP 上建立安全连接, 之后才是收发 HTTP 报文. 在讲 TLS 握手之前, 先简单介绍一下 TLS 协议的组成.
 
@@ -176,13 +169,11 @@ TLS 协议有多个模块组成, 比较常用的有记录协议, 警报协议, �
 
 ![TLS 协议](https://edge.yancey.app/beg/2gloicuc-1647999700009.webp)
 
-## ECDHE 详细握手过程
+短暂椭圆曲线迪菲 - 赫尔曼密钥交换(Elliptic Curve Diffie - Hellman key exchange, 缩写为 ECDH), 是一种匿名的密钥合意协议(Key-agreement protocol), 这是迪菲 - 赫尔曼密钥交换的变种, 采用椭圆曲线密码学来加强性能与安全性. 在这个协定下, 双方利用由椭圆曲线密码学建立的公钥与私钥对, 在一个不安全的通道中, 建立起安全的共有加密资料. 临时 ECDH(ECDH Ephemeral, ECDHE)能够提供前向安全性.
 
-椭圆曲线迪菲 - 赫尔曼密钥交换(Elliptic Curve Diffie - Hellman key exchange, 缩写为 ECDH), 是一种匿名的密钥合意协议(Key-agreement protocol), 这是迪菲 - 赫尔曼密钥交换的变种, 采用椭圆曲线密码学来加强性能与安全性. 在这个协定下, 双方利用由椭圆曲线密码学建立的公钥与私钥对, 在一个不安全的通道中, 建立起安全的共有加密资料. 临时 ECDH(ECDH Ephemeral, ECDHE)能够提供前向安全性.
+![ECDHE 详细握手过程](https://edge.yancey.app/beg/jbf7vavm-1648374811554.webp)
 
-![ECDHE 详细握手过程](https://edge.yancey.app/beg/2gloicuc-1647999700009.webp)
-
-### Client Hello
+### 阶段 1: Client Hello
 
 在 TCP 建立连接之后, 浏览器会首先发一个 **Client Hello** 消息, 也就是跟服务器**打招呼**. 里面有客户端的版本号, 支持的密码套件, 还有一个**随机数**(Client Random), 用于后续生成会话密钥, 具体所有参数在下面. **Client Hello** 的目的就是: **我这边有这些这些信息, 你看看哪些是能用的, 关键的随机数可得留着.**
 
@@ -194,7 +185,7 @@ TLS 协议有多个模块组成, 比较常用的有记录协议, 警报协议, �
   - 密钥交换算法
   - MAC 算法
   - 加密方式(流, 分组)
-- 压缩算法(如果支持压缩的话)
+- 压缩算法(由于压缩会带来安全漏洞(CRIME 攻击, Compression Ratio Info-leak Made Easy), 所以压缩算法这里一般写死成 null, 后面 TLS 1.3 明令禁止使用压缩. 简单说一下攻击原理: 它依赖于攻击者能观察浏览器发送的密文的大小, 并在同时诱导浏览器发起多个精心设计的到目标网站的连接. 攻击者会观察已压缩请求载荷的大小, 其中包括两个浏览器只发送到目标网站的私密 Cookie, 以及攻击者创建的变量内容. 当压缩内容的大小降低时, 攻击者可以推断注入内容的某些部分与源内容的某些部分匹配, 其中包括攻击者想要发掘的私密内容. 使用分治法技术可以用较小的尝试次数解读真正秘密的内容, 需要恢复的字节数会大幅降低)
 
 ![Client Hello](https://edge.yancey.app/beg/to2ed2xt-1648319923179.jpg)
 
@@ -202,51 +193,267 @@ TLS 协议有多个模块组成, 比较常用的有记录协议, 警报协议, �
 
 ![加密套件](https://edge.yancey.app/beg/6ezavr4h-1648320849344.jpg)
 
-### Server Hello
+### 阶段 2: Server Hello
 
-服务器收到 **Client Hello** 后, 会返回一个 **Server Hello** 消息. 把版本号确认一下, 也给出一个**随机数**(Server Random), 需要客户端也留着, 然后从客户端的列表里选一个作为本次通信使用的密码套件, 在这里它选择了 **TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384**.
+服务器收到 **Client Hello** 后, 会返回一个 **Server Hello** 消息. 把版本号确认一下, 也给出一个**随机数**(Server Random), 需要客户端也留着, 然后从客户端的列表里选一个作为本次通信使用的密码套件.
+
+- 服务端采纳的本次通讯的 SSL 版本
+- 服务端生成的一个用于生成主密钥(master key)的 32 字节的随机数(主密钥由客户端和服务端的随机数共同生成), 它是由随机种子 gmt_unix_time 使用伪随机数函数(PRF)生成的 32 字节随机数.
+- 会话 ID: 如果没有建立过连接则对应值为空, 不为空则说明之前建立过对应的连接并缓存.
+- 服务端采纳的用于本次通讯的加密套件(从客户端发送的加密套件列表中选出了一个, 下面的例子选出的加密组合是 TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, ECDHE_RSA 作为密钥交换算法)
+  - 加密算法
+  - 密钥交换算法
+  - MAC 算法
+  - 加密方式(流, 分组)
+- 压缩算法(如果支持压缩的话)
+
+![Server Hello](https://edge.yancey.app/beg/rtnrb58y-1648375017814.jpg)
+
+### 阶段 2: Server Certificate
+
+SSL 服务器将**携带自己公钥信息的数字证书**和到根 CA 整个链发给客户端通过 Certificate 消息发送给 SSL 客户端(整个公钥文件都发送过去), 客户端使用这个公钥完成以下任务:
+
+- 客户端可以使用该公钥来验证服务端的身份, 因为只有服务端有对应的私钥能解密它的公钥加密的数据;
+- 用于对 **premaster secret** 进行加密, 这个 **premaster secret** 就是用客户端和服务端生成的 Random 随机数来生成的, 客户端用服务端的公钥对其进行了加密后发送给服务端.
+
+下面这个例子, 我们访问的是百度, 它会给我们从百度的证书到根 CA 证书.
+
+![Server Certificate Chain](https://edge.yancey.app/beg/zzats6wk-1648385767041.jpg)
+
+![CA Chain](https://edge.yancey.app/beg/ityhtt6n-1648388509073.jpg)
+
+### 阶段 2: Server Key Exchange
+
+下一步则是密钥交换阶段, Server Key Exchange 消息中包含有密钥交换算法所需要的额外参数, 它是一个可选步骤, 之所以说是可选步骤, 是因为只有在下列场景下这个步骤才会发生:
+
+- 协商采用了 RSA 加密, 但是服务端的证书没有提供 RSA 公钥
+- 协商采用了 DH 加密, 但是服务端的证书没有提供 DH 参数
+- 协商采用了 fortezza_kea 加密, 但是服务端的证书没有提供参数
+
+总结来说, **Server Key Exchange**这个步骤是对上一步 **Certificate** 的一个补充, 为了让整个 SSL 握手过程能正常进行.
+
+![Server Key Exchange](https://edge.yancey.app/beg/4nq5zant-1648392843770.png)
+
+### 阶段 2: Server Hello Done
+
+SSL 服务器发送 Server Hello Done 消息, 通知 SSL 客户端版本和加密套件协商结束. 这样第一个消息往返就结束了(两个 TCP 包), 结果是客户端和服务器通过明文共享了三个信息: Client Random, Server Random 和 Server Params.
+
+![Server Hello Done](https://edge.yancey.app/beg/4x6gg567-1648392989481.png)
+
+### 阶段 3: Client Key Exchange
+
+客户端这时也拿到了服务器的证书, 开始走证书链逐级验证, 确认证书的真实性, 再用证书公钥验证签名, 就确认了服务器的身份. 利用证书中的公钥加密 SSL 客户端随机生成的 **premaster secret**(通过之前客户端, 服务端分别生成的随机数生成的), 并通过 Client Key Exchange 消息发送给 SSL 服务器. 注意, 这一步完成后, 客户端和服务端都已经保存了**主密钥**(之所以这里叫预备主密钥, 是因为还没有投入使用). 这个**主密钥**会用于之后的 SSL 通信数据的加密. master secret 的伪代码算法如下:
 
 ```ts
+master_secret = PRF(
+  pre_master_secret,
+  "master secret",
+  ClientHello.random + ServerHello.random
+);
+```
+
+![Client Key Exchange](https://edge.yancey.app/beg/32ujnxab-1648393270773.png)
+
+### 阶段 3: Change Cipher Spec
+
+客户端发送 **Change Cipher Spec**(密钥改变协议), 通知 SSL 服务器后续报文将采用协商好的**主密钥**和加密套件进行加密和 MAC 计算, 即以后咱们都用这个密钥进行通信数据的加密吧. 然后客户端会发送一个 Finished, 表示结束了.
+
+![Change Cipher Spec](https://edge.yancey.app/beg/rc7r05kr-1648393413671.png)
+
+### 阶段 3: Finished
+
+SSL 客户端计算已交互的握手消息(除 Change Cipher Spec 消息外所有已交互的消息)的 Hash 值, 利用协商好的密钥和加密套件处理 Hash 值(计算并添加 MAC 值, 加密等), 并通过 Finished 消息发送给 SSL 服务器. SSL 服务器利用同样的方法计算已交互的握手消息的 Hash 值, 并与 Finished 消息的解密结果比较, 如果二者相同, 且 MAC 值验证成功, 则证明密钥和加密套件协商成功. 意思就是告诉服务器: 后面都改用对称算法加密通信了, 用的就是打招呼时说的 AES, 加密对不对还得你测一下.
+
+### 阶段 4: 客户端发送请求
+
+客户端使用主密钥加密数据, 发送给服务端.
+
+![加密后的数据](https://edge.yancey.app/beg/8blqnzab-1648393278877.png)
+
+### 阶段 4: Change Cipher Spec
+
+同样地, SSL 服务器发送 Change Cipher Spec 消息, 通知 SSL 客户端后续报文将采用协商好的密钥和加密套件进行加密和 MAC 计算.
+
+### 阶段 4: Finished
+
+SSL 服务器计算已交互的握手消息的 Hash 值, 利用协商好的密钥和加密套件处理 Hash 值(计算并添加 MAC 值, 加密等), 并通过 Finished 消息发送给 SSL 客户端. SSL 客户端利用同样的方法计算已交互的握手消息的 Hash 值, 并与 Finished 消息的解密结果比较, 如果二者相同, 且 MAC 值验证成功, 则证明密钥和加密套件协商成功.
+
+SSL 客户端接收到 SSL 服务器发送的 Finished 消息后, 如果解密成功, 则可以判断 SSL 服务器是数字证书的拥有者, 即 SSL 服务器身份验证成功, 因为只有拥有私钥的 SSL 服务器才能从 Client Key Exchange 消息中解密得到 premaster secret, 从而间接地实现了 SSL 客户端对 SSL 服务器的身份验证.
+
+### 阶段 4: 服务端发送响应
+
+最后就是服务端使用协商好的加密算法加密响应数据, 返回给客户端.
+
+### 双向认证
+
+上面说的是**单向认证**握手过程, 只认证了服务器的身份, 而没有认证客户端的身份. 这是因为通常单向认证通过后已经建立了安全通信, 用账号, 密码等简单的手段就能够确认用户的真实身份. 但为了防止账号, 密码被盗, 有的时候(比如网上银行)还会使用 U 盾给用户颁发客户端证书, 实现**双向认证**, 这样会更加安全. 双向认证的流程也没有太多变化, 只是在**Server Hello Done**之后, **Client Key Exchange**之前, 客户端要发送**Client Certificate**消息, 服务器收到后也把证书链走一遍, 验证客户端的身份.
+
+我记录了一份 [gist](https://gist.github.com/YanceyOfficial/6b0bd5579f7fb244044541b7e38e6acc), 可以看到双向认证的流程.
+
+## 谈一谈 TLS 1.3
+
+上面说的是都是基于 TLS 1.2, 它发布于 2008 年, 从现在来看在很多方面已经力不从心了. 因此经过近 30 个草案的反复打磨, TLS 1.3 于 2018 年发布, 再次确立了信息安全领域的新标准. TLS 1.3 的三个目标是**兼容**, **安全**与**性能**.
+
+![TLS 1.3](https://edge.yancey.app/beg/3znd82t2-1648887969787.jpg)
+
+### 兼容 1.1 和 1.2
+
+由于 1.1, 1.2 等协议已经出现了很多年, 屎山已经改不动了, 因此必须要求 TLS 1.3 进行**兼容**. 它采用了**扩展协议(Extension Protocol)**的手段, 通过在记录末尾添加一系列的**扩展字段**来增加新的功能, 老版本的 TLS 不认识它可以直接忽略, 这就实现了**后向兼容**.
+
+在记录头的 Version 字段被兼容性**固定**的情况下, 只要是 TLS1.3 协议, 握手的 **Hello** 消息后面就必须有 **supported_versions** 扩展, 它标记了 TLS 的版本号, 使用它就能区分新旧协议.
+
+```shell
+Handshake Protocol: Client Hello
+    Version: TLS 1.2 (0x0303)
+    Extension: supported_versions (len=11)
+        Supported Version: TLS 1.3 (0x0304)
+        Supported Version: TLS 1.2 (0x0303)
+```
+
+### 更高的安全性
+
+TLS 1.2 在十来年的应用中获得了许多宝贵的经验, 陆续发现了很多的漏洞和加密算法的弱点, 所以 TLS 1.3 就在协议里修补了这些不安全因素. 比如:
+
+- 伪随机数函数由 PRF 升级为 HKDF(HMAC-based Extract-and-Expand Key Derivation Function);
+- 明确禁止在记录协议里使用压缩;
+- 废除了 RC4, DES 对称加密算法;
+- 废除了 ECB, CBC 等传统分组模式;
+- 废除了 MD5, SHA1, SHA-224 摘要算法;
+- 废除了 RSA, DH 密钥交换算法和许多命名曲线.
+
+这样 TLS1.3 里只保留了 AES, ChaCha20 对称加密算法, 分组模式只能用 AEAD 的 GCM, CCM 和 Poly1305, 摘要算法只能用 SHA256, SHA384, 密钥交换算法只有 ECDHE 和 DHE, 椭圆曲线也被**砍**到只剩 P-256 和 x25519 等 5 种. 基于此, TLS 1.3 的密码套件数量大幅减少:
+
+![TLS 1.3 的密码套件](https://edge.yancey.app/beg/wgscs3uv-1648885988928.webp)
+
+这里还要特别说一下废除 RSA 和 DH 密钥交换算法的原因. 上面我们介绍到 ECDHE, 其实还有一种使用 RSA 来做密钥交换, 但是浏览器默认会使用 ECDHE 而不是 RSA 做密钥交换, 这是因为它不具有**前向安全**(Forward Secrecy). 这是因为 RSA 服务端的私钥是**固定**的, 一旦私钥被破解了, 加密就不安全了. 而 ECDHE 算法在每次握手时都会生成一对临时的公钥和私钥, 即便是某次被破解了, 也只会影响本次通信, 而不会影响后续的. 所以现在主流的服务器和浏览器在握手阶段都已经不再使用 RSA, 改用 ECDHE, 而 TLS1.3 在协议里明确废除 RSA 和 DH 则在标准层面保证了**前向安全**.
+
+此外, TLS 1.3 还做了防恶意降级机制, 如果发现中间人恶意将版本降级到 1.2, 服务器的最后八个字节会被设置为 44 4F 57 4E 47 52 44 01, 即 DOWNGRD01, 支持 TLS 1.3 的客户端就会识别到, 然后发出报警.
+
+### 性能的提升
+
+HTTPS 建立连接时除了要做 TCP 握手, 还要做 TLS 握手, 在 TLS 1.2 中会多花两个消息往返(2-RTT), 可能导致几十毫秒甚至上百毫秒的延迟, 在移动网络中延迟还会更严重. 而 TLS 1.3 因为密码套件大幅度简化(只有 5 个), 也就没有必要再像以前那样走复杂的协商流程了.
+
+此外, TLS1.3 压缩了以前的 **Hello** 协商过程, 删除了 **Key Exchange** 消息, 把握手时间减少到了 **1-RTT**, 效率提高了一倍. 具体的做法还是利用了**扩展**. 客户端在 **Client Hello** 消息里直接用 **supported_groups** 带上支持的曲线, 比如 P-256, x25519, 用**key_share**带上曲线对应的客户端公钥参数, 用 **signature_algorithms** 带上签名算法. 服务器收到后在这些扩展里选定一个曲线和参数, 再用 **key_share** 扩展返回服务器这边的公钥参数, 就实现了双方的密钥交换, 后面的流程就和 TLS 1.2 基本一样了. 如下是 TLS 1.3 握手的概略图.
+
+![TLS 1.3 握手的概略图](https://edge.yancey.app/beg/rgclesir-1648887706093.webp)
+
+除了标准的 **1-RTT** 握手, TLS1.3 还引入了 **0-RTT** 握手, 用 **pre_shared_key** 和 **early_data** 扩展, 在 TCP 连接后立即就建立安全连接发送加密消息.
+
+### TLS 1.3 握手分析
+
+![TLS 1.3 握手分析](https://edge.yancey.app/beg/gitkz6uh-1648887627101.webp)
+
+在 Client Hello 阶段, 除了跟 TLS 1.2 相同的部分, 还增加了 **supported_versions**(支持的版本), **supported_groups**(支持的曲线), **key_share**(曲线对应的参数) 等字段. 具体可以看 [](https://halfrost.com/tls_1-3_introduction/#toc-7)
+
+```shell
+Handshake Protocol: Client Hello
+    Version: TLS 1.2 (0x0303)
+    Random: cebeb6c05403654d66c2329...
+    Cipher Suites (18 suites)
+        Cipher Suite: TLS_AES_128_GCM_SHA256 (0x1301)
+        Cipher Suite: TLS_CHACHA20_POLY1305_SHA256 (0x1303)
+        Cipher Suite: TLS_AES_256_GCM_SHA384 (0x1302)
+    Extension: supported_versions (len=9)
+        Supported Version: TLS 1.3 (0x0304)
+        Supported Version: TLS 1.2 (0x0303)
+    Extension: supported_groups (len=14)
+        Supported Groups (6 groups)
+            Supported Group: x25519 (0x001d)
+            Supported Group: secp256r1 (0x0017)
+    Extension: key_share (len=107)
+        Key Share extension
+            Client Key Share Length: 105
+            Key Share Entry: Group: x25519
+            Key Share Entry: Group: secp256r1
+```
+
+Server Hello 阶段, 如果确认使用 TLS 1.3, **supported_versions** 会标明使用的是 TLS 1.3, 然后在 **key_share** 扩展带上曲线和对应的公钥参数.
+
+```shell
 Handshake Protocol: Server Hello
     Version: TLS 1.2 (0x0303)
-    Random: 0e6320f21bae50842e96...
-    Cipher Suite: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (0xc030)
+    Random: 12d2bce6568b063d3dee2...
+    Cipher Suite: TLS_AES_128_GCM_SHA256 (0x1301)
+    Extension: supported_versions (len=2)
+        Supported Version: TLS 1.3 (0x0304)
+    Extension: key_share (len=36)
+        Key Share extension
+            Key Share Entry: Group: x25519, Key Exchange length: 32
 ```
 
-然后, 服务器为了证明自己的身份, 就把证书也发给了客户端(Server Certificate).
+这时只交换了两条消息, 客户端和服务器就拿到了四个共享信息：**Client Random** 和 **Server Random**, **Client Params** 和 **Server Params**, 两边就可以各自用 ECDHE 算出 **Pre-Master**, 再用 HKDF 生成主密钥 **Master Secret**, 效率比 TLS 1.2 提高了一大截, 因为不需要在 cipher suite 协商了.
 
-接下来是一个关键的操作, 因为服务器选择了 ECDHE 算法, 所以它会在证书后发送 **Server Key Exchange** 消息, 里面是**椭圆曲线的公钥(Server Params)**, 用来实现密钥交换算法, 再加上自己的私钥签名认证.
+在算出主密钥后, 服务器立刻发出 **Change Cipher Spec** 消息, 比 TLS 1.2 提早进入加密通信, 后面的证书等就都是加密的了, 减少了握手时的明文信息泄露.
 
-```ts
-Handshake Protocol: Server Key Exchange
-    EC Diffie-Hellman Server Params
-        Curve Type: named_curve (0x03)
-        Named Curve: x25519 (0x001d)
-        Pubkey: 3b39deaf00217894e...
-        Signature Algorithm: rsa_pkcs1_sha512 (0x0601)
-        Signature: 37141adac38ea4...
+这里 TLS1.3 还有一个安全强化措施, 多了个 **Certificate Verify** 消息, 用服务器的私钥把前面的曲线, 套件, 参数等握手数据加了签名, 作用和 **Finished** 消息差不多. 但由于是私钥签名, 所以强化了身份认证和和防窜改.
+
+这两个 **Hello** 消息之后, 客户端验证服务器证书, 再发 **Finished** 消息, 就正式完成了握手, 开始收发 HTTP 报文.
+
+## HTTPS 的优化
+
+我们知道, HTTPS 连接大致上可以划分为两个部分, 第一个是建立连接时的非对称加密握手, 第二个是握手后的对称加密报文传输. 由于目前流行的 AES, ChaCha20 性能都很好, 还有硬件优化, 报文传输的性能损耗可以说是非常地小, 小到几乎可以忽略不计了. 所以, 通常所说的“HTTPS 连接慢”指的就是**刚开始建立连接的那段时间**.
+
+## 附录: 配置 HTTPS
+
+以 nginx 为例, 监听 443 端口, 并提供证书的路径.
+
+```shell
+listen                443 ssl;
+
+ssl_certificate       xxx_rsa.crt;  # rsa2048 cert
+ssl_certificate_key   xxx_rsa.key;  # rsa2048 private key
+
+ssl_certificate       xxx_ecc.crt;  # ecdsa cert
+ssl_certificate_key   xxx_ecc.key;  # ecdsa private ke
 ```
 
-这相当于说: **刚才我选的密码套件有点复杂, 所以再给你个算法的参数, 和刚才的随机数一样有用, 别丢了. 为了防止别人冒充, 我又盖了个章.**
+为了提高 HTTPS 的安全系数和性能, 还可以强制 Nginx 只支持 TLS1.2 以上的协议, 打开 **Session Ticket** 会话复用:
 
-之后是 **Server Hello Done** 消息, 即服务器已经给了全部信息, 打招呼完毕.
+```shell
+ssl_protocols               TLSv1.2 TLSv1.3;
 
-这样第一个消息往返就结束了(两个 TCP 包), 结果是客户端和服务器通过明文共享了三个信息: Client Random, Server Random 和 Server Params.
-
-客户端这时也拿到了服务器的证书, 那这个证书是不是真实有效的呢？
-
-这就要用到第 25 讲里的知识了, 开始走证书链逐级验证, 确认证书的真实性, 再用证书公钥验证签名, 就确认了服务器的身份: **刚才跟我打招呼的不是骗子, 可以接着往下走.**
-
-然后, 客户端按照密码套件的要求, 也生成一个**椭圆曲线的公钥(Client Params)**, 用 **Client Key Exchange** 消息发给服务器. **Client Key Exchange** 消息的目的是携带密钥交换的额外数据. 对于使用 DHE/ECDHE 非对称密钥协商算法的 SSL 握手, 将发送该类型握手. RSA 算法不会该握手流程(DH, ECDH 也不会发送 server key exchange).
-
-```ts
-Handshake Protocol: Client Key Exchange
-    EC Diffie-Hellman Client Params
-        Pubkey: 8c674d0e08dc27b5eaa...
+ssl_session_timeout         5m;
+ssl_session_tickets         on;
+ssl_session_ticket_key      ticket.key;
 ```
 
-现在客户端和服务器手里都拿到了密钥交换算法的两个参数(Client Params, Server Params), 就用 ECDHE 算法一阵算, 算出了一个新的东西, 叫**Pre-Master**, 其实也是一个随机数.
+密码套件的选择方面, 建议是以服务器的套件优先. 这样可以避免恶意客户端故意选择较弱的套件, 降低安全等级, 然后密码套件向 TLS1.3**看齐**, 只使用 ECDHE, AES 和 ChaCha20, 支持 **False Start**. 如果客户端硬件没有 AES 优化, 服务器就会顺着客户端的意思, 优先选择与 AES **等价**的 ChaCha20 算法, 让客户端能够快一点. 可以通过 [SSL Server Test](https://www.ssllabs.com/ssltest/analyze.html) 来测试你的服务器 SSL 的安全性.
 
-至于具体的计算原理和过程, 因为太复杂就不细说了, 但算法可以保证即使黑客截获了之前的参数, 也是绝对算不出这个随机数的.
+```shell
+ssl_prefer_server_ciphers on;
+ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-CHACHA20-POLY1305:ECDHE+AES128:!MD5:!SHA1;
 
-现在客户端和服务器手里有了三个随机数: Client Random, Server Random 和 Pre-Master. 用这三个作为原始材料, 就可以生成用于加密会话的主密钥, 叫 **Master Secret**. 而黑客因为拿不到 **Pre-Master**, 所以也就得不到主密钥.
+# 如果你的服务器上使用了 OpenSSL 的分支 BorringSSL,
+# 那么还可以使用一个特殊的**等价密码组**(Equal preference cipher groups)特性,
+# 它可以让服务器配置一组**等价**的密码套件, 在这些套件里允许客户端优先选择
+ssl_ciphers
+[ECDHE-ECDSA-AES128-GCM-SHA256|ECDHE-ECDSA-CHACHA20-POLY1305];
+```
+
+### SNI
+
+在 HTTP 协议里, 多个域名可以同时在一个 IP 地址上运行, 这就是**虚拟主机**, Web 服务器会使用请求头里的 Host 字段来选择. 但在 HTTPS 里, 因为请求头只有在 TLS 握手之后才能发送, 在握手时就必须选择**虚拟主机**对应的证书, TLS 无法得知域名的信息, 就只能用 IP 地址来区分. 所以, 最早的时候每个 HTTPS 域名必须使用独立的 IP 地址, 非常不方便.
+
+这需要用到 TLS 的**扩展**, 给协议加个 SNI(Server Name Indication)的**补充条款**. 它的作用和 Host 字段差不多, 客户端会在 **Client Hello** 时带上域名信息, 这样服务器就可以根据名字而不是 IP 地址来选择证书.
+
+### 重定向跳转
+
+301
+
+## 小结
+
+TLS 通过以下几点来保证机密性, 完整性, 身份认证和不可否认.
+
+- 摘要算法用来实现完整性, 能够为数据生成独一无二的**指纹**, 常用的算法是 SHA-2;
+- 数字签名是私钥对摘要的加密, 可以由公钥解密后验证, 实现身份认证和不可否认;
+- 公钥的分发需要使用数字证书, 必须由 CA 的信任链来验证, 否则就是不可信的;
+- 作为信任链的源头 CA 有时也会不可信, 解决办法有 CRL, OCSP, 还有终止信任.
+
+TLS 握手小结:
+
+1. HTTPS 协议会先与服务器执行 TCP 握手, 然后执行 TLS 握手, 才能建立安全连接;
+2. 握手的目标是安全地交换对称密钥, 需要三个随机数, 第三个随机数**Pre-Master**必须加密传输, 绝对不能让黑客破解;
+3. **Hello**消息交换随机数, **Key Exchange**消息交换**Pre-Master**;
+4. **Change Cipher Spec**之前传输的都是明文, 之后都是对称密钥加密的密文.
+
+对 TLS 1.2 已知的攻击有 BEAST, BREACH, CRIME, TREAK, LUCKY13, POODLE, ROBOT.
