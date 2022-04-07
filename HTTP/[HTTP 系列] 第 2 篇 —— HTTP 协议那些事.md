@@ -2,6 +2,40 @@
 
 > 这里是《写给前端工程师的 HTTP 系列》, 记得有位大佬曾经说过: **大厂前端面试对 HTTP 的要求比 CSS 还要高**, 由此可见 HTTP 的重要程度不可小视. 文章写作计划如下, 视情况可能有一定的删减, 本篇是该系列的第 2 篇 —— 《HTTP 协议那些事》. 这篇文章会涉及到 HTTP 协议, cookie 和 session, HTTP 首部/方法/状态码等.
 
+## HTTP 的发展历程
+
+1989 年, 任职于欧洲核子研究中心(CERN)的蒂姆·伯纳斯 - 李(Tim Berners-Lee)发表了一篇论文, 提出了在互联网上构建超链接文档系统的构想. 这篇论文中他确立了三项关键技术.
+
+- URI: 即统一资源标识符, 作为互联网上资源的唯一身份;
+- HTML: 即超文本标记语言, 描述超文本文档;
+- HTTP: 即超文本传输协议, 用来传输超文本.
+
+`HTTP/0.9` 标准于 1990 年问世, 因为当时的 HTTP 没有作为正式的标准被确立, 该版本含有 HTTP/1.0 之前版本的意味.
+
+`HTTP/1.0` 标准于 1996 年 5 月作为第一份标准被公布, 它被记载于 [RFC1945 - Hypertext Transfer Protocol -- HTTP/1.0](http://www.ietf.org/rfc/rfc1945.txt)
+
+- 增加了 HEAD, POST 等新方法;
+- 增加了响应状态码, 标记可能的错误原因;
+- 引入了协议版本号概念;
+- 引入了 HTTP Header(头部)的概念, 让 HTTP 处理请求和响应更加灵活;
+- 传输的数据不再仅限于文本.
+
+`HTTP/1.1` 标准于 1999 年 6 月被公布, 截止到目前它应该是最主流的 HTTP 协议版本, 它被记载于 [RFC2616 - Hypertext Transfer Protocol -- HTTP/1.1](http://www.ietf.org/rfc/rfc2616.txt)
+
+- 增加了 PUT, DELETE 等新的方法;
+- 增加了缓存管理和控制;
+- 明确了连接管理, 允许持久连接;
+- 允许响应数据分块(chunked), 利于传输大文件;
+- 强制要求 Host 头, 让互联网主机托管成为可能.
+
+`HTTP/2` 标准于 2015 年 5 月被正式发布, 它被记载于 [RFC7540 - Hypertext Transfer Protocol -- HTTP/2](http://www.ietf.org/rfc/rfc7540.txt), 它的特点是 ① 采用二进制而非明文来打包, ② 多路复用, ③ 修复队头堵塞, ④ 允许设置设定请求优先级, ⑤ 服务器推送, ⑥ WebSocket 等等.
+
+据 [w3techs](https://w3techs.com/technologies/details/ce-http2/all/all) 统计, 截止到 2019/04/22, HTTP/2 的全球占有率为 36%. 我的 [个人博客](https://yanceyleo.com) 在上线之初就支持了 HTTP/2.
+
+![My Website](https://edge.yancey.app/beg/Jietu20190422-104131%402x.jpg)
+
+`HTTP/3`, 于 2018 年, 互联网标准化组织 IETF 提议将**HTTP over QUIC**更名为**HTTP/3**并获得批准, HTTP/3 正式进入了标准化制订阶段.
+
 ## HTTP 协议
 
 ![HTTP 协议学习图谱](https://edge.yancey.app/beg/8e70rur9-1646643798972.webp)
