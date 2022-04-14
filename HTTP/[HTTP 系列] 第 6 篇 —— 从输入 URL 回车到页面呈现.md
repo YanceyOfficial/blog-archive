@@ -242,7 +242,7 @@ div {
 
 通常, 栅格化过程都会使用 GPU 来加速生成, 使用 GPU 生成位图的过程叫快速栅格化, 或者 GPU 栅格化, 生成的位图被保存在 GPU 内存中. 由于 GPU 操作是运行在 GPU 进程中, 如果栅格化操作使用了 GPU, 那么最终生成位图的操作是在 GPU 中完成的, 这就涉及到了跨进程操作. 从下图可以看出, 渲染进程把生成图块的指令发送给 GPU, 然后在 GPU 中执行生成图块的位图, 并保存在 GPU 的内存中.
 
-![a8d954cd8e4722ee03d14afaa14c3987.webp](https://edge.yancey.app/beg/wp8inuxz-1649951587261.webp)
+![栅格化过程](https://edge.yancey.app/beg/wp8inuxz-1649951587261.webp)
 
 ### 合成和显示
 
