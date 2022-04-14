@@ -2,6 +2,13 @@
 
 > 这里是《写给前端工程师的 HTTP 系列》, 记得有位大佬曾经说过: **大厂前端面试对 HTTP 的要求比 CSS 还要高**, 由此可见 HTTP 的重要程度不可小视. 文章写作计划如下, 视情况可能有一定的删减, 本篇是该系列的第 4 篇 —— HTTPS.
 
+- [\[HTTP 系列\] 第 1 篇 —— 从 TCP/UDP 到 DNS 解析](https://www.yanceyleo.com/post/3a9d3d47-9977-4579-a756-4bf5af4a3fd4)
+- [\[HTTP 系列\] 第 2 篇 —— HTTP 协议那些事](https://www.yanceyleo.com/post/efd566e9-4ee3-4ee2-8448-628414659480)
+- [\[HTTP 系列\] 第 3 篇 —— HTTP 缓存那些事](https://www.yanceyleo.com/post/89731d8e-5510-4094-8962-462b127ed5d0)
+- [\[HTTP 系列\] 第 4 篇 —— HTTPS](https://www.yanceyleo.com/post/f976717f-9e40-4849-a73f-86c63c0c45e1)
+- \[HTTP 系列\] 第 5 篇 —— 网络安全
+- [\[HTTP 系列\] 第 6 篇 —— 从输入 URL 回车到页面呈现](https://www.yanceyleo.com/post/05daeef2-2caf-4ebe-89f0-2ad9cae286c4)
+
 ## HTTPS 安全四要素
 
 由于 HTTP 天生**明文传输**的特点, 整个传输过程完全透明, 任何人都能够在链路中截获, 修改或者伪造请求或者响应报文, 数据不具有可信性. 通常认为, 如果通信过程具备了四个特性, 就可以认为是**安全**的, 这四个特性是: 机密性, 完整性, 身份认证和不可否认.
