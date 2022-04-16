@@ -8,11 +8,11 @@
 
 不知道大家看到一个小细节没，打开Chrome开发者工具，选择查看元素，将鼠标移动到html页面，发现浏览器自动给栅格标上了虚线，看下图。
 
-![Chrome开发者工具自动标注栅格线](https://static.yancey.app/6ec00c5f-cb40-4d56-9835-fd57d4c7805b.jpg)
+![Chrome开发者工具自动标注栅格线](https://edge.yancey.app/beg/6ec00c5f-cb40-4d56-9835-fd57d4c7805b.jpg)
 
 既然是写CSS3相关的属性，按惯例先去[Can I Use](https://caniuse.com/#search=grid)了解一下浏览器的支持情况，发现主流浏览器都能完美使用了。
 
-![Can i use Grid?](https://static.yancey.app/5dbd661e-b8d9-4691-a429-ce976c7c74db.jpg)
+![Can i use Grid?](https://edge.yancey.app/beg/5dbd661e-b8d9-4691-a429-ce976c7c74db.jpg)
 
 ## Terminology
 
@@ -43,25 +43,25 @@
 
 栅格线是构成网格结构的分界线：垂直的叫做`列栅格线(column grid lines)`，水平的叫做`行栅格线(row grid lines)`，栅格线的概念很重要，后面定义`grid-column`和`grid-row`都会直接用到栅格线的概念，如下图黄线即为一条栅格线。
 
-![Grid Line](https://static.yancey.app/8d19574c-3a92-4caa-8bb5-c8a9db29af42.png)
+![Grid Line](https://edge.yancey.app/beg/8d19574c-3a92-4caa-8bb5-c8a9db29af42.png)
 
 ### Grid Track
 
 栅格轨道是由两条`相邻`网格线构成的一个`单行`或`单列`的区域。注意`相邻`这个概念，从词法来说，`轨道`一般都是单条的，如下黄色区域则为一条栅格轨道。
 
-![Grid Track](https://static.yancey.app/54636927-1746-4529-8401-6933d20a2cba.png)
+![Grid Track](https://edge.yancey.app/beg/54636927-1746-4529-8401-6933d20a2cba.png)
 
 ### Grid Cell
 
 要注意和`Grid Item`的区别，一个Grid Cell包含其对应的Grid Item和Grid Item里面的内容，如下图黄色区域即为一个栅格元。
 
-![Grid Cell](https://static.yancey.app/c145158d-8aa5-46c8-a106-d0f0cb89eb70.png)
+![Grid Cell](https://edge.yancey.app/beg/c145158d-8aa5-46c8-a106-d0f0cb89eb70.png)
 
 ### Grid Area
 
 最后一个术语则是栅格区域，可以说栅格轨道和栅格区域是包含和被包含的关系，如下图的黄色区域就是行栅格线1和3与列栅格线1和3之间圈出来的网格区域。
 
-![Grid Area](https://static.yancey.app/8273252d-9714-4029-8572-65eaa719a446.png)
+![Grid Area](https://edge.yancey.app/beg/8273252d-9714-4029-8572-65eaa719a446.png)
 
 ## List of Grid Attributes
 
@@ -100,7 +100,7 @@
 
 ps: 看到这么多属性头都大了，突然想到某考研名师的名言：
 
-![やめてよ！！！](https://static.yancey.app/6ea92be3-bd18-4886-9985-db6d9a53f539.jpeg)
+![やめてよ！！！](https://edge.yancey.app/beg/6ea92be3-bd18-4886-9985-db6d9a53f539.jpeg)
 
 BUT! 考虑到梦想、~~钱~~(大误)前途。
 
@@ -171,7 +171,7 @@ display: grid | inline-grid
 
 这里的解释是个人的想法，留个坑，看下图。
 
-![当grid-container的总宽或总高大于grid-wrapper的总宽或总高](https://static.yancey.app/970aea7f-40b7-4f7b-9e99-3b65c744187c.jpg)
+![当grid-container的总宽或总高大于grid-wrapper的总宽或总高](https://edge.yancey.app/beg/970aea7f-40b7-4f7b-9e99-3b65c744187c.jpg)
 
 #### line-name
 
@@ -188,7 +188,7 @@ display: grid | inline-grid
 
 ```
 
-![一个综合例子](https://static.yancey.app/dd956aaf-cdc2-4749-aabd-bd5f328d3aa3.png)
+![一个综合例子](https://edge.yancey.app/beg/dd956aaf-cdc2-4749-aabd-bd5f328d3aa3.png)
 
 更骚气的是，一条Grid Line还可以有多个名称，看代码，这里的第二条row-grid-line将会有两个名字，分别是`row1-end`和`row2-start`。
 
@@ -220,7 +220,7 @@ BUT! 还没骚完...还有一个repeat语法，看下面的代码。
 
 卧槽，什么概念，三句话搞了一个视口九宫格！想想用传统方式写个九宫格，甚至用弹性布局写个九宫格，而如今...
 
-![感动ing...](https://static.yancey.app/57005890-f4bc-44ed-a9c9-85453da6b098.jpeg)
+![感动ing...](https://edge.yancey.app/beg/57005890-f4bc-44ed-a9c9-85453da6b098.jpeg)
 
 最后... 还有一个单位... 叫fr...
 
@@ -315,7 +315,7 @@ ul {
 
 ```
 
-![右边溢出了一部分](https://static.yancey.app/f41d6d46-64da-4e31-845a-c07a6ed95d7c.jpg)
+![右边溢出了一部分](https://edge.yancey.app/beg/f41d6d46-64da-4e31-845a-c07a6ed95d7c.jpg)
 
 当然你可以考虑使用计算属性，看代码。
 
@@ -388,7 +388,7 @@ ul {
 
 整个栅格系统分了四列，每列宽50px，第一行四个全被定义成了`header`；第二行从左右到右，`main`占了列，第三列`未定义`名称，所以用`.`来占位，最后一个则被定义为`aside`；最后一行则被`footer`所占据。
 
-![grid-template-areas示例示意图](https://static.yancey.app/a9e15001-8241-4acb-ae90-764e4bdbab98.png)
+![grid-template-areas示例示意图](https://edge.yancey.app/beg/a9e15001-8241-4acb-ae90-764e4bdbab98.png)
 
 看到这里，就有种`模块化的味道了`，比如在class为`grid-item-1`的部分去定义`header`的相关属性；在class为`grid-item-4`的部分去定义`footer`的相关属性。
 
@@ -496,7 +496,7 @@ align-items为沿着列轴线(column axis) 对齐网格项(grid items) 内的内
 
 ```
 
-![显式栅格](https://static.yancey.app/01347098-a600-4585-9593-f952ffe540f0.png)
+![显式栅格](https://edge.yancey.app/beg/01347098-a600-4585-9593-f952ffe540f0.png)
 
 这里暂时用一下Grid Items的语法`grid-column`和`grid-row`，以区域2为例，它在垂直方向由`第一根线`和`第二根线`围成；在水平方向由`第二根线`和`第三根线`围成。因此区域2可以用一下代码表示：
 
@@ -510,7 +510,7 @@ align-items为沿着列轴线(column axis) 对齐网格项(grid items) 内的内
 
 ```
 
-![提前了解一下grid-column和grid-row](https://static.yancey.app/4331b23b-52b0-4d6d-8d23-5ff85782dac1.png)
+![提前了解一下grid-column和grid-row](https://edge.yancey.app/beg/4331b23b-52b0-4d6d-8d23-5ff85782dac1.png)
 
 回到正题，看下面代码，`item-a`是在真正的栅格系统里，而`item-b`不再原栅格系统。
 
@@ -528,7 +528,7 @@ align-items为沿着列轴线(column axis) 对齐网格项(grid items) 内的内
 
 ```
 
-![item-b不在正常的栅格系统里](https://static.yancey.app/5d47a3a7-b70c-4693-8511-97f124a57b02.png)
+![item-b不在正常的栅格系统里](https://edge.yancey.app/beg/5d47a3a7-b70c-4693-8511-97f124a57b02.png)
 
 因此就可以用`grid-auto-columns`和`grid-auto-rows`来定义隐式创建的Grid Track的大小。私以为这种出格的事情，还是不要去做的好。
 
@@ -614,7 +614,7 @@ align-items为沿着列轴线(column axis) 对齐网格项(grid items) 内的内
 
 ```
 
-![grid-area](https://static.yancey.app/364db01f-48f2-4101-9f73-cff0a7e5baf1.png)
+![grid-area](https://edge.yancey.app/beg/364db01f-48f2-4101-9f73-cff0a7e5baf1.png)
 
 ### justify-self
 

@@ -1,6 +1,6 @@
 # js 遍历数组、对象总结
 
-![logo](https://static.yancey.app/pixiv58255799_0-1024x485.png)
+![logo](https://edge.yancey.app/beg/pixiv58255799_0-1024x485.png)
 
 > 最近写 Vue 偏多，在写一些普通页面时，原生 JS 的一些方法居然一时半会儿想不出来了，趁放假赶紧总结一下。刚在教务处弄完论文查重，居然是 0.9%... 自己的毕业恭喜了。
 

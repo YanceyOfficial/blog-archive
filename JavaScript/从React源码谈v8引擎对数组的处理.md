@@ -82,7 +82,7 @@ v8 之所以做出这样的区别, 是因为操作一个 packed array 会比 hol
 
 通过这张图, 我们看到转化关系是不可逆的, 且只能从特殊类型到普遍类型. 更特定的元素类型支持更细粒度的优化, 元素类型在越靠右下，对该数组的操作可能就越慢. 为了获得最佳性能, 避免不必要地转换到那些普遍类型, 坚持使用最适合情况的特定类型.
 
-![elements kind 转化关系](https://static.yancey.app/0t8gs8apw3-1621848252686)
+![elements kind 转化关系](https://edge.yancey.app/beg/0t8gs8apw3-1621848252686)
 
 ## Performance tips
 

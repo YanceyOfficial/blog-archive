@@ -1,6 +1,6 @@
 # 剖析 requestAnimationFrame
 
-![logo](https://static.yancey.app/IMG_20171127_161530-1024x576.jpg)
+![logo](https://edge.yancey.app/beg/IMG_20171127_161530-1024x576.jpg)
 
 > 得益于 CSS3 的发展，大部分动效不再依赖传统的定时器编写。然而 CSS3 无法处理一些需要数学计算的效果，如三次方缓动、指数衰减的正弦曲线缓动等等。requestAnimationFrame 作为一个新兴的 API（其实也不新了），既比定时器动效温柔，又比 CSS 动效广泛，下面其聊一聊其正确打开姿势。
 
@@ -47,7 +47,7 @@ window.requestAnimationFrame(callback),里面需要传一个函数，并且每�
 
 而每次传入的这个`DOMHighResTimeStamp`的增量, 大约就是 17ms，为了佐证，我专门将`timestamp`追加到数组，然后放在`Chart.js`做了简单的数据可视化，如图下：
 
-![DOMHighResTimeStamp变化曲线](https://static.yancey.app/b4ca9cf3-35db-4f27-9143-73b54cca26ee.jpg)
+![DOMHighResTimeStamp变化曲线](https://edge.yancey.app/beg/b4ca9cf3-35db-4f27-9143-73b54cca26ee.jpg)
 
 分析这张图，因为程序启动或多或少受到一些干扰，因此横坐标并不是从 0 开始的；
 
@@ -102,7 +102,7 @@ Also note that multiple calls to requestAnimationFrame with the same callback (b
 
 下面我同样去调用文章第一个函数，但这次在函数运行过程中我会`切换选项卡`，然后再看一下渲染出来的图表：
 
-![当我在程序运行中切换选项卡](https://static.yancey.app/77bab955-9126-4260-89e9-a89b45970fbe.jpg)
+![当我在程序运行中切换选项卡](https://edge.yancey.app/beg/77bab955-9126-4260-89e9-a89b45970fbe.jpg)
 
 由图可见，横坐标不再是 120 份，渲染出来的也不是近似一条直线。因此，在 requestAnimationFrame 运行过程中如果触发到`resize`、`visibilitychange`、`scroll`、`touch`这种高频事件，requestAnimationFrame 可能就会造成紊乱。
 

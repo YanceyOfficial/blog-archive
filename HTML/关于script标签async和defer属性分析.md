@@ -1,6 +1,6 @@
 # 关于 script 标签 async 和 defer 属性分析
 
-![logo](https://static.yancey.app/whats-the-difference-between-async-vs-defer-attributes.jpg)
+![logo](https://edge.yancey.app/beg/whats-the-difference-between-async-vs-defer-attributes.jpg)
 
 > 折腾了半个来月的时间，终于把工作的事情稳定了下来。分析了一下现状，还是不要急着玩一些新鲜的东西。遂定了个计划，在工作之余重新学习 JavaScript 的基础，每周学一章高程，做好总结和笔记。頑張ります！
 
@@ -12,7 +12,7 @@ async 和 defer 是高程第二章的两个概念，印象里没有主动用过�
 
 ## 正文
 
-![defer和async的差异](https://static.yancey.app/2151798436-59da4801c6772_articlex.png)
+![defer和async的差异](https://edge.yancey.app/beg/2151798436-59da4801c6772_articlex.png)
 
 ## 当不加 aysnc 和 defer 时
 

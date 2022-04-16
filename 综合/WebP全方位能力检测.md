@@ -8,11 +8,11 @@ WebP 是 Google 开发一种同时采用有损和无损压缩的图像格式,于
 
 WebP 除了有损和无损形式, 它还支持 Alpha 通道(图像可能具有透明度), 也支持 Animation(即动图, 可类比 GIF). 目前 Youtube 在支持 WebP 格式的浏览器中, 将**视频预览**的图像格式全部转换为 WebP; 而不支持 WebP 的浏览器如 Safari, Youtube 干脆就取消了**视频预览**的特性.
 
-![Youtube 预览使用 WebP 格式](https://static.yancey.app/Jietu20200721-135252.jpg)
+![Youtube 预览使用 WebP 格式](https://edge.yancey.app/beg/Jietu20200721-135252.jpg)
 
 WebP 已诞生 10 年之久, 并且对于图片性能的提升肉眼可见, 但部分浏览器仍不支持. 下面是 [caniuse](https://caniuse.com/#search=WebP) 给出的数据, 可见 ~~IE~~ 和苹果系的浏览器仍不支持, 这里可能是一些技术原因, 但更多是商业因素. 因此这篇文章教你 360° 无死角 WebP 的能力检测.
 
-![Can I use WebP?](https://static.yancey.app/Jietu20200720-202312.jpg)
+![Can I use WebP?](https://edge.yancey.app/beg/Jietu20200720-202312.jpg)
 
 ## 方案一
 
@@ -20,9 +20,9 @@ WebP 已诞生 10 年之久, 并且对于图片性能的提升肉眼可见, 但�
 
 在浏览器中执行这段脚本, 最新版的 Chrome 浏览器给 html 标签增加了 `webp`, `webp-alpha`, `webp-aniamtion`, `webp-lossless` 的类; 而 Safari 浏览器增加了 `no-webp` 的类, 因此我们在 css 中, 只要写出形如下的代码就可以了.
 
-![支持 WebP](https://static.yancey.app/Jietu20200721-112534.jpg)
+![支持 WebP](https://edge.yancey.app/beg/Jietu20200721-112534.jpg)
 
-![不支持 WebP](https://static.yancey.app/Jietu20200721-112156.jpg)
+![不支持 WebP](https://edge.yancey.app/beg/Jietu20200721-112156.jpg)
 
 ```css
 .no-webp .cover {
@@ -89,7 +89,7 @@ export const checkWebp = () => {
 
 对于 SSR 场景下, 方案二可保证所有的 img 标签都能展示最优结果, 但对于 background-image 就无能为力了. 这种情况下, 我们依然可以借助后端之力. 在 HTTP 请求头中的 accept 字段中, 我们发现了 `image/webp` 的字样, 后端接收到这个请求, 只要判断存在 `image/webp`, 就证明该浏览器支持 WebP 格式, 后端将**你的浏览器支持 WebP** 再告诉给前端, 那这个问题就迎刃而解了.
 
-![HTTP 请求头中记录浏览器是否支持 WebP](https://static.yancey.app/Jietu20200721-153247.jpg)
+![HTTP 请求头中记录浏览器是否支持 WebP](https://edge.yancey.app/beg/Jietu20200721-153247.jpg)
 
 下面这段代码是[我的博客](https://yanceyleo.com)中的真实案例, 项目使用了 [Next.js](https://nextjs.org) 做服务端渲染, 通过 `getServerSideProps` 方法将 `isSupportWebp` 返回给前端, 进而前端判断是否有能力展示 WebP 格式的图片.
 

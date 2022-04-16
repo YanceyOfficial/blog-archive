@@ -31,7 +31,7 @@ Scheduler 从宏观和微观对任务进行管控. 宏观上, 也就是对于多
 
 目前源码中使用[**小顶堆**](https://algorithm.yanceyleo.com/data-structure/tree/binary-heap)这个数据结构实现, 堆是[优先队列](https://algorithm.yanceyleo.com/data-structure/queue/priority-queue)的底层实现, 它在插入或者删除元素的时候, 通过"上浮"和"下沉"操作来使元素自动排序(优先队列经常用来解决算法中 [topK](https://algorithm.yanceyleo.com/leetcode/lcof/40-get-least-numbers) 问题). 需要注意的是, 堆的元素存储在数组中, 而非链式结构. 关于二叉堆相关的逻辑本文不去展开, 有兴趣可以参考我学习[数据结构与算法](https://algorithm.yanceyleo.com)的仓库.
 
-![小顶堆](https://static.yancey.app/lld7yvf9th-1622692950075)
+![小顶堆](https://edge.yancey.app/beg/lld7yvf9th-1622692950075)
 
 回到源码, 当我们插入任务时, `timerQueue` 和 `taskQueue` 能保证元素是从小到大排序的. 那排序的依据是什么呢?
 
@@ -49,7 +49,7 @@ Scheduler 从宏观和微观对任务进行管控. 宏观上, 也就是对于多
 
 在循环 taskQueue 执行每一个任务时, 如果某个任务执行时间过长, 达到了时间片限制的时间, 那么该任务必须中断, 以便于让位给更重要的事情(如浏览器绘制), 等高优过期任务完成了, 再恢复执行该任务. Scheduler 要实现这样的调度效果需要两个角色: **任务的调度者**, **任务的执行者**. 调度者调度一个执行者, 执行者去循环 taskQueue, 逐个执行任务. 当某个任务的执行时间比较长, 执行者会根据时间片中断任务执行, 然后告诉调度者: 我现在正执行的这个任务被中断了, 还有一部分没完成, 但现在必须让位给更重要的事情, 你再调度一个执行者吧, 好让这个任务能在之后被继续执行完(任务的恢复). 于是, 调度者知道了任务还没完成, 需要继续做, 它会再调度一个执行者去继续完成这个任务. 通过执行者和调度者的配合, 可以实现任务的中断和恢复. 其实将任务挂起与恢复并不是一个新潮的概念, 它有一个名词叫做[**协程**](https://en.wikipedia.org/wiki/Coroutine), ES6 之后的生成器, 就可以用 yield 关键字来模拟协程的概念.
 
-![time slice](https://static.yancey.app/hrn331c8no-1622697039929)
+![time slice](https://edge.yancey.app/beg/hrn331c8no-1622697039929)
 
 ## 源码解析
 
@@ -252,7 +252,7 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
 
 顾名思义, getCurrentTime 用来获取当前时间, 它优先使用 [`performance.now()`](https://developer.mozilla.org/en-US/docs/Web/API/Performance/now), 否则使用 `Date.now()`. 提起 performance 我们并不陌生, 它主要被用来收集性能指标. `performance.now()` 返回一个精确到毫秒的 `DOMHighResTimeStamp`(emmm, 一看到 HighRes 就想起大法).
 
-![Sony Hi-Res](https://static.yancey.app/rc3v7cruxx-1622531131004)
+![Sony Hi-Res](https://edge.yancey.app/beg/rc3v7cruxx-1622531131004)
 
 ```ts
 let getCurrentTime;
@@ -369,7 +369,7 @@ function advanceTimers(currentTime) {
 
 旧的 React 版通过 `requestAnimationFrame` 和 `requestIdleCallback` 进行任务调度与帧对齐, 但在 [[scheduler] Yield many times per frame, no rAF #16214](https://github.com/facebook/react/pull/16214/commits) 这个 pr 中, 这种方式被废弃了. 如果你看过我以前的一篇文章 [剖析 requestAnimationFrame](https://www.yanceyleo.com/post/20506b75-0a04-450d-aeec-6ea08ef25116), 就会发现 rAF 是会受到用户行为的干扰的, 比如切换选项卡, 滚动页面等. 看下面这张图, 前面一部分的斜率大抵就是 `16.7`, 也就是 `1 / 60`, 但我切换了选项卡之后, 帧刷新率立马不稳定了.
 
-![rAF 受到干扰](https://static.yancey.app/77bab955-9126-4260-89e9-a89b45970fbe.jpg)
+![rAF 受到干扰](https://edge.yancey.app/beg/77bab955-9126-4260-89e9-a89b45970fbe.jpg)
 
 此外, rAF 毕竟仰仗显示器的刷新频率, 而市面上的刷新频率层次不齐, 有 60Hz 的, 像苹果的 ProMotion 就到了 120Hz, ~~再加上好的显卡都被拿去挖矿了~~, 兼容起来实在麻烦. 简言之, 这种方式会受到外界因素影响, 无法使 Scheduler 做到百分百掌控.
 
@@ -377,7 +377,7 @@ function advanceTimers(currentTime) {
 
 目前最新的代码中, Scheduler 通过 MessageChannel 来人为的控制调度频率, 默认的时间切片是 5ms, 可见这个粒度比 ProMotion 还要高. 如果你以前没听说过 MessageChannel, 但一定得听说过 postMessage 这家伙, 它经常被用做宿主跟 iframe 之间的通信. 此外它兼容性上也是好到没朋友.
 
-![MessageChannel](https://static.yancey.app/hstk3fzgbq-1622612290323)
+![MessageChannel](https://edge.yancey.app/beg/hstk3fzgbq-1622612290323)
 
 铺垫的都说完了, 直接看源码. 它做了一波兼容, 如果是 Node.js 或者低端 IE, 就使用 `setImmediate`, 这块不展开说. 在正经的浏览器环境下(IE: 你直接念我身份证好了), 我们通过 MessageChannel 创建一个实例 channel, 该实例有两个 port, 用来互相通信. Scheduler 通过 port2 发送消息(`port.postMessage`), 通过 port1 来接收消息(`port1.onmessage`). 因此, port2 就是那个调度者, port1 是那个收到调度信号真正干活的.
 
@@ -709,7 +709,7 @@ function forceFrameRate(fps) {
 
 以上全部就是 Scheduler 的源码解析了, 洋洋洒洒两万余字, 一大半都是代码... 除此之外源码中还有一些通用逻辑的封装, 以及一些面向未来的特性文中没有涉及, 有兴趣可以去 GayHub 上翻源码看看. 本文基于 v17.0.2, 未来谁也没法保证它的代码会变成啥样, 先看先享受, 且行且珍惜. 后面如有大的更新, 我会尽力更新文章, 以保证和 master 对齐. 读源码这事儿, 不是一朝一夕的事儿, 也不能只一家之言, 欢迎大家拍砖提意见. 实在是画图苦手, 盗用 shockw4ver 大佬的一张流程图收尾.
 
-![5scdbn97g8-1622629716400](https://static.yancey.app/5scdbn97g8-1622629716400)
+![5scdbn97g8-1622629716400](https://edge.yancey.app/beg/5scdbn97g8-1622629716400)
 
 ## 参考
 
@@ -719,4 +719,4 @@ function forceFrameRate(fps) {
 - [一篇长文帮你彻底搞懂 React 的调度机制原理](https://segmentfault.com/a/1190000039101758)
 - [这可能是最通俗的 React Fiber(时间分片) 打开方式](https://juejin.cn/post/6844903975112671239)
 
-![齋藤飛鳥](https://static.yancey.app/齋藤飛鳥.gif)
+![齋藤飛鳥](https://edge.yancey.app/beg/齋藤飛鳥.gif)

@@ -1,12 +1,12 @@
 # React 练习——汇率计算器
 
-![logo](https://static.yancey.app/01f3b801-aed5-43eb-825d-dd79db2bb7e8.png)
+![logo](https://edge.yancey.app/beg/01f3b801-aed5-43eb-825d-dd79db2bb7e8.png)
 
 > 这是学习 React 时候自己设计的一个小项目，居然折腾了一天。暂且不谈组件化，React 做多级联动简直爽到飞起。项目重点涉及了 React 组件间通讯，这个地方练熟了写 React 基本就无敌了。当然前提是能够合理的划分出 UI 组件层级。
 
 ## 先来一段动图
 
-![动图演示](https://static.yancey.app/3c05a686-5fd7-4410-9eb2-42a79c674973.gif)
+![动图演示](https://edge.yancey.app/beg/3c05a686-5fd7-4410-9eb2-42a79c674973.gif)
 
 ##　昨天的面试
 
@@ -26,7 +26,7 @@
 
 ## 功能实现
 
-![组件分割示意图](https://static.yancey.app/23001024-d8f4-43e7-a976-73337b65591f.png)
+![组件分割示意图](https://edge.yancey.app/beg/23001024-d8f4-43e7-a976-73337b65591f.png)
 
 既然 React 的卖点是组件化（话说昨天面试小姐姐问 React 除了组件化还有什么，我居然忘了**声明式**，悔しい）。上图是自己的划分思路：
 
@@ -413,7 +413,7 @@ class CountryChoice extends React.Component {
 
 至于为什么当时想到了做一个汇率计算器，可能就是下图吧：
 
-![哦](https://static.yancey.app/cc96791d-d215-47b3-8b75-24d4840008ee.jpeg)
+![哦](https://edge.yancey.app/beg/cc96791d-d215-47b3-8b75-24d4840008ee.jpeg)
 
 以上、よろしく。
 

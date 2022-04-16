@@ -112,7 +112,7 @@ step-start, step-end 和 step-middle 表示步进动画。
 
 首先你要下载下面这张图片，可以看到它是一张 **未点赞状态 -> 生成礼花 -> 礼花消失 -> 点赞状态** 的雪碧图。
 
-![1_MTZW1G1mE7LSX1CnhTYeHA.png](https://static.yancey.app/169e6d3fb6a474b2.png)
+![1_MTZW1G1mE7LSX1CnhTYeHA.png](https://edge.yancey.app/beg/169e6d3fb6a474b2.png)
 
 在初始化时，我们通过 `background-position: left` 和 `background-size: 2900%` 将初始背景定位到上图中第一个灰色的 icon.
 

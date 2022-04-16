@@ -1,6 +1,6 @@
 # 聊一聊 TypeScript 的工程引用
 
-![logo](https://static.yancey.app/banner.png)
+![logo](https://edge.yancey.app/beg/banner.png)
 
 > 工程引用是 TypeScript 3.0 的新特性, 它支持将 TypeScript 程序的结构分割成更小的组成部分. 这样可以改善构建时间 (打开 composite 会自动开启增量编译), 强制在逻辑上对组件进行分离, 更好地组织你的代码.
 

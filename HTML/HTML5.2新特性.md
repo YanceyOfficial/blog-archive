@@ -1,6 +1,6 @@
 # HTML5.2 新特性
 
-![logo](https://static.yancey.app/fe55649c-8fcf-4655-8a2f-0a0fff41435e.png)
+![logo](https://edge.yancey.app/beg/fe55649c-8fcf-4655-8a2f-0a0fff41435e.png)
 
 > 平成 29 年 12 月 14 日，W3C 发布 HTML 规范 5.2 更新版本，并官方建议用户使用。此次更新增加了 dialog 标签等新功能、弃用了一些其他功能，比如废除了 keygen 标签。并对 iframe 增加了支付请求 API、演示 API 等。支付请求 API 啊卧槽！！！！
 
@@ -73,7 +73,7 @@ document.getElementById("close").addEventListener("click", () => {
 
 \<dialog>标签已经被 Chrome 支持（Chrome 大法好！！！），火狐也立了梗马上要支持了。
 
-![Data on support for the dialog feature across the major browsers](https://static.yancey.app/caniuse-dialog.png)
+![Data on support for the dialog feature across the major browsers](https://edge.yancey.app/beg/caniuse-dialog.png)
 
 _注：鄙人在 2 月 8 号测试时，火狐以及火狐开发者版本都木有支持 dialog 标签_
 

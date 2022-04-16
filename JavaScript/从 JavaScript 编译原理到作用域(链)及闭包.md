@@ -32,7 +32,7 @@
 
 * 解析/语法分析 (Parsing)这个过程将词法单元流转换成一棵 **抽象语法树** (Abstract Syntax Tree, AST). 语法分析会根据 ECMAScript 的标准来解析成 AST, 比如你写了 `const new = 'Yancey'`, 就会报错 **Uncaught SyntaxError: Unexpected token new**.对于上面那个例子, 生成的 AST 如下图所示, 其中 `Identifier` 代表着变量名, `Literal` 代表着变量的值.
 
-![AST](https://static.yancey.app/Jietu20190405-233819%402x.jpg)
+![AST](https://edge.yancey.app/beg/Jietu20190405-233819%402x.jpg)
 
 * 代码生成这个阶段就是将 AST 转换为可执行代码, 像 V8 引擎会将 JavaScript 字符串编译成二进制代码(创建变量, 分配内存, 将一个值存储到变量里...)
 
@@ -411,7 +411,7 @@ A: 当函数可以记住并访问所在的词法作用域时, 就产生了闭包
 
 导致这篇文章写这么长的根本原因就是 ~~面试~~ 该死的 `var` 关键字! 它就是一个设计错误！不要去用它!
 
-![卑微](https://static.yancey.app/me8Sqe9R.jpg)
+![卑微](https://edge.yancey.app/beg/me8Sqe9R.jpg)
 
 以一道笔试题收尾: 写一个函数, 第一次调用返回 0, 之后每次调用返回比之前大 1. 这道题不难, 主要是在考察闭包和立即执行函数. 我写的答案如下, 如果你有更好的方案请在评论区分享.
 
@@ -445,4 +445,4 @@ const add = (() => {
 
 欢迎关注我的公众号: 进击的前端
 
-![Yancey_FE](https://static.yancey.app/qrcode_for_gh_541158abcb21_344.jpg)
+![Yancey_FE](https://edge.yancey.app/beg/qrcode_for_gh_541158abcb21_344.jpg)

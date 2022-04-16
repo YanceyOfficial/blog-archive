@@ -1,6 +1,6 @@
 # React 单页应用添加 GA 埋点
 
-![logo](https://static.yancey.app/google_analytics.png)
+![logo](https://edge.yancey.app/beg/google_analytics.png)
 
 > Blog2.0 已经上线一个多月了，突然想起还没把 GA 从 1.0 迁移过来，但 2.0 是一个 SPA 应用，不能跟以前那样简单引一段 JS 代码。折腾了一小会儿搞了出来，这里做个记录。
 

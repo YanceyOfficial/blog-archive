@@ -1,6 +1,6 @@
 # 原生 JS 实现轮播图效果
 
-![logo](https://static.yancey.app/9496879-776d40aacdf8d03e.png)
+![logo](https://edge.yancey.app/beg/9496879-776d40aacdf8d03e.png)
 
 > 如果爱情能跟用原生 JS 写一个轮播图那么简单该多好啊。嗯，虽然也不简单。虽然很多优秀的第三方轮播图插件（如 Swiper）在业界广受好评，但掌握轮播图的原理还是尤为重要的。
 

@@ -1,6 +1,6 @@
 # JS 判断数据类型的多种方式
 
-![logo](https://static.yancey.app/kv9wow9.png)
+![logo](https://edge.yancey.app/beg/kv9wow9.png)
 
 > 周末翻以前总结的面试题，看到这篇文章的时候发现有一些错误，决定推翻重写，以加深印象。虽然大部分都是打酱油的方法，毕竟 Object.prototype.toString.call() 一把梭解决一切。当然考虑到面试，我认为这写都能好好的答出来，并且能说出各自的优缺点就足够了。
 

@@ -2,7 +2,7 @@
 
 > 前几天看到 Twitter 点赞区域蹦哒的很可爱, 于是乎想研究研究怎么实现的. 一开始下意识以为是 WebSocket, 但是在控制台死活没找到相关的信息, 去 stackoverflow 问了下原来是 Server-Sent Events, 本文对此做个介绍.
 
-![Screen Shot 2021-03-21 at 10.45.19 PM.png](https://static.yancey.app/Screen%20Shot%202021-03-21%20at%2010.45.19%20PM.png)
+![Screen Shot 2021-03-21 at 10.45.19 PM.png](https://edge.yancey.app/beg/Screen%20Shot%202021-03-21%20at%2010.45.19%20PM.png)
 
 ## 什么是 Server-Sent Events
 
@@ -106,15 +106,15 @@ export class SSEService {
 
 如果没什么意外, 前端就可以看到 stream 了.
 
-![Screen Shot 2021-03-21 at 11.36.29 PM.png](https://static.yancey.app/Screen%20Shot%202021-03-21%20at%2011.36.29%20PM.png)
+![Screen Shot 2021-03-21 at 11.36.29 PM.png](https://edge.yancey.app/beg/Screen%20Shot%202021-03-21%20at%2011.36.29%20PM.png)
 
 分析下响应头, 很重要的两个标志是禁止了缓存, 并且 `Content-Type: text/event-stream`.
 
-![Screen Shot 2021-03-21 at 11.37.55 PM.png](https://static.yancey.app/Screen%20Shot%202021-03-21%20at%2011.37.55%20PM.png)
+![Screen Shot 2021-03-21 at 11.37.55 PM.png](https://edge.yancey.app/beg/Screen%20Shot%202021-03-21%20at%2011.37.55%20PM.png)
 
 ## GraphQL 是否支持?
 
-![Screen Shot 2021-03-21 at 11.49.43 PM.png](https://static.yancey.app/Screen%20Shot%202021-03-21%20at%2011.49.43%20PM.png)
+![Screen Shot 2021-03-21 at 11.49.43 PM.png](https://edge.yancey.app/beg/Screen%20Shot%202021-03-21%20at%2011.49.43%20PM.png)
 
 Emmmm, 似乎不支持, 不过 GraphQL 本身已经有了强大的 Subscriptions 系统, 也没必要支持这些玩意儿了(毕竟去年 GraphQL 支持个上传还不利索, 逃).
 
@@ -122,7 +122,7 @@ Emmmm, 似乎不支持, 不过 GraphQL 本身已经有了强大的 Subscriptions
 
 Emmmm, 除了某浏览器, 都可以用.
 
-![Screen Shot 2021-03-21 at 10.40.10 PM.png](https://static.yancey.app/Screen%20Shot%202021-03-21%20at%2010.40.10%20PM.png)
+![Screen Shot 2021-03-21 at 10.40.10 PM.png](https://edge.yancey.app/beg/Screen%20Shot%202021-03-21%20at%2010.40.10%20PM.png)
 
 ## 其他
 

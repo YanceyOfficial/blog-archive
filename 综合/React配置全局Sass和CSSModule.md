@@ -1,6 +1,6 @@
 # React 配置全局 Sass 和 CSS Module
 
-![logo](https://static.yancey.app/Cover.93953ad376e749309a483c8b11b40106.jpg)
+![logo](https://edge.yancey.app/beg/Cover.93953ad376e749309a483c8b11b40106.jpg)
 
 > 接下来的业余时间要做个人博客 Wap 端，这次打算尝试一下 TypeScript、持续集成、自动化等以前没有实践过的技术栈...当然大前提还是要把架子搭好，上次记录了一下 Vue 配置全局 Sass 变量的方法，这次把 React 的配置方法记录一下，显然比 Vue-cli 麻烦了一些。
 
@@ -42,7 +42,7 @@ import styles from "./App.module.css";
 
 这里我建议在 class 命名的时候，要以下划线的形式连接每个单词，比如`App_common_logo`，这也是[鹅厂 aotu 实验室推荐的的命名方式](https://guide.aotu.io/docs/name/classname.html)，其实这样对使用 CSS Module 也有好处，一会儿会说到。
 
-![CSS Module使用图例](https://static.yancey.app/Jietu20181201-212344%402x.jpg)
+![CSS Module使用图例](https://edge.yancey.app/beg/Jietu20181201-212344%402x.jpg)
 
 ### 使用方法
 
@@ -52,11 +52,11 @@ import styles from "./App.module.css";
 
 我们再看一下 Dev Tool 的渲染情况：
 
-![渲染出来的类名](https://static.yancey.app/Jietu20181201-213207.jpg)
+![渲染出来的类名](https://edge.yancey.app/beg/Jietu20181201-213207.jpg)
 
 这是 Webpack 的默认配置，默认就是`模块名_类名__5位hash`，好处一目了然，不会用重复的 class 了，我个人决定在开发环境直接使用 Webpack 的默认配置，在生产环境再做一些改变，打开`config/webpack.config.prod.js`文件，搜索关键字`getLocalIndent`，我个人打算 build 之后的类名直接是`6位hash`，所以配置如下图：
 
-![修改Webpack配置](https://static.yancey.app/Jietu20181201-214147%402x.jpg)
+![修改Webpack配置](https://edge.yancey.app/beg/Jietu20181201-214147%402x.jpg)
 
 ### 题外话
 
@@ -87,7 +87,7 @@ className={cs(styles.social_media_motto, styles.no_user_select)}
 
 检索关键词`sass-loader`，看下图：
 
-![配置全局Sass](https://static.yancey.app/Jietu20181201-221430.jpg)
+![配置全局Sass](https://edge.yancey.app/beg/Jietu20181201-221430.jpg)
 
 下面把代码贴出来，注意一定是`../src/assets/styles/_colors.scss'`，网上教程坑得一逼，全给写成`./src/assets/styles/_colors.scss'`，结果一直报错。
 
@@ -114,7 +114,7 @@ use: [{
 
 因为我们做了 CSS Module，所以我们也要为 CSS Module 支持引入全局 Sass 变量。
 
-![为CSS Module配置全局Sass](https://static.yancey.app/Jietu20181201-222133%402x.jpg)
+![为CSS Module配置全局Sass](https://edge.yancey.app/beg/Jietu20181201-222133%402x.jpg)
 
 这时我们将上面的`App.mudule.css`重命名为`App.mudule.scss`，然后随便找个 class 添加个颜色，发现生效了：
 

@@ -1,6 +1,6 @@
 # Natsuha - 用 Taro 写个天气微信小程序
 
-![logo](https://static.yancey.app/917824-weather-wallpaper.jpg)
+![logo](https://edge.yancey.app/beg/917824-weather-wallpaper.jpg)
 
 > 去年年底 o2 开源了 Taro，一直手痒痒没去玩。考虑到 wx 的审核制度，所以决定写个工具类小程序。赶在 Taro 喜提第 2000 个 issues 之际 😂，Natsuha 终于上线了 🥳。源码全部释出（除涉及私钥部分，GitHub 有说明），文章后面会贴出一些仍需优化的点，欢迎大家一起讨论。
 
@@ -8,9 +8,9 @@
 
 [源码看这里](https://github.com/YanceyOfficial/Natsuha-Weather)
 
-![Scan the QR Code by WeChat](https://static.yancey.app/natsuha_344.jpg)
+![Scan the QR Code by WeChat](https://edge.yancey.app/beg/natsuha_344.jpg)
 
-![效果图](https://static.yancey.app/barcelona.jpg)
+![效果图](https://edge.yancey.app/beg/barcelona.jpg)
 
 项目的技术栈是 `Taro + mobx + TypeScript`，接口来自 [Yahoo Weather API](https://developer.yahoo.com/weather/documentation.html)，当然设计也是参 (chao) 考 (xi) 的 [Yahoo Weather](https://www.yahoo.com/news/weather/china/beijing/beijing-2151330)
 
@@ -44,7 +44,7 @@
 
 首先在根目录的 `project.config.json` 文件里添加 `"cloudfunctionRoot": "functions/"`，然后在根目录创建文件夹 `functions`. 并点击右键创建一个新的云函数，比如我们叫 `getRegion`。
 
-![云函数开发](https://static.yancey.app/Jietu20190309-114128%402x.jpg)
+![云函数开发](https://edge.yancey.app/beg/Jietu20190309-114128%402x.jpg)
 
 因为我们的目标是**通过云函数请求一个未 bei an 的接口**，所以为了更方便的处理异步请求，我们引入 `request-promise` 这个库。
 
@@ -147,7 +147,7 @@ export const httpClient = (url: string, data: any) => new Promise((resolve, reje
 
 文字有些累，直接看图。
 
-![授权图解](https://static.yancey.app/%E6%9C%AA%E5%91%BD%E5%90%8D_meitu_1.jpg)
+![授权图解](https://edge.yancey.app/beg/%E6%9C%AA%E5%91%BD%E5%90%8D_meitu_1.jpg)
 
 #### 无法用传统方式清空文本框文字
 
@@ -208,7 +208,7 @@ ts 肯定会报错。
 一开始用的`import`来引入静态文件，但报“找不到路径”，可以看下图（但不影响使用）。提了个 issue [#2213](https://github.com/NervJS/taro/issues/2213),
 按照大佬的回复修改也没解决问题，实在受不了一片红，索性改成了`commonJS`.
 
-![找不到模块](https://static.yancey.app/Jietu20190219-142504@2x.jpg)
+![找不到模块](https://edge.yancey.app/beg/Jietu20190219-142504@2x.jpg)
 
 ## Problem
 
@@ -240,4 +240,4 @@ ts 肯定会报错。
 
 ## 最后
 
-![老子再也不写小程序了！](https://static.yancey.app/FD200112FC037CDE3AC366B45288EA61.jpg)
+![老子再也不写小程序了！](https://edge.yancey.app/beg/FD200112FC037CDE3AC366B45288EA61.jpg)

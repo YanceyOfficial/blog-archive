@@ -1,6 +1,6 @@
 # 关于 css 优先级
 
-![logo](https://static.yancey.app/da82d0e9-e445-431e-9248-8b058debd86e.jpg)
+![logo](https://edge.yancey.app/beg/da82d0e9-e445-431e-9248-8b058debd86e.jpg)
 
 > css 优先级需要关注两个维度：一个是样式距离，分别是内联样式、内部样式、外联样式；另一个则是根据属性的权重来判断。前者不用多说，这里详细分析一下后者。
 

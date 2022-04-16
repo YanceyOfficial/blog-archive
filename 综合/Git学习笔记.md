@@ -1,6 +1,6 @@
 # Git 学习笔记
 
-![logo](https://static.yancey.app/social.jpg)
+![logo](https://edge.yancey.app/beg/social.jpg)
 
 > 实习半个月有余，因为公司做电商相关，收获还是超级大的。最近周末一直忙着编论文，博客一直没更新实为惭愧。鄙人对 Git 多人协作那一块儿了解不多，赶紧恶补一下。文章以廖雪峰聚聚的教程为蓝本，加之自身理解。
 
@@ -42,7 +42,7 @@ $ git init
 
 随后我向 learnGit 文件夹中添加一个名为 HotKeys 的 txt 文件\*（注：本文均以这个文件为例，这里面主要记录一些 Mac 常用快捷键）\*，然而此时 Git 并不能确定你是否要将这个文件添加到版本库，执行`git status`，看下图：
 
-![Git提示你将文件添加到版本库](https://static.yancey.app/c54c9dda-3e05-4091-a187-b17ff3c2d9a1.jpg)
+![Git提示你将文件添加到版本库](https://edge.yancey.app/beg/c54c9dda-3e05-4091-a187-b17ff3c2d9a1.jpg)
 
 因此执行下面两句：
 
@@ -59,7 +59,7 @@ $ git commit -m "增加一个名字叫做HotKeys的文本文件"
 
 此时再次执行一遍`git status`，看下图，嗯，已经洗白白了：
 
-![已经没有待提交的文件了](https://static.yancey.app/1e7cc831-5e1f-4739-95d8-7f0efb4ea6e3.jpg)
+![已经没有待提交的文件了](https://edge.yancey.app/beg/1e7cc831-5e1f-4739-95d8-7f0efb4ea6e3.jpg)
 
 ## 时光机穿梭
 
@@ -78,11 +78,11 @@ $ git commit -m "增加一个名字叫做HotKeys的文本文件"
 
 执行一遍`git status`，它丫告诉我们文件已被修改，但还没被提交。
 
-![文件已被修改，但还没被提交](https://static.yancey.app/543a6ec0-a6e9-45ac-ad8d-566f91f1fd56.jpg)
+![文件已被修改，但还没被提交](https://edge.yancey.app/beg/543a6ec0-a6e9-45ac-ad8d-566f91f1fd56.jpg)
 
 我们可以通过`git diff`来查看我们到底修改了什么。好吧，增加了 5 行文字：
 
-![看看我们修改了什么](https://static.yancey.app/0c683427-1940-4486-a59f-c40239ef168a.jpg)
+![看看我们修改了什么](https://edge.yancey.app/beg/0c683427-1940-4486-a59f-c40239ef168a.jpg)
 
 然后，我们再次执行一遍 add 和 commit 命令：
 
@@ -95,13 +95,13 @@ $ git commit -m "增加关于截图工具的快捷键"
 
 再次执行一遍`git status`，看下图，嗯，已经洗白白了：
 
-![已经没有待提交的文件了](https://static.yancey.app/1e7cc831-5e1f-4739-95d8-7f0efb4ea6e3.jpg)
+![已经没有待提交的文件了](https://edge.yancey.app/beg/1e7cc831-5e1f-4739-95d8-7f0efb4ea6e3.jpg)
 
 ### 版本回退
 
 通过`git log`可以查看当前分支所有日志：
 
-![所有日志](https://static.yancey.app/4da268c2-feaa-4be4-bb3a-34f4cb1ab037.jpg)
+![所有日志](https://edge.yancey.app/beg/4da268c2-feaa-4be4-bb3a-34f4cb1ab037.jpg)
 
 当然使用`git log --pretty=oneline`命令可以美化 log 输出，话说也不见得美化啊喂！！！
 
@@ -125,7 +125,7 @@ $ git reset --hard HEAD^
 
 ```
 
-![一觉回到解放前](https://static.yancey.app/02501c3a-8c8b-4cf0-833a-6e037e64e2ef.jpg)
+![一觉回到解放前](https://edge.yancey.app/beg/02501c3a-8c8b-4cf0-833a-6e037e64e2ef.jpg)
 
 我们使用`cat HotKeys.txt`打开这个文件，发现新增的**关于截图快捷键**那部分给消失了，说明我们成功会退到了上一版本。
 
@@ -151,13 +151,13 @@ $ git reflog
 
 ```
 
-![命令日志](https://static.yancey.app/6689ed54-2c87-4c51-8e69-e105ce59ed31.jpg)
+![命令日志](https://edge.yancey.app/beg/6689ed54-2c87-4c51-8e69-e105ce59ed31.jpg)
 
 酱紫，你就找到所对应的版本号了。
 
 ### 工作区和暂存区
 
-![工作区和版本库](https://static.yancey.app/02de5473-0e0a-4e7d-9d3e-aa6d4ce5514f.jpeg)
+![工作区和版本库](https://edge.yancey.app/beg/02de5473-0e0a-4e7d-9d3e-aa6d4ce5514f.jpeg)
 
 这里盗用廖雪峰聚聚的一张图，所谓工作区(Working Directory)，就是 learnGit 文件夹下**我们自己编写的那一部分**，而版本库\(Repository\)就是那个隐藏文件\*\*\.git\*\*了。
 
@@ -207,7 +207,7 @@ $ git reset HEAD HotKeys.txt
 
 一般我们就直接右键把文件删除了，但是 Git 会把删除理解为修改，我们尝试将 HotKeys 文件丢弃到废纸篓，输入命令`git status`，发现如下图所示：
 
-![移除文件](https://static.yancey.app/0cdf4afe-64bc-487f-b62c-6fdb5c210fd6.jpg)
+![移除文件](https://edge.yancey.app/beg/0cdf4afe-64bc-487f-b62c-6fdb5c210fd6.jpg)
 
 假设你确实要删除此文件，那么执行下面两句：
 
@@ -352,7 +352,7 @@ $ git branch -d loginPage
 
 当然有时会显示并没有完全转移，如下图所示，如果确定没什么冲突，那就直接`git branch -D loginPage`好了。
 
-![没有完全转移](https://static.yancey.app/8738933d-3ee5-4e8d-a0b4-a35960d193a0.jpg)
+![没有完全转移](https://edge.yancey.app/beg/8738933d-3ee5-4e8d-a0b4-a35960d193a0.jpg)
 注意：`git branch -d loginPage`这个命令是删除本地的 loginPage，若远端还保留着这个分支，用下面这个命令：
 
 ```
@@ -409,7 +409,7 @@ DS_Store
 
 当别人在你不知情的情况下把你远端的分支给删除了，你执行`git branch -a`会发现这个分支还在远端显示着。当你想删除这个远端分支时，执行`git push origin :taggoods2`就会报错：
 
-![远端的分支被别人删除](https://static.yancey.app/d89a9d94-b126-4555-b97e-5640443c5e6d.jpg)
+![远端的分支被别人删除](https://edge.yancey.app/beg/d89a9d94-b126-4555-b97e-5640443c5e6d.jpg)
 
 _注意这是我工作中遇到的问题，所以关键地方打了码_。
 

@@ -50,7 +50,7 @@ const obj = { foo: 5 };
 
 上述代码将一个对象赋值给变量 obj，JS 引擎会在内存里生成一个对象 `{ foo: 5}`，然后把这个对象的内存地址赋值给变量 obj. 因此，变量 obj 只是个地址（指针），如果要读取 `obj.foo`，则需要 JS 引擎从 `obj` 中拿到内存地址，然后再从该地址读出原始的对象。我们知道对象里的每个属性都对应着一个属性描述符对象，因此上面的 foo 就是以下图方式保存的。
 
-![普通对象保存到堆](https://static.yancey.app/bg2018061802.png)
+![普通对象保存到堆](https://edge.yancey.app/beg/bg2018061802.png)
 
 关于属性描述符可以参照我的一篇文章 [Object\.defineProperty\\\(\\\) \| JavaScript 全解析系列](https://js.yanceyleo.com/ECMAScript/Object/Object.defineProperty.html)。
 
@@ -63,7 +63,7 @@ const obj = { foo: function() {} };
 
 JavaScript 引擎会将函数单独保存到内存中，然后将函数的内存地址赋值给 `foo` 属性的 `value` 属性，这也就说明了函数在内存中是个独立的个体，调用它的方式不同，结果也会不同。
 
-![函数保存到单独内存](https://static.yancey.app/bg2018061803.png)
+![函数保存到单独内存](https://edge.yancey.app/beg/bg2018061803.png)
 
 ## this 的绑定规则
 
