@@ -6,37 +6,38 @@
 
 对于大部分编程语言, 编译大致有三个步骤.
 
-* 分词/词法分析 (Tokenizing/Lexing)此过程将源代码分解成 `词法单元 (token)`, 如代码 `const firstName = 'Yancey'` 会被分解成 `const`, `firstName`, `=`, `'Yancey'`, 空格是否会被当成词法单元, 取决于空格对这门语言的意义. 这里推荐一个网站 [Parser](http://esprima.org/demo/parse.html#) 可以用来解析 JavaScript 的源代码. 对于这个例子, 分词结构如下.
+- 分词/词法分析 (Tokenizing/Lexing)此过程将源代码分解成 `词法单元 (token)`, 如代码 `const firstName = 'Yancey'` 会被分解成 `const`, `firstName`, `=`, `'Yancey'`, 空格是否会被当成词法单元, 取决于空格对这门语言的意义. 这里推荐一个网站 [Parser](http://esprima.org/demo/parse.html#) 可以用来解析 JavaScript 的源代码. 对于这个例子, 分词结构如下.
 
-``` js
+```js
 [
   {
-    type: 'Keyword',
-    value: 'const',
+    type: "Keyword",
+    value: "const",
   },
   {
-    type: 'Identifier',
-    value: 'firstName',
+    type: "Identifier",
+    value: "firstName",
   },
   {
-    type: 'Punctuator',
-    value: '=',
+    type: "Punctuator",
+    value: "=",
   },
   {
-    type: 'String',
+    type: "String",
     value: "'Yancey'",
   },
 ];
-
 ```
 
-* 解析/语法分析 (Parsing)这个过程将词法单元流转换成一棵 **抽象语法树** (Abstract Syntax Tree, AST). 语法分析会根据 ECMAScript 的标准来解析成 AST, 比如你写了 `const new = 'Yancey'`, 就会报错 **Uncaught SyntaxError: Unexpected token new**.对于上面那个例子, 生成的 AST 如下图所示, 其中 `Identifier` 代表着变量名, `Literal` 代表着变量的值.
+- 解析/语法分析 (Parsing)这个过程将词法单元流转换成一棵 **抽象语法树** (Abstract Syntax Tree, AST). 语法分析会根据 ECMAScript 的标准来解析成 AST, 比如你写了 `const new = 'Yancey'`, 就会报错 **Uncaught SyntaxError: Unexpected token new**.对于上面那个例子, 生成的 AST 如下图所示, 其中 `Identifier` 代表着变量名, `Literal` 代表着变量的值.
 
 ![AST](https://edge.yancey.app/beg/Jietu20190405-233819%402x.jpg)
 
-* 代码生成这个阶段就是将 AST 转换为可执行代码, 像 V8 引擎会将 JavaScript 字符串编译成二进制代码(创建变量, 分配内存, 将一个值存储到变量里...)
+- 代码生成这个阶段就是将 AST 转换为可执行代码, 像 V8 引擎会将 JavaScript 字符串编译成二进制代码(创建变量, 分配内存, 将一个值存储到变量里...)
 
 除上面三个阶段之外, JavaScript 引擎还对 **语法分析**, **代码生成**, **编译过程** 进行一些优化, 这一块估计得看 v8 源码了, 先留个坑. 有个库叫做 [Acorn](https://github.com/acornjs/acorn), 用来解析 JavaScript 代码, 像 webpack, eslint 都有用到, 有时间可以玩一玩.
+
+总的来讲, 先是生成字节码, 然后解释器可以直接执行字节码, 输出结果. 但是通常 Javascript 还有个编译器, 会把那些频繁执行的字节码编译为二进制, 这样那些经常被运行的函数就可以快速执行了, 通常又把这种解释器和编译器混合使用的技术称为 JIT.
 
 ## 词法作用域和动态作用域
 
@@ -50,11 +51,11 @@
 
 不管是编译阶段还是运行时, 都离不开 **引擎**, **编译器**, **作用域**.
 
-* 引擎用来负责 JavaScript 程序的编译和执行.
+- 引擎用来负责 JavaScript 程序的编译和执行.
 
-* 编译器负责语法分析, 代码生成等工作.
+- 编译器负责语法分析, 代码生成等工作.
 
-* 作用域用来收集并维护所有变量访问规则.
+- 作用域用来收集并维护所有变量访问规则.
 
 以代码 `const firstName = 'Yancey'` 为例, 首先编译器遇到 `const firstName`, 会询问 **作用域** 是否已经有一个同名变量在当前作用域集合, 如果有编译器则忽略该声明, 否则它会在当前作用域的集合中声明一个新的变量并命名为 `firstName`.
 
@@ -64,14 +65,13 @@
 
 看下面这个例子.
 
-``` js
+```js
 function foo(a) {
   var b = a;
   return a + b;
 }
 
 var c = foo(2);
-
 ```
 
 1. `var c = foo(2);` 引擎会在作用域里找是否有 `foo` 这个函数, 这是一次 RHS 查找, 找到之后将其赋值给变量 `c`, 这是一次 LHS 查找.
@@ -86,20 +86,20 @@ var c = foo(2);
 
 以浏览器环境为例:
 
-* **最外层函数**和**在最外层函数外面**定义的变量拥有全局作用域
+- **最外层函数**和**在最外层函数外面**定义的变量拥有全局作用域
 
-* 所有末定义直接赋值的变量自动声明为拥有全局作用域
+- 所有末定义直接赋值的变量自动声明为拥有全局作用域
 
-* 所有 window 对象的属性拥有全局作用域
+- 所有 window 对象的属性拥有全局作用域
 
-``` js
+```js
 const a = 1; // 全局变量
 
 // 全局函数
 function foo() {
   b = 2; // 未定义却赋初值被认为是全局变量
 
-  const name = 'yancey'; // 局部变量
+  const name = "yancey"; // 局部变量
 
   // 局部函数
   function bar() {
@@ -108,7 +108,6 @@ function foo() {
 }
 
 window.navigator; // window 对象的属性拥有全局作用域
-
 ```
 
 全局作用域的缺点很明显, 就是会污染全局命名空间, 因此很多库的源码都会使用 `(function(){....})()`. 此外, 模块化 (ES6, commonjs 等等) 的广泛使用也为防止污染全局命名空间提供了更好的解决方案.
@@ -117,9 +116,9 @@ window.navigator; // window 对象的属性拥有全局作用域
 
 函数作用域指属于这个函数的全部变量都可以在整个函数范围内使用及复用.
 
-``` js
+```js
 function foo() {
-  const name = 'Yancey';
+  const name = "Yancey";
   function sayName() {
     console.log(`Hello, ${name}`);
   }
@@ -130,21 +129,19 @@ foo(); // 'Hello, Yancey'
 
 console.log(name); // 外部无法访问到内部变量
 sayName(); // 外部无法访问到内部函数
-
 ```
 
 值得注意的是, if, switch, while, for 这些条件语句或者循环语句不会创建新的作用域, 虽然它也有一对 `{}` 包裹. 能不能访问的到内部变量取决于声明方式(var 还是 let/const)
 
-``` js
+```js
 if (true) {
-  var name = 'yancey';
+  var name = "yancey";
   const age = 18;
 }
 
 console.log(name); // 'yancey'
 
 console.log(age); // 报错
-
 ```
 
 ### 块级作用域
@@ -153,7 +150,7 @@ console.log(age); // 报错
 
 此外, `try/catch` 的 `catch` 分句也会创建一个块级作用域, 看下面一个例子:
 
-``` js
+```js
 try {
   noThisFunction(); // 创造一个异常
 } catch (e) {
@@ -161,7 +158,6 @@ try {
 }
 
 console.log(e); // 报错, 外部无法拿到 e
-
 ```
 
 ## 提升
@@ -178,7 +174,7 @@ console.log(e); // 报错, 外部无法拿到 e
 
 下面这个例子你能不能全部答对.
 
-``` js
+```js
 typeof null; // 'object'
 
 typeof []; // 'object'
@@ -186,8 +182,7 @@ typeof []; // 'object'
 typeof someStr; // 'undefined'
 
 typeof str; // Uncaught ReferenceError: str is not defined
-const str = 'Yancey';
-
+const str = "Yancey";
 ```
 
 第一个, 因为 `null` 根本上是一个指针, 所以会返回 `'object'`. 深层次一点, 不同的对象在底层都表示为二进制, 在 Javascript 中二进制前三位都为 0 的会被判断为 Object 类型, null 的二进制全为 0, 自然前三位也是 0, 所以执行 typeof 时会返回 `'object'`.
@@ -202,52 +197,50 @@ const str = 'Yancey';
 
 函数声明和变量声明都会被提升, 但值得注意的是, 函数首先被提升, 然后才是变量.
 
-``` js
+```js
 test();
 
 function test() {
   foo();
   bar();
-  var foo = function() {
+  var foo = function () {
     console.log("this won't run!");
   };
   function bar() {
-    console.log('this will run!');
+    console.log("this will run!");
   }
 }
-
 ```
 
 上面的代码会变成下面的形式: 内部的 `bar` 函数会被提升到顶部, 所以可以被执行到;接下来变量 `foo` 会被提升到顶部, 但变量无法执行, 因此执行 `foo()` 会报错.
 
-``` js
+```js
 function test() {
   var foo;
   function bar() {
-    console.log('this will run!');
+    console.log("this will run!");
   }
   foo();
   bar();
-  foo = function() {
+  foo = function () {
     console.log("this won't run!");
   };
 }
 test();
-
 ```
 
-### 变量提升与 JavaScript 代码的执行流程
+### 环境变量
 
 ```ts
-showName()
-console.log(myname)
-var myname = '极客时间'
+showName();
+console.log(myname);
+var myname = "极客时间";
 function showName() {
-    console.log('函数showName被执行');
+  console.log("函数showName被执行");
 }
 ```
 
-之所以有变量提升和函数提升, 这跟 JavaScript 代码的执行流程有关. 变量和函数声明在代码里的位置是不会改变的, 而且是在编译阶段被 JavaScript 引擎放入内存中. 之所以有变量提升和函数提升, 一段 JavaScript 代码在执行之前需要被 JavaScript 引擎编译, 编译完成之后, 才会进入执行阶段.
+之所以有变量提升和函数提升, 这是因为一段 JavaScript 代码在执行之前需要被 JavaScript 引擎编译. 变量和函数声明在代码里的位置是不会改变的, 而且是在编译阶段被 JavaScript 引擎放入内存中, 编译完成之后, 才会进入执行阶段.
 
 在编译阶段, 会生成两部分内容: 执行上下文(Execution context)和可执行代码. 执行上下文是 JavaScript 执行一段代码时的运行环境, 比如调用一个函数, 就会进入这个函数的执行上下文, 确定该函数在执行期间用到的诸如 this, 变量, 对象以及函数等. 在执行上下文中存在一个变量环境的对象(Viriable Environment), 该对象中保存了变量提升的内容.
 
@@ -257,24 +250,99 @@ function showName() {
 
 ```ts
 VariableEnvironment:
-  myname -> undefined, 
+  myname -> undefined,
   showName -> function: { console.log(myname) }
 ```
 
 让我们一步一步来看上面的代码是怎样提升的:
 
 ```ts
-showName()
-console.log(myname)
-var myname = '极客时间'
+showName();
+console.log(myname);
+var myname = "极客时间";
 function showName() {
-    console.log('函数showName被执行');
+  console.log("函数showName被执行");
 }
 ```
 
-* 第 1 行和第 2 行, 由于这两行代码不是声明操作, 所以 JavaScript 引擎不会做任何处理;
-* 第 3 行, 由于这行是经过 var 声明的, 因此 JavaScript 引擎将在环境对象中创建一个名为 myname 的属性, 并使用 undefined 对其初始化;
-* 第 4 行, JavaScript 引擎发现了一个通过 function 定义的函数, 所以它将函数定义存储到堆(HEAP）中, 并在环境对象中创建一个 showName 的属性, 然后将该属性值指向堆中函数的位置.
+- 第 1 行和第 2 行, 由于这两行代码不是声明操作, 所以 JavaScript 引擎不会做任何处理;
+- 第 3 行, 由于这行是经过 var 声明的, 因此 JavaScript 引擎将在环境对象中创建一个名为 myname 的属性, 并使用 undefined 对其初始化;
+- 第 4 行, JavaScript 引擎发现了一个通过 function 定义的函数, 所以它将函数定义存储到堆(HEAP)中, 并在环境对象中创建一个 showName 的属性, 然后将该属性值指向堆中函数的位置.
+
+这样就生成了变量环境对象. 接下来 JavaScript 引擎会把声明以外的代码编译为字节码, 此时, 现在有了执行上下文和可执行代码了, 那么接下来就到了执行阶段了. 执行阶段 JavaScript 引擎便开始在变量环境对象中查找这些变量或函数. 此外, 一段代码如果定义了两个相同名字的函数, 那么最终生效的是最后一个函数. 如果变量和函数同名, 那么在编译阶段, 变量的声明会被忽略.
+
+## 执行上下文
+
+上下文指的是一个外部的, 内部的或由全局 / 模块入口映射成的函数. JavaScript 的执行系统由一个执行栈和一个执行队列构成. 在执行队列中保存的是待执行的任务, 称为 Job. 每一个执行上下文都需要关联到一个对照表. 这个对照表, 就称为**词法环境(Lexical Environment)**.
+
+**模块入口**是所有模块的顶层代码的顺序组合, 它们被封装为一个称为顶层模块执行(TopLevelModule Evaluation Job)的函数中来作为模块加载的第一个执行上下文创建. 一般 **.js 文件**也会创建一个脚本执行(Script Evaluation Job) 的函数, 这也是文件加载中所有全局代码块被称为 script 块的原因. **eval** 也是会开启一个执行上下文, JavaScript 为 eval() 所分配的这个执行上下文, 与调用 eval() 时的函数上下文享有同一个环境(包括词法环境和变量环境等等), 并在退出 eval() 时释放它的引用, 以确保同一个环境中同时只有一个逻辑在执行.
+
+对于普通函数被调用, 它也会形成执行上下文, 但它是**被**调用的, 所以它会创建一个 caller(调用者), 由于栈是先入后出的, 因此总是立即执行这个 callee 函数的上下文. 因此所有其他上下文都在执行栈上, 而生成器的上下文(多数时间是)在栈的外面.
+
+## 调用栈
+
+调用栈就是用来管理函数调用关系的一种数据结构, 在执行上下文创建好后, JavaScript 引擎会将执行上下文压入栈中, 通常把这种用来管理执行上下文的栈称为**执行上下文栈**, 又称**调用栈**. 以下面这段代码为例.
+
+```ts
+var a = 2;
+function add() {
+  var b = 10;
+  return a + b;
+}
+add();
+```
+
+在执行到函数 add() 之前, JavaScript 引擎会为上面这段代码创建全局执行上下文, 包含了声明的函数和变量.
+
+![全局执行上下文](https://edge.yancey.app/beg/yrwofq1f-1650203945435.webp)
+
+执行上下文准备好之后, 便开始执行全局代码, 当执行到 add 这儿时, JavaScript 判断这是一个函数调用, 那么将执行以下操作:
+
+- 首先, 从**全局执行上下文**中, 取出 add 函数代码.
+- 其次, 对 add 函数的这段代码进行编译, 并创建该函数的**执行上下文**和**可执行代码**.
+- 最后, 执行代码, 输出结果.
+
+![函数调用过程](https://edge.yancey.app/beg/gjros498-1650203937037.webp)
+
+再换个复杂的例子:
+
+```ts
+var a = 2;
+function add(b, c) {
+  return b + c;
+}
+function addAll(b, c) {
+  var d = 10;
+  result = add(b, c);
+  return a + result + d;
+}
+addAll(3, 6);
+```
+
+1. 首先创建全局上下文, 并将其压入栈底. 此时全局上下文的 a, add, adAll 被保存到变量环境对象中.
+2. 全局执行上下文压入到调用栈后, JavaScript 引擎便开始执行全局代码了. 首先会执行 `a = 2` 的赋值操作, 执行该语句会将全局上下文变量环境中 a 的值设置为 2.
+3. 接着调用 addAll 函数. 当调用该函数时, JavaScript 引擎会编译该函数, 并为其创建一个执行上下文, 最后还将该函数的执行上下文压入栈中.
+4. addAll 函数的执行上下文创建好之后, 便进入了函数代码的执行阶段了, 这里先执行的是 d=10 的赋值操作, 执行语句会将 addAll 函数执行上下文中的 d 由 undefined 变成了 10.
+5. 当执行到 add 函数调用语句时, 同样会为其创建执行上下文, 并将其压入调用栈, 当 add 函数返回时, 该函数的执行上下文就会从栈顶弹出, 并将 result 的值设置为 add 函数的返回值, 也就是 9
+6. 紧接着 addAll 执行最后一个相加操作后并返回, addAll 的执行上下文也会从栈顶部弹出, 此时调用栈中就只剩下全局上下文了, 整个 JavaScript 流程执行结束了
+
+![执行图](https://edge.yancey.app/beg/vuiuq6ua-1650205890104.jpeg)
+
+### 利用调用栈调试指南
+
+通过在 Source 中打断点, 这时可以通过右边“ `call stack` 来查看当前的调用栈的情况, 如下图:
+
+![Source 断点](https://edge.yancey.app/beg/oq4xknmu-1650206989381.webp)
+
+除了通过断点来查看调用栈, 你还可以使用 `console.trace()` 来输出当前的函数调用关系, 如下图:
+
+![console.trace()](https://edge.yancey.app/beg/rep90r1f-1650206979053.webp)
+
+### 栈溢出
+
+现在你知道了调用栈是一种用来管理执行上下文的数据结构, 符合后进先出的规则. 不过还有一点你要注意, 调用栈是有大小的, 当入栈的执行上下文超过一定数目, JavaScript 引擎就会报错, 我们把这种错误叫做栈溢出. 这是因为这个函数是递归的, 并且没有任何终止条件, 所以它会一直创建新的函数执行上下文, 并反复将其压入栈中, 但栈是有容量限制的, 超过最大数量后就会出现栈溢出的错误. 除了对代码做出改进, 目前引擎都实现了尾递归优化, 可以利用这一点来避免爆栈333333333333333333333333.
+
+![栈溢出](https://edge.yancey.app/beg/tgfm7a8f-1650210260724.jpg)
 
 ## 闭包
 
@@ -294,7 +362,7 @@ function showName() {
 
 看下面这个例子. 在执行 `apple` 函数时, 将 `output` 的引用作为参数传递给了 `fruit` 函数的 `arg`, 因此在 `fruit` 函数执行期间, `arg` 是存在的, 所以 `output` 也是存在的, 而 `output` 依赖的 `apple` 函数产生的局部作用域也是存在. 这也就是 `output` 函数"记住"了 `apple` 函数作用域的原因.
 
-``` js
+```js
 function apple() {
   var count = 0;
   function output() {
@@ -303,17 +371,16 @@ function apple() {
   fruit(output);
 }
 function fruit(arg) {
-  console.log('fruit');
+  console.log("fruit");
 }
 apple(); // fruit
-
 ```
 
 ### "记住" 并 "访问"
 
 但上面的例子并不是完整的"闭包", 因为只是"记住"了作用域, 但没有去"访问"这个作用域. 我们稍微改造一下上面这个例子, 在 `fruit` 函数中执行 `arg` 函数, 实际就是执行 `output`, 并且还访问了 `apple` 函数中的 `count` 变量.
 
-``` js
+```js
 function apple() {
   var count = 0;
   function output() {
@@ -327,20 +394,18 @@ function fruit(arg) {
 }
 
 apple(); // 0
-
 ```
 
 ### 循环和闭包
 
 下面是一道经典的面试题. 我们希望代码输出 0 ～ 4, 每秒一次, 每次一个. 但实际上, 这段代码在运行时会以每秒一次的频率输出五次 5.
 
-``` js
+```js
 for (var i = 0; i < 5; i++) {
   setTimeout(function timer() {
     console.log(i);
   }, i * 1000);
 }
-
 ```
 
 因为 setTimeout 是异步执行的, 1000 毫秒后向任务队列里添加一个任务, 只有主线程上的任务全部执行完毕才会执行任务队列里的任务, 所以当主线程 for 循环执行完之后 i 的值为 5, 而用这个时候再去任务队列中执行任务, 因此 i 全部为 5. 又因为在 for 循环中使用 `var` 声明的 `i` 是在全局作用域中, 因此 `timer` 函数中打印出来的 `i` 自然是都是 5.
@@ -348,37 +413,38 @@ for (var i = 0; i < 5; i++) {
 我们可以通过在迭代内使用 IIFE 来给每个迭代都生成一个新的作用域, 使得延迟函数的回调可以将新的作用域封闭在每个迭代内部, 每个迭代中都会含有一个具有正确值的变量供我们访问.
 代码如下所示.
 
-``` js
+```js
 for (var i = 0; i < 5; i++) {
-  (function(j) {
+  (function (j) {
     setTimeout(function timer() {
       console.log(j);
     }, j * 1000);
   })(i);
 }
-
 ```
 
 如果你 API 看得仔细的话, 还可以写成下面的形式:
 
-``` js
+```js
 for (var i = 0; i < 5; i++) {
-    setTimeout(function(j) {
-        console.log(j);
-    }, i * 1000, i);
+  setTimeout(
+    function (j) {
+      console.log(j);
+    },
+    i * 1000,
+    i
+  );
 }
-
 ```
 
 当然最好的方式是使用 let 声明 i, 这时候变量 i 就能作用于这个循环块, 每个迭代都会使用上一个迭代结束的值来初始化这个变量.
 
-``` js
+```js
 for (let i = 0; i < 5; i++) {
   setTimeout(function timer() {
     console.log(i);
   }, i * 1000);
 }
-
 ```
 
 ## 垃圾回收
@@ -415,12 +481,11 @@ A: 当函数可以记住并访问所在的词法作用域时, 就产生了闭包
 
 以一道笔试题收尾: 写一个函数, 第一次调用返回 0, 之后每次调用返回比之前大 1. 这道题不难, 主要是在考察闭包和立即执行函数. 我写的答案如下, 如果你有更好的方案请在评论区分享.
 
-``` js
+```js
 const add = (() => {
   let num = 0;
   return () => num++;
 })();
-
 ```
 
 ## 参考
@@ -441,7 +506,7 @@ const add = (() => {
 
 [作用域闭包, 你真的懂了吗？](https://i-solar.github.io/2016/11/05/%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%97%AD%E5%8C%85%EF%BC%8C%E4%BD%A0%E7%9C%9F%E7%9A%84%E6%87%82%E4%BA%86%E5%90%97%EF%BC%9F-JavaScript/)
 
-- - -
+---
 
 欢迎关注我的公众号: 进击的前端
 
