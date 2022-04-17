@@ -24,23 +24,22 @@
 
 直接看 W3C 的一个例子，这个例子是将元素向右滑动移动 200px：
 
-```
+```ts
 var start = null;
-var element = document.getElementById('SomeElementYouWantToAnimate');
-element.style.position = 'absolute';
+var element = document.getElementById("SomeElementYouWantToAnimate");
+element.style.position = "absolute";
 
 function step(timestamp) {
   if (!start) start = timestamp;
   var progress = timestamp - start;
-  element.style.left = Math.min(progress / 10, 200) + 'px';
+  element.style.left = Math.min(progress / 10, 200) + "px";
   if (progress < 2000) {
     window.requestAnimationFrame(step);
   }
 }
 
-window.requestAnimationFrame(step);ionFrame(step);
-
-
+window.requestAnimationFrame(step);
+ionFrame(step);
 ```
 
 window.requestAnimationFrame(callback),里面需要传一个函数，并且每次调用它会给这个函数传一个`DOMHighResTimeStamp`，指示 requestAnimationFrame() 开始触发回调函数的当前时间。
@@ -59,35 +58,37 @@ window.requestAnimationFrame(callback),里面需要传一个函数，并且每�
 
 上面说到，CSS3 还无法处理一些缓动效果，而定时器效果又不好，因此 requestAnimationFrame 是个不错的选择，直接看例子：
 
-```
-    let t = 0, b = 0, c = 100, d = 100;
+```ts
+let t = 0,
+  b = 0,
+  c = 100,
+  d = 100;
 
-    const easeOut = (t, b, c, d) => {
-        if ((t /= d) < (1 / 2.75)) {
-            return c * (7.5625 * t * t) + b;
-        } else if (t < (2 / 2.75)) {
-            return c * (7.5625 * (t -= (1.5 / 2.75)) * t + .75) + b;
-        } else if (t < (2.5 / 2.75)) {
-            return c * (7.5625 * (t -= (2.25 / 2.75)) * t + .9375) + b;
-        } else {
-            return c * (7.5625 * (t -= (2.625 / 2.75)) * t + .984375) + b;
-        }
-    };
+const easeOut = (t, b, c, d) => {
+  if ((t /= d) < 1 / 2.75) {
+    return c * (7.5625 * t * t) + b;
+  } else if (t < 2 / 2.75) {
+    return c * (7.5625 * (t -= 1.5 / 2.75) * t + 0.75) + b;
+  } else if (t < 2.5 / 2.75) {
+    return c * (7.5625 * (t -= 2.25 / 2.75) * t + 0.9375) + b;
+  } else {
+    return c * (7.5625 * (t -= 2.625 / 2.75) * t + 0.984375) + b;
+  }
+};
 
-    const step = () => {
-        const _width = easeOut(t, b, c, d);
-        t++;
-        document.querySelector('#SomeElementYouWantToAnimate').style.width = (100 + _width) + 'px';
-        if (t <= d) {
-            window.requestAnimationFrame(step);
-        } else {
-            window.cancelAnimationFrame(step);
-        }
-    };
+const step = () => {
+  const _width = easeOut(t, b, c, d);
+  t++;
+  document.querySelector("#SomeElementYouWantToAnimate").style.width =
+    100 + _width + "px";
+  if (t <= d) {
+    window.requestAnimationFrame(step);
+  } else {
+    window.cancelAnimationFrame(step);
+  }
+};
 
-    step();
-
-
+step();
 ```
 
 代码和效果全都放在了上面，其中`easeOut`是一个缓动函数，直接从张鑫旭大大那边抄来了，戳 => [GitHub Repo](https://github.com/zhangxinxu/Tween)
@@ -112,99 +113,97 @@ Also note that multiple calls to requestAnimationFrame with the same callback (b
 
 但是每次调用 requestAnimationFrame 时，它自身知道自己的调用时间，所以可以加个 flag 来判断：
 
-```
+```ts
 let ticking = false; //raf触发锁
 
-    function onScroll() {
-        if (!ticking) {
-            requestAnimationFrame(step);
-            ticking = true;
-        }
-    }
+function onScroll() {
+  if (!ticking) {
+    requestAnimationFrame(step);
+    ticking = true;
+  }
+}
 
-    window.addEventListener('resize', onScroll, false);
-
-
+window.addEventListener("resize", onScroll, false);
 ```
 
 然后在`step`把`ticking`置为`false`。
 
 最后把整个 demo 贴在这里，包括 chart.js 渲染：
 
-```
+```html
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>requestAnimationFrame</title>
     <style>
-        #SomeElementYouWantToAnimate {
-            width: 100px;
-            height: 100px;
-            background: #7fffd4;
-        }
+      #SomeElementYouWantToAnimate {
+        width: 100px;
+        height: 100px;
+        background: #7fffd4;
+      }
     </style>
-</head>
-<body>
-<div style="height: 10000px;"></div>
-<div id="SomeElementYouWantToAnimate"></div>
-<canvas id="myChart" width="400" height="400"></canvas>
-<script src="./Chart.min.js"></script>
-<script>
-    // record data
-    const arr = [];
-    const indexList = [];
+  </head>
+  <body>
+    <div style="height: 10000px;"></div>
+    <div id="SomeElementYouWantToAnimate"></div>
+    <canvas id="myChart" width="400" height="400"></canvas>
+    <script src="./Chart.min.js"></script>
+    <script>
+      // record data
+      const arr = [];
+      const indexList = [];
 
-    let ticking = false; //raf触发锁
+      let ticking = false; //raf触发锁
 
-    function onScroll() {
+      function onScroll() {
         if (!ticking) {
-            requestAnimationFrame(step);
-            ticking = true;
+          requestAnimationFrame(step);
+          ticking = true;
         }
-    }
+      }
 
-    window.addEventListener('resize', onScroll, false);
+      window.addEventListener("resize", onScroll, false);
 
-    let start = null;
-    function step(timestamp) {
-
+      let start = null;
+      function step(timestamp) {
         ticking = false;
 
         arr.push(timestamp);
 
         if (!start) start = timestamp;
         const progress = timestamp - start;
-        document.querySelector('#SomeElementYouWantToAnimate').style.width = (100 + Math.min(progress / 10, 200)) + 'px';
+        document.querySelector("#SomeElementYouWantToAnimate").style.width =
+          100 + Math.min(progress / 10, 200) + "px";
         if (progress <= 2000) {
-            window.requestAnimationFrame(step);
+          window.requestAnimationFrame(step);
         } else {
-            window.cancelAnimationFrame(step);
-            for (let i = 0; i < arr.length; i++) {
-                indexList.push(i)
-            }
-            new Chart(document.getElementById("myChart"), {
-                "type": "line",
-                "data": {
-                    "labels": indexList,
-                    "datasets": [{
-                        "label": "Chart for requestAnimationFrame API",
-                        "data": arr,
-                        "fill": false,
-                        "borderColor": "rgba(75, 192, 192)",
-                        "lineTension": 0.1
-                    }]
+          window.cancelAnimationFrame(step);
+          for (let i = 0; i < arr.length; i++) {
+            indexList.push(i);
+          }
+          new Chart(document.getElementById("myChart"), {
+            type: "line",
+            data: {
+              labels: indexList,
+              datasets: [
+                {
+                  label: "Chart for requestAnimationFrame API",
+                  data: arr,
+                  fill: false,
+                  borderColor: "rgba(75, 192, 192)",
+                  lineTension: 0.1,
                 },
-            });
+              ],
+            },
+          });
         }
-    }
+      }
 
-    window.requestAnimationFrame(step);
-</script>
-</body>
+      window.requestAnimationFrame(step);
+    </script>
+  </body>
 </html>
-
-
 ```
 
 ## 参考文章

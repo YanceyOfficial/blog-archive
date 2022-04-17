@@ -1,28 +1,30 @@
+# 最后一次弄懂 Event Loop
+
 > Event Loop 是 JavaScript 异步编程的核心思想，也是前端进阶必须跨越的一关。同时，它又是面试的必考点，特别是在 Promise 出现之后，各种各样的面试题层出不穷，花样百出。这篇文章从现实生活中的例子入手，让你彻底理解 Event Loop 的原理和机制，并能游刃有余的解决此类面试题。
 
 ## 宇宙条那道烂大街的笔试题镇楼
 
 ```js
 async function async1() {
-  console.log('async1 start');
+  console.log("async1 start");
   await async2();
-  console.log('async1 end');
+  console.log("async1 end");
 }
 async function async2() {
-  console.log('async2');
+  console.log("async2");
 }
-console.log('script start');
-setTimeout(function() {
-  console.log('setTimeout');
+console.log("script start");
+setTimeout(function () {
+  console.log("setTimeout");
 }, 0);
 async1();
-new Promise(function(resolve) {
-  console.log('promise1');
+new Promise(function (resolve) {
+  console.log("promise1");
   resolve();
-}).then(function() {
-  console.log('promise2');
+}).then(function () {
+  console.log("promise2");
 });
-console.log('script end');
+console.log("script end");
 ```
 
 ## 为什么 JavaScript 是单线程的？
@@ -40,10 +42,10 @@ console.log('script end');
 如果在一个函数返回的时候，调用者就能够得到预期结果，那么这个函数就是同步的。也就是说同步方法调用一旦开始，调用者必须等到该函数调用返回后，才能继续后续的行为。下面这段段代码首先会弹出 alert 框，如果你不点击 `确定` 按钮，所有的页面交互都被锁死，并且后续的 `console` 语句不会被打印出来。
 
 ```js
-alert('Yancey');
-console.log('is');
-console.log('the');
-console.log('best');
+alert("Yancey");
+console.log("is");
+console.log("the");
+console.log("best");
 ```
 
 ### 异步
@@ -54,7 +56,7 @@ console.log('best');
 
 ```js
 setTimeout(() => {
-  console.log('yancey');
+  console.log("yancey");
 }, 1000);
 
 for (let i = 0; i < 100000000; i += 1) {
@@ -150,23 +152,23 @@ JavaScript 中引用类型值的大小是不固定的，因此它们会被存储
 
 ```js
 setTimeout(() => {
-  console.log('A');
+  console.log("A");
 }, 0);
 var obj = {
-  func: function() {
-    setTimeout(function() {
-      console.log('B');
+  func: function () {
+    setTimeout(function () {
+      console.log("B");
     }, 0);
-    return new Promise(function(resolve) {
-      console.log('C');
+    return new Promise(function (resolve) {
+      console.log("C");
       resolve();
     });
   },
 };
-obj.func().then(function() {
-  console.log('D');
+obj.func().then(function () {
+  console.log("D");
 });
-console.log('E');
+console.log("E");
 ```
 
 - 第一个 `setTimeout` 放到宏任务队列，此时宏任务队列为 ['A']
@@ -186,11 +188,11 @@ console.log('E');
 再来看一道阮一峰老师出的题目，其实也不难。
 
 ```js
-let p = new Promise(resolve => {
+let p = new Promise((resolve) => {
   resolve(1);
   Promise.resolve().then(() => console.log(2));
   console.log(4);
-}).then(t => console.log(t));
+}).then((t) => console.log(t));
 console.log(3);
 ```
 
@@ -243,32 +245,32 @@ foo();
 
 ```js
 function async1() {
-  console.log('async1 start'); // 2
+  console.log("async1 start"); // 2
 
   Promise.resolve(async2()).then(() => {
-    console.log('async1 end'); // 6
+    console.log("async1 end"); // 6
   });
 }
 
 function async2() {
-  console.log('async2'); // 3
+  console.log("async2"); // 3
 }
 
-console.log('script start'); // 1
+console.log("script start"); // 1
 
-setTimeout(function() {
-  console.log('settimeout'); // 8
+setTimeout(function () {
+  console.log("settimeout"); // 8
 }, 0);
 
 async1();
 
-new Promise(function(resolve) {
-  console.log('promise1'); // 4
+new Promise(function (resolve) {
+  console.log("promise1"); // 4
   resolve();
-}).then(function() {
-  console.log('promise2'); // 7
+}).then(function () {
+  console.log("promise2"); // 7
 });
-console.log('script end'); // 5
+console.log("script end"); // 5
 ```
 
 - 首先打印出 `script start`
@@ -322,18 +324,18 @@ Node.js 在升级到 11.x 后，Event Loop 运行原理发生了变化，一旦�
   <legend></legend>
 
   <script>
-    const input = document.getElementById('input');
-    const btn = document.getElementById('btn');
-    const result = document.getElementById('result');
+    const input = document.getElementById("input");
+    const btn = document.getElementById("btn");
+    const result = document.getElementById("result");
 
-    btn.addEventListener('click', () => {
-      const worker = new Worker('./worker.js');
+    btn.addEventListener("click", () => {
+      const worker = new Worker("./worker.js");
 
       // 向 Worker 发送消息
       worker.postMessage(input.value);
 
       // 接收来自 Worker 的消息
-      worker.addEventListener('message', e => {
+      worker.addEventListener("message", (e) => {
         result.innerHTML = e.data;
 
         // 使用完 Worker 后记得关闭
@@ -349,8 +351,8 @@ Node.js 在升级到 11.x 后，Event Loop 运行原理发生了变化，一旦�
 ```js
 function memorize(f) {
   const cache = {};
-  return function() {
-    const key = Array.prototype.join.call(arguments, ',');
+  return function () {
+    const key = Array.prototype.join.call(arguments, ",");
     if (key in cache) {
       return cache[key];
     } else {
@@ -359,18 +361,18 @@ function memorize(f) {
   };
 }
 
-const factorial = memorize(n => {
+const factorial = memorize((n) => {
   return n <= 1 ? 1 : n * factorial(n - 1);
 });
 
 // 监听主线程发过来的消息
 self.addEventListener(
-  'message',
-  function(e) {
+  "message",
+  function (e) {
     // 响应主线程
     self.postMessage(factorial(e.data));
   },
-  false,
+  false
 );
 ```
 
@@ -382,31 +384,31 @@ self.addEventListener(
 
 ```js
 const p1 = new Promise((resolve, reject) => {
-  console.log('promise1');
+  console.log("promise1");
   resolve();
 })
   .then(() => {
-    console.log('then11');
+    console.log("then11");
     new Promise((resolve, reject) => {
-      console.log('promise2');
+      console.log("promise2");
       resolve();
     })
       .then(() => {
-        console.log('then21');
+        console.log("then21");
       })
       .then(() => {
-        console.log('then23');
+        console.log("then23");
       });
   })
   .then(() => {
-    console.log('then12');
+    console.log("then12");
   });
 
 const p2 = new Promise((resolve, reject) => {
-  console.log('promise3');
+  console.log("promise3");
   resolve();
 }).then(() => {
-  console.log('then31');
+  console.log("then31");
 });
 ```
 
@@ -432,24 +434,24 @@ const p2 = new Promise((resolve, reject) => {
 
 ```js
 const p1 = new Promise((resolve, reject) => {
-  console.log('promise1'); // 1
+  console.log("promise1"); // 1
   resolve();
 })
   .then(() => {
-    console.log('then11'); // 2
+    console.log("then11"); // 2
     return new Promise((resolve, reject) => {
-      console.log('promise2'); // 3
+      console.log("promise2"); // 3
       resolve();
     })
       .then(() => {
-        console.log('then21'); // 4
+        console.log("then21"); // 4
       })
       .then(() => {
-        console.log('then23'); // 5
+        console.log("then23"); // 5
       });
   })
   .then(() => {
-    console.log('then12'); //6
+    console.log("then12"); //6
   });
 ```
 
