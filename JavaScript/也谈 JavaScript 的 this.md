@@ -69,7 +69,7 @@ this 的绑定规则有四种, 分别是:
 
 - 默认绑定
 - 隐式绑定
-- 硬绑定
+- 显式绑定
 - new 绑定
 
 ### 默认绑定
@@ -244,6 +244,20 @@ var otherGreeting = obj.greeting;
 otherGreeting.call(null); // Hello, Sayaka
 ```
 
+最后看一个例子, foo 函数显式绑定到 bar 对象上, 会导致 bar 的 myName 的值发生变化.
+
+```ts
+let bar = {
+  myName : "A",
+  test1 : 1
+}
+function foo(){
+  this.myName = "B"
+}
+foo.call(bar)
+console.log(bar) // { myName: 'B', test1: 1 }
+```
+
 ### new 绑定
 
 首先来回忆一下 new 做了什么:
@@ -290,7 +304,7 @@ new 绑定 > 显式绑定 > 隐式绑定 > 默认绑定
 
 4. 不可以使用 yield 命令, 因此箭头函数不能用作 Generator 函数.
 
-5. 箭头函数没有自己的 this, 因此不能使用 call()、apply()、bind()等方法改变 this 的指向.
+5. 箭头函数没有自己的 this, 因此不能使用 call(), apply(), bind()等方法改变 this 的指向.
 
 ```ts
 var obj = {
@@ -346,15 +360,6 @@ var name = 'Sayaka';
 
 obj.greeting(); // Hello, Yancey
 ```
-
-## 总结
-
-- 函数是否在 new 中调用(new 绑定), 如果是, 那么 this 绑定的是新创建的对象.
-- 函数是否通过 call,apply 调用, 或者使用了 bind(即硬绑定), 如果是, 那么 this 绑定的就是指定的对象.
-- 函数是否在某个上下文对象中调用(隐式绑定), 如果是的话, this 绑定的是那个上下文对象. 一般是 obj.foo().
-- 如果以上都不是, 那么使用默认绑定. 如果在严格模式下, 则绑定到 undefined, 否则绑定到全局对象.
-- 如果把 Null 或者 undefined 作为 this 的绑定对象传入 call、apply 或者 bind, 这些值在调用时会被忽略, 实际应用的是默认绑定规则.
-- 如果是箭头函数, 箭头函数的 this 继承的是外层代码块的 this.
 
 ## 面试题解析
 
@@ -453,6 +458,69 @@ func();
 第一次调用是隐式调用, 因此 this 指向 obj, 所以 this.val 也就是 obj.val 变成了 4, 但是 dbl 方法中没有定义 val, 所以会沿着作用域链找到 window.val, 所以会依次打印出 2, 4
 
 第二次是默认调用, this 指向 window, window.val 会经历两次乘 2 变成 8, 所以会依次打印出 8, 8
+
+## this 设计的缺陷
+
+看下面这个例子, 第一个 console 是一个默认绑定, 没什么好说的, 但里面 bar 函数的 this 居然是 window. 这是因为对于独立调用的函数, 如果未进行有效的 this 绑定的话, this 就会绑定到 window 对象(非严格模式)或者 undefined(严格模式).
+
+```ts
+var myObj = {
+  name: "极客时间", 
+  showThis: function() {
+    console.log(this);
+    function bar() {
+      console.log(this);
+    }
+    bar();
+  }
+}
+
+myObj.showThis();
+```
+
+有两种方式可以解决, 第一种使用 self 大法来解决.
+
+```ts
+var myObj = {
+  name: "极客时间", 
+  showThis: function() {
+    console.log(this);
+    const self = this;
+    function bar() {
+      console.log(self);
+    }
+    bar();
+  }
+}
+
+myObj.showThis();
+```
+
+第二种方法就是把内部函数卷成一个箭头函数. 上面也说到了, ES6 中的箭头函数并不会创建其自身的执行上下文, 所以箭头函数中的 this 取决于它的外部函数.
+
+```ts
+var myObj = {
+  name: "极客时间", 
+  showThis: function() {
+    console.log(this);
+    const bar = () => {
+      console.log(this);
+    }
+    bar();
+  }
+}
+
+myObj.showThis();
+```
+
+## 总结
+
+- 函数是否在 new 中调用(new 绑定), 如果是, 那么 this 绑定的是新创建的对象.
+- 函数是否通过 call, apply 调用, 或者使用了 bind(即显式绑定), 如果是, 那么 this 绑定的就是指定的对象.
+- 函数是否在某个上下文对象中调用(隐式绑定), 如果是的话, this 绑定的是那个上下文对象. 一般是 obj.foo().
+- 如果以上都不是, 那么使用默认绑定. 如果在严格模式下, 则绑定到 undefined, 否则绑定到全局对象.
+- 如果把 Null 或者 undefined 作为 this 的绑定对象传入 call, apply 或者 bind, 这些值在调用时会被忽略, 实际应用的是默认绑定规则.
+- 如果是箭头函数, 箭头函数的 this 继承的是外层代码块的 this; 而普通嵌套函数中的 this 不会继承外层函数的 this 值.
 
 ## 参考
 
