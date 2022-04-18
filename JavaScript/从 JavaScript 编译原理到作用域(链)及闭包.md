@@ -170,7 +170,7 @@ console.log(e); // 报错, 外部无法拿到 e
 
 因此, 对于代码 `var i = 2;` 而言, JavaScript 实际上会将这句代码看作 `var i;` 和 `i = 2`, 其中第一个是在编译阶段, 第二个赋值操作会原地等待执行阶段. 换句话说, 这个过程将会把变量和函数声明放到其作用域的顶部, 这个过程就叫做提升.
 
-可能你会有疑问, 为什么 let 和 const 不存在变量提升呢？这是因为在编译阶段, 当遇到变量声明时, 编译器要么将它提升至作用域顶部(var 声明), 要么将它放到 **临时死区(temporal dead zone, TDZ)**, 也就是用 let 或 const 声明的变量. **访问 TDZ 中的变量会触发运行时的错误**, 只有执行过变量声明语句后, 变量才会从 TDZ 中移出, 这时才可访问.
+可能你会有疑问, 为什么 let 和 const 不存在变量提升呢?这是因为在编译阶段, 当遇到变量声明时, 编译器要么将它提升至作用域顶部(var 声明), 要么将它放到 **临时死区(temporal dead zone, TDZ)**, 也就是用 let 或 const 声明的变量. **访问 TDZ 中的变量会触发运行时的错误**, 只有执行过变量声明语句后, 变量才会从 TDZ 中移出, 这时才可访问.
 
 下面这个例子你能不能全部答对.
 
@@ -394,7 +394,7 @@ function apple() {
 }
 
 function fruit(arg) {
-  arg(); // 这就是闭包！
+  arg(); // 这就是闭包! 
 }
 
 apple(); // 0
@@ -463,23 +463,60 @@ for (let i = 0; i < 5; i++) {
 
 引用计数是跟踪记录每个值被引用的次数. 当声明了一个变量并将一个引用类型值赋给该变量时, 这个值得引用次数就是 1;相反, 如果包含对这个值引用的变量又取得了另外一个值, 则这个值得引用次数减 1;下次运行垃圾回收器时就可以释放那些引用次数为 0 的值所占用的内存. 缺点: **循环引用**会导致引用次数永远不为 0.
 
+## 谈一谈 JavaScript 内存与闭包
+
+```ts
+function foo() {
+    var myName = "极客时间"
+    let test1 = 1
+    const test2 = 2
+    var innerBar = { 
+        setName:function(newName){
+            myName = newName
+        },
+        getName:function(){
+            console.log(test1)
+            return myName
+        }
+    }
+    return innerBar
+}
+var bar = foo()
+bar.setName("极客邦")
+bar.getName()
+console.log(bar.getName())
+```
+
+还是以这段代码为例. 当 foo 函数的执行上下文销毁时, 由于 foo 函数产生了闭包, 所以变量 myName 和 test1 并没有被销毁, 而是保存在内存中. 这应该怎么解释呢?
+
+1. 当 JavaScript 引擎执行到 foo 函数时, 首先会编译, 并创建一个空执行上下文.
+2. 在编译过程中, 遇到内部函数 setName, JavaScript 引擎还要对内部函数做一次快速的词法扫描, 发现该内部函数引用了 foo 函数中的 myName 变量, 由于是内部函数引用了外部函数的变量, 所以 JavaScript 引擎判断这是一个闭包, 于是在堆空间创建换一个 `closure(foo)` 的对象(这是一个内部对象, JavaScript 是无法访问的), 用来保存 myName 变量.
+3. 接着继续扫描到 getName 方法时, 发现该函数内部还引用变量 test1, 于是 JavaScript 引擎又将 test1 添加到 `closure(foo)` 对象中. 这时候堆中的 `closure(foo)` 对象中就包含了 myName 和 test1 两个变量了.
+4. 由于 test2 并没有被内部函数引用, 所以 test2 依然保存在调用栈中.
+
+![闭包的产生过程](https://edge.yancey.app/beg/kqsj6rkj-1650287019406.webp)
+
+从上图你可以清晰地看出, 当执行到 foo 函数时, 闭包就产生了; 当 foo 函数执行结束之后, 返回的 getName 和 setName 方法都引用 `closure(foo)` 对象, 所以即使 foo 函数退出了, `closure(foo)` 依然被其内部的 getName 和 setName 方法引用. 所以在下次调用 `bar.setName` 或者 `bar.getName` 时, 创建的执行上下文中就包含了 `closure(foo)`.
+
+总的来说, 产生闭包的核心有两步: 第一步是需要预扫描内部函数; 第二步是把内部函数引用的外部变量保存到堆中.
+
 ## 总结
 
-Q: 什么是作用域？
+Q: 什么是作用域?
 
 A: 作用域是根据名称查找变量的一套规则.
 
-Q: 什么是作用域链？
+Q: 什么是作用域链?
 
 A: 当一个块或函数嵌套在另一个块或另一个函数中时, 就发生了作用域嵌套. 因此, 在当前作用域下找不到某个变量时, 会往外层嵌套的作用域继续查找, 直到找到该变量或抵达全局作用域, 如果在全局作用域中还没找到就会报错. 这种逐级向上查找的模式就是作用域链.
 
-Q: 什么是闭包？
+Q: 什么是闭包?
 
 A: 当函数可以记住并访问所在的词法作用域时, 就产生了闭包, 即使函数是在当前词法作用域之外执行.
 
 ## 最后
 
-导致这篇文章写这么长的根本原因就是 ~~面试~~ 该死的 `var` 关键字! 它就是一个设计错误！不要去用它!
+导致这篇文章写这么长的根本原因就是 ~~面试~~ 该死的 `var` 关键字! 它就是一个设计错误! 不要去用它!
 
 ![卑微](https://edge.yancey.app/beg/me8Sqe9R.jpg)
 
@@ -508,7 +545,7 @@ const add = (() => {
 
 [JavaScript 编译原理, 编译器, 引擎及作用域](https://www.jianshu.com/p/5ebf2ad6def2)
 
-[作用域闭包, 你真的懂了吗？](https://i-solar.github.io/2016/11/05/%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%97%AD%E5%8C%85%EF%BC%8C%E4%BD%A0%E7%9C%9F%E7%9A%84%E6%87%82%E4%BA%86%E5%90%97%EF%BC%9F-JavaScript/)
+[作用域闭包, 你真的懂了吗?](https://i-solar.github.io/2016/11/05/%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%97%AD%E5%8C%85%EF%BC%8C%E4%BD%A0%E7%9C%9F%E7%9A%84%E6%87%82%E4%BA%86%E5%90%97%EF%BC%9F-JavaScript/)
 
 ---
 
