@@ -102,6 +102,22 @@ JavaScript 中引用类型值的大小是不固定的, 因此它们会被存储�
 
 ![任务队列](https://edge.yancey.app/beg/g1tyu1pj-1650445583033.webp)
 
+## 页面使用单线程的缺点
+
+我们知道页面线程所有执行的任务都来自于消息队列. 消息队列是先进先出的属性, 也就是说放入队列中的任务, 需要等待前面的任务被执行完, 才会被执行. 假设有一个耗时的任务, 它是同步的, 就会导致执行效率的下降. 如果它是异步的, 它将被添加到消息队列的尾部, 那么又会影响到实时性, 因为在添加到消息队列的过程中, 可能前面就有很多任务在排队了.
+
+为了权衡效率和实时性, 微任务就应用而生了. 通常我们把消息队列中的任务称为宏任务, 每个宏任务中都包含了一个微任务队列. 在执行宏任务的过程中, 如果有一些微任务, 那么就会将该变化添加到微任务列表中, 这样就不会影响到宏任务的继续执行, 因此也就解决了执行效率的问题. 等宏任务中的主要功能都直接完成之后, 这时候, 渲染引擎并不着急去执行下一个宏任务, 而是执行当前宏任务中的微任务, 因为这些微任务的事件都保存在这些微任务队列中, 这样也就解决了实时性问题.
+
+第二个是如何解决单个任务执行时长过久的问题. 因为所有的任务都是在单线程中执行的, 所以每次只能执行一个任务, 而其他任务就都处于等待状态. 如果其中一个任务执行时间过久, 那么下一个任务就要等待很长时间. 针对这种情况, JavaScript 可以通过回调功能来规避这种问题, 也就是让要执行的 JavaScript 任务滞后执行.
+
+## 单线程处理任务的方法论
+
+- 如果有一些确定好的任务, 可以使用一个单线程来按照顺序处理这些任务, 这是第一版线程模型.
+- 要在线程执行过程中接收并处理新的任务, 就需要引入循环语句和事件系统, 这是第二版线程模型.
+- 如果要接收其他线程发送过来的任务, 就需要引入消息队列, 这是第三版线程模型.
+- 如果其他进程想要发送任务给页面主线程, 那么先通过 IPC 把任务发送给渲染进程的 IO 线程, IO 线程再把任务发送给页面主线程.
+- 消息队列机制并不是太灵活, 为了适应效率和实时性, 引入了微任务.
+
 ## 事件循环
 
 我们注意到, 在异步代码完成后仍有可能要在一旁等待, 因为此时程序可能在做其他的事情, 等到程序空闲下来才有时间去看哪些异步已经完成了. 所以 JavaScript 有一套机制去处理同步和异步操作, 那就是事件循环 (Event Loop).
@@ -117,7 +133,7 @@ JavaScript 中引用类型值的大小是不固定的, 因此它们会被存储�
 在当前执行栈为空时, 主线程会查看微任务队列是否有事件存在
 
 - 存在, 依次执行队列中的事件对应的回调, 直到微任务队列为空, 然后去宏任务队列中取出最前面的事件, 把当前的回调加到当前指向栈.
-- 如果不存在, 那么再去宏任务队列中取出一个事件并把对应的回到加入当前执行栈；
+- 如果不存在, 那么再去宏任务队列中取出一个事件并把对应的回到加入当前执行栈;
 当前执行栈执行完毕后时会立刻处理所有微任务队列中的事件, 然后再去宏任务队列中取出一个事件. 同一次事件循环中, 微任务永远在宏任务之前执行.
 
 在事件循环中, 每进行一次循环操作称为 tick, 每一次 tick 的任务处理模型是比较复杂的, 但关键步骤如下:
@@ -170,7 +186,7 @@ console.log('end')
 
 柜员 OS: “艹...”
 
-这个例子就说明了: ~~你大爷永远是你大爷~~ `在当前微任务没有执行完成时, 是不会执行下一个宏任务的！`
+这个例子就说明了: ~~你大爷永远是你大爷~~ `在当前微任务没有执行完成时, 是不会执行下一个宏任务的!`
 
 总结一下, 异步任务分为 `宏任务(macrotask)` 与 `微任务 (microtask)`. 宏任务会进入一个队列, 而微任务会进入到另一个不同的队列, 且微任务要优于宏任务执行.
 
@@ -258,7 +274,7 @@ async function bar() {
 foo();
 ```
 
-其中 `await 前面的代码` 是同步的, 调用此函数时会直接执行；而 `await bar();` 这句可以被转换成 `Promise.resolve(bar())`；`await 后面的代码` 则会被放到 Promise 的 then() 方法里. 因此上面的代码可以被转换成如下形式, 这样是不是就很清晰了?
+其中 `await 前面的代码` 是同步的, 调用此函数时会直接执行; 而 `await bar();` 这句可以被转换成 `Promise.resolve(bar())`; `await 后面的代码` 则会被放到 Promise 的 then() 方法里. 因此上面的代码可以被转换成如下形式, 这样是不是就很清晰了?
 
 ```js
 function foo() {
@@ -388,9 +404,9 @@ micro-task 大概包括:
 
 ## 浅谈 Web Workers
 
-需要强调的是, Worker 是浏览器 (即宿主环境) 的功能, 实际上和 JavaScript 语言本身几乎没有什么关系. 也就是说, JavaScript 当前并没有任何支持多线程执行的功能.
+需要强调的是, Worker 是浏览器(即宿主环境)的功能, 实际上和 JavaScript 语言本身几乎没有什么关系. 也就是说, JavaScript 当前并没有任何支持多线程执行的功能.
 
-所以, JavaScript 是一门单线程的语言！JavaScript 是一门单线程的语言！JavaScript 是一门单线程的语言！
+所以, JavaScript 是一门单线程的语言! JavaScript 是一门单线程的语言! JavaScript 是一门单线程的语言!
 
 浏览器可以提供多个 `JavaScript 引擎实例`, 各自运行在自己的线程上, 这样你可以在每个线程上运行不同的程序. 程序中每一个这样的的独立的多线程部分被称为一个 Worker. 这种类型的并行化被称为 `任务并行`, 因为其重点在于把程序划分为多个块来并发运行. 下面是 Worker 的运作流图.
 
@@ -465,6 +481,124 @@ self.addEventListener(
   },
   false,
 );
+```
+
+## 谈一谈 setTimeout
+
+上面我们说道宏任务会放在消息队列中, 但除此之外, 还有另外一个消息队列, 这个队列中维护了需要延迟执行的任务列表, 包括了定时器和 [Chromium 内部一些需要延迟执行的任务](https://source.chromium.org/chromium/chromium/src/+/main:base/task/sequence_manager/task_queue_impl.h;l=391;bpv=0;bpt=1). 所以当通过 JavaScript 创建一个定时器时, 渲染进程会将该定时器的回调任务添加到延迟队列中, 延迟队列的签名如下:
+
+```c++
+DelayedIncomingQueue delayed_incoming_queue;
+```
+
+当通过 JavaScript 调用 setTimeout 设置回调函数的时候, 渲染进程将会创建一个回调任务, 包含了回调函数 callBack, 当前发起时间, 延迟执行时间,
+
+```c++
+struct DelayTask {
+  int64 id; 
+  CallBackFunction cbf;
+  int start_time;
+  int delay_time;
+};
+DelayTask timerTask;
+timerTask.cbf = callBack;
+timerTask.start_time = getCurrentTime(); //获取当前时间
+timerTask.delay_time = 200;//设置延迟执行时间
+```
+
+创建好回调任务之后, 再将该任务添加到延迟执行队列中, 代码如下所示：
+
+```c++
+delayed_incoming_queue.push(timerTask); 
+```
+
+我们添加了一个 ProcessDelayTask 函数, 该函数是专门用来处理延迟执行任务的, 它会在 delayed_incoming_queue 中取出已经到期的定时器任务依次执行.
+
+这里我们要重点关注它的执行时机, 在上段代码中, 处理完消息队列中的一个任务之后, 就开始执行 ProcessDelayTask 函数. ProcessDelayTask 函数会根据发起时间和延迟时间计算出到期的任务, 然后依次执行这些到期的任务. 等到期的任务执行完成之后, 再继续下一个循环过程. 通过这样的方式, 一个完整的定时器就实现了.
+
+```c++
+void ProcessTimerTask() {
+  // 从 delayed_incoming_queue 中取出已经到期的定时器任务
+  // 依次执行这些任务
+}
+
+TaskQueue task_queue; 
+void ProcessTask();
+bool keep_running = true;
+void MainTherad() {
+  for(;;){
+    //执行消息队列中的任务
+    Task task = task_queue.takeTask();
+    ProcessTask(task);
+    
+    //执行延迟队列中的任务
+    ProcessDelayTask()
+
+    if(!keep_running) //如果设置了退出标志, 那么直接退出线程循环
+        break; 
+  }
+}
+```
+
+`clearTimeout(timer_id)` 的原理也很简单, 就是在 delayed_incoming_queue 把 timer_id 删掉即可.
+
+### 使用 setTimeout 的一些注意事项
+
+#### 如果当前任务执行时间过久, 会影响定时器任务的执行
+
+这个很好理解, 要执行消息队列中的下个任务, 需要等待当前的任务执行完成, 所以当前任务很重的话, 势必会影响到下个任务的执行.
+
+#### 如果 setTimeout 存在嵌套调用, 那么系统会设置最短时间间隔为 4 毫秒
+
+![最短时间间隔为 4 毫秒](https://edge.yancey.app/beg/6j7l3o5c-1650464022544.webp)
+
+上图中的竖线就是定时器的函数回调过程, 从图中可以看出, 前面五次调用的时间间隔比较小, 嵌套调用超过五次以上, 后面每次的调用最小时间间隔是 4 毫秒. 之所以出现这样的情况, 是因为在 Chrome 中, 定时器被嵌套调用 5 次以上, 系统会判断该函数方法被阻塞了, 如果定时器的调用时间间隔小于 4 毫秒, 那么浏览器会将每次调用的时间间隔设置为 4 毫秒.
+
+```c++
+static const int kMaxTimerNestingLevel = 5;
+
+// Chromium uses a minimum timer interval of 4ms. We'd like to go
+// lower; however, there are poorly coded websites out there which do
+// create CPU-spinning loops.  Using 4ms prevents the CPU from
+// spinning too busily and provides a balance between CPU spinning and
+// the smallest possible interval timer.
+static constexpr base::TimeDelta kMinimumInterval = base::TimeDelta::FromMilliseconds(4);
+
+
+base::TimeDelta interval_milliseconds =
+      std::max(base::TimeDelta::FromMilliseconds(1), interval);
+
+  if (interval_milliseconds < kMinimumInterval &&
+      nesting_level_ >= kMaxTimerNestingLevel)
+    interval_milliseconds = kMinimumInterval;
+
+  if (single_shot)
+    StartOneShot(interval_milliseconds, FROM_HERE);
+  else
+    StartRepeating(interval_milliseconds, FROM_HERE);
+```
+
+#### 未激活的页面, setTimeout 执行最小间隔是 1000 毫秒
+
+如果标签不是当前的激活标签, 那么定时器最小的时间间隔是 1000 毫秒, 目的是为了优化后台页面的加载损耗以及降低耗电量.
+
+#### 延时执行时间有最大值
+
+除了要了解定时器的回调函数时间比实际设定值要延后之外, 还有一点需要注意下, 那就是 Chrome, Safari, Firefox 都是以 32 个 bit 来存储延时值的, 32bit 最大只能存放的数字是 2147483647 毫秒, 这就意味着, 如果 setTimeout 设置的延迟值大于 2147483647 毫秒（大约 24.8 天）时就会溢出, 那么相当于延时值被设置为 0 了, 这导致定时器会被立即执行.
+
+#### 小心 setTimeout 设置的回调函数中的 this
+
+如下代码中 showName 的 this 指向的是 window, 为了解决这个问题, 你可以 bind 一下.
+
+```ts
+var name= 1;
+var MyObj = {
+  name: 2,
+  showName: function() {
+    console.log(this.name);
+  }
+}
+setTimeout(MyObj.showName,1000)
 ```
 
 ## 以三道题收尾
