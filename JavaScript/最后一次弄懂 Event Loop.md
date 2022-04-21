@@ -6,25 +6,25 @@
 
 ```js
 async function async1() {
-  console.log('async1 start');
+  console.log("async1 start");
   await async2();
-  console.log('async1 end');
+  console.log("async1 end");
 }
 async function async2() {
-  console.log('async2');
+  console.log("async2");
 }
-console.log('script start');
-setTimeout(function() {
-  console.log('setTimeout');
+console.log("script start");
+setTimeout(function () {
+  console.log("setTimeout");
 }, 0);
 async1();
-new Promise(function(resolve) {
-  console.log('promise1');
+new Promise(function (resolve) {
+  console.log("promise1");
   resolve();
-}).then(function() {
-  console.log('promise2');
+}).then(function () {
+  console.log("promise2");
 });
-console.log('script end');
+console.log("script end");
 ```
 
 ## 为什么 JavaScript 是单线程的?
@@ -42,10 +42,10 @@ console.log('script end');
 如果在一个函数返回的时候, 调用者就能够得到预期结果, 那么这个函数就是同步的. 也就是说同步方法调用一旦开始, 调用者必须等到该函数调用返回后, 才能继续后续的行为. 下面这段段代码首先会弹出 alert 框, 如果你不点击 `确定` 按钮, 所有的页面交互都被锁死, 并且后续的 `console` 语句不会被打印出来.
 
 ```js
-alert('Yancey');
-console.log('is');
-console.log('the');
-console.log('best');
+alert("Yancey");
+console.log("is");
+console.log("the");
+console.log("best");
 ```
 
 ### 异步
@@ -56,7 +56,7 @@ console.log('best');
 
 ```js
 setTimeout(() => {
-  console.log('yancey');
+  console.log("yancey");
 }, 1000);
 
 for (let i = 0; i < 100000000; i += 1) {
@@ -134,15 +134,15 @@ JavaScript 中引用类型值的大小是不固定的, 因此它们会被存储�
 
 - 存在, 依次执行队列中的事件对应的回调, 直到微任务队列为空, 然后去宏任务队列中取出最前面的事件, 把当前的回调加到当前指向栈.
 - 如果不存在, 那么再去宏任务队列中取出一个事件并把对应的回到加入当前执行栈;
-当前执行栈执行完毕后时会立刻处理所有微任务队列中的事件, 然后再去宏任务队列中取出一个事件. 同一次事件循环中, 微任务永远在宏任务之前执行.
+  当前执行栈执行完毕后时会立刻处理所有微任务队列中的事件, 然后再去宏任务队列中取出一个事件. 同一次事件循环中, 微任务永远在宏任务之前执行.
 
 在事件循环中, 每进行一次循环操作称为 tick, 每一次 tick 的任务处理模型是比较复杂的, 但关键步骤如下:
 
 - 执行一个宏任务(栈中没有就从事件队列中获取)
 - 执行过程中如果遇到微任务, 就将它添加到微任务的任务队列中
 - 宏任务执行完毕后, 立即执行当前微任务队列中的所有微任务(依次执行)
-- 当前宏任务执行完毕, 开始检查渲染, 然后GUI线程接管渲染
-- 渲染完毕后, JS线程继续接管, 开始下一个宏任务(从事件队列中获取)
+- 当前宏任务执行完毕, 开始检查渲染, 然后 GUI 线程接管渲染
+- 渲染完毕后, JS 线程继续接管, 开始下一个宏任务(从事件队列中获取)
 
 简单总结一下执行的顺序:
 
@@ -153,19 +153,21 @@ JavaScript 中引用类型值的大小是不固定的, 因此它们会被存储�
 看一个例子:
 
 ```ts
-console.log('start')
+console.log("start");
 
-setTimeout(function() {
-  console.log('setTimeout')
-}, 0)
+setTimeout(function () {
+  console.log("setTimeout");
+}, 0);
 
-Promise.resolve().then(function() {
-  console.log('promise1')
-}).then(function() {
-  console.log('promise2')
-})
+Promise.resolve()
+  .then(function () {
+    console.log("promise1");
+  })
+  .then(function () {
+    console.log("promise2");
+  });
 
-console.log('end')
+console.log("end");
 ```
 
 ![1653721873-5adb68e2247cf.gif](https://edge.yancey.app/beg/1653721873-5adb68e2247cf.gif)
@@ -192,9 +194,9 @@ console.log('end')
 
 ### 常见的宏任务和微任务
 
-宏任务: script(整体代码), setTimeout, setInterval, I/O, 事件, postMessage,  MessageChannel, setImmediate (Node.js)
+宏任务: script(整体代码), setTimeout, setInterval, I/O, 事件, postMessage, MessageChannel, setImmediate (Node.js)
 
-微任务: Promise.then,  MutaionObserver, process.nextTick (Node.js)
+微任务: Promise.then, MutaionObserver, process.nextTick (Node.js)
 
 ### 来做几道题
 
@@ -202,23 +204,23 @@ console.log('end')
 
 ```js
 setTimeout(() => {
-  console.log('A');
+  console.log("A");
 }, 0);
 var obj = {
-  func: function() {
-    setTimeout(function() {
-      console.log('B');
+  func: function () {
+    setTimeout(function () {
+      console.log("B");
     }, 0);
-    return new Promise(function(resolve) {
-      console.log('C');
+    return new Promise(function (resolve) {
+      console.log("C");
       resolve();
     });
   },
 };
-obj.func().then(function() {
-  console.log('D');
+obj.func().then(function () {
+  console.log("D");
 });
-console.log('E');
+console.log("E");
 ```
 
 - 第一个 `setTimeout` 放到宏任务队列, 此时宏任务队列为 ['A']
@@ -238,11 +240,11 @@ console.log('E');
 再来看一道阮一峰老师出的题目, 其实也不难.
 
 ```js
-let p = new Promise(resolve => {
+let p = new Promise((resolve) => {
   resolve(1);
   Promise.resolve().then(() => console.log(2));
   console.log(4);
-}).then(t => console.log(t));
+}).then((t) => console.log(t));
 console.log(3);
 ```
 
@@ -295,32 +297,32 @@ foo();
 
 ```js
 function async1() {
-  console.log('async1 start'); // 2
+  console.log("async1 start"); // 2
 
   Promise.resolve(async2()).then(() => {
-    console.log('async1 end'); // 6
+    console.log("async1 end"); // 6
   });
 }
 
 function async2() {
-  console.log('async2'); // 3
+  console.log("async2"); // 3
 }
 
-console.log('script start'); // 1
+console.log("script start"); // 1
 
-setTimeout(function() {
-  console.log('settimeout'); // 8
+setTimeout(function () {
+  console.log("settimeout"); // 8
 }, 0);
 
 async1();
 
-new Promise(function(resolve) {
-  console.log('promise1'); // 4
+new Promise(function (resolve) {
+  console.log("promise1"); // 4
   resolve();
-}).then(function() {
-  console.log('promise2'); // 7
+}).then(function () {
+  console.log("promise2"); // 7
 });
-console.log('script end'); // 5
+console.log("script end"); // 5
 ```
 
 - 首先打印出 `script start`
@@ -388,11 +390,11 @@ micro-task 大概包括:
 
 因此, 从上面这个简化图中, 我们可以分析出 node 的事件循环的阶段顺序为:
 
-输入数据阶段(incoming data)->轮询阶段(poll)->检查阶段(check)->关闭事件回调阶段(close callback)->定时器检测阶段(timers)->I/O事件回调阶段(I/O callbacks)->闲置阶段(idle, prepare)->轮询阶段...
+输入数据阶段(incoming data)->轮询阶段(poll)->检查阶段(check)->关闭事件回调阶段(close callback)->定时器检测阶段(timers)->I/O 事件回调阶段(I/O callbacks)->闲置阶段(idle, prepare)->轮询阶段...
 
 - 定时器检测阶段(timers): 本阶段执行 timer 的回调, 即 setTimeout, setInterval 里面的回调函数.
 
-- I/O事件回调阶段(I/O callbacks): 执行延迟到下一个循环迭代的 I/O 回调, 即上一轮循环中未被执行的一些I/O回调.
+- I/O 事件回调阶段(I/O callbacks): 执行延迟到下一个循环迭代的 I/O 回调, 即上一轮循环中未被执行的一些 I/O 回调.
 
 - 闲置阶段(idle, prepare): 仅系统内部使用.
 
@@ -431,18 +433,18 @@ micro-task 大概包括:
   <legend></legend>
 
   <script>
-    const input = document.getElementById('input');
-    const btn = document.getElementById('btn');
-    const result = document.getElementById('result');
+    const input = document.getElementById("input");
+    const btn = document.getElementById("btn");
+    const result = document.getElementById("result");
 
-    btn.addEventListener('click', () => {
-      const worker = new Worker('./worker.js');
+    btn.addEventListener("click", () => {
+      const worker = new Worker("./worker.js");
 
       // 向 Worker 发送消息
       worker.postMessage(input.value);
 
       // 接收来自 Worker 的消息
-      worker.addEventListener('message', e => {
+      worker.addEventListener("message", (e) => {
         result.innerHTML = e.data;
 
         // 使用完 Worker 后记得关闭
@@ -458,8 +460,8 @@ micro-task 大概包括:
 ```js
 function memorize(f) {
   const cache = {};
-  return function() {
-    const key = Array.prototype.join.call(arguments, ',');
+  return function () {
+    const key = Array.prototype.join.call(arguments, ",");
     if (key in cache) {
       return cache[key];
     } else {
@@ -468,18 +470,18 @@ function memorize(f) {
   };
 }
 
-const factorial = memorize(n => {
+const factorial = memorize((n) => {
   return n <= 1 ? 1 : n * factorial(n - 1);
 });
 
 // 监听主线程发过来的消息
 self.addEventListener(
-  'message',
-  function(e) {
+  "message",
+  function (e) {
     // 响应主线程
     self.postMessage(factorial(e.data));
   },
-  false,
+  false
 );
 ```
 
@@ -495,7 +497,7 @@ DelayedIncomingQueue delayed_incoming_queue;
 
 ```c++
 struct DelayTask {
-  int64 id; 
+  int64 id;
   CallBackFunction cbf;
   int start_time;
   int delay_time;
@@ -506,10 +508,10 @@ timerTask.start_time = getCurrentTime(); //获取当前时间
 timerTask.delay_time = 200;//设置延迟执行时间
 ```
 
-创建好回调任务之后, 再将该任务添加到延迟执行队列中, 代码如下所示：
+创建好回调任务之后, 再将该任务添加到延迟执行队列中, 代码如下所示:
 
 ```c++
-delayed_incoming_queue.push(timerTask); 
+delayed_incoming_queue.push(timerTask);
 ```
 
 我们添加了一个 ProcessDelayTask 函数, 该函数是专门用来处理延迟执行任务的, 它会在 delayed_incoming_queue 中取出已经到期的定时器任务依次执行.
@@ -522,7 +524,7 @@ void ProcessTimerTask() {
   // 依次执行这些任务
 }
 
-TaskQueue task_queue; 
+TaskQueue task_queue;
 void ProcessTask();
 bool keep_running = true;
 void MainTherad() {
@@ -530,12 +532,12 @@ void MainTherad() {
     //执行消息队列中的任务
     Task task = task_queue.takeTask();
     ProcessTask(task);
-    
+
     //执行延迟队列中的任务
     ProcessDelayTask()
 
     if(!keep_running) //如果设置了退出标志, 那么直接退出线程循环
-        break; 
+        break;
   }
 }
 ```
@@ -591,15 +593,66 @@ base::TimeDelta interval_milliseconds =
 如下代码中 showName 的 this 指向的是 window, 为了解决这个问题, 你可以 bind 一下.
 
 ```ts
-var name= 1;
+var name = 1;
 var MyObj = {
   name: 2,
-  showName: function() {
+  showName: function () {
     console.log(this.name);
-  }
-}
-setTimeout(MyObj.showName,1000)
+  },
+};
+setTimeout(MyObj.showName, 1000);
 ```
+
+## 谈一谈 XMLHttpRequest
+
+首先谈一谈同步回调和异步回调. 将一个函数作为参数传递给另外一个函数, 那作为参数的这个函数就是回调函数, 回调函数可以是同步或者异步的. 回调函数 callback 是在主函数返回之前执行的, 我们把这个回调过程称为同步回调. 回调函数 callback 并没有在主函数内部被调用, 我们把这种回调函数在主函数外部执行的过程称为异步回调.
+
+```ts
+// 同步回调
+let callback = function () {
+  console.log("i am do homework");
+};
+function doWork(cb) {
+  console.log("start do work");
+  cb();
+  console.log("end do work");
+}
+doWork(callback);
+```
+
+```ts
+// 异步回调
+let callback = function () {
+  console.log("i am do homework");
+};
+function doWork(cb) {
+  console.log("start do work");
+  setTimeout(cb, 1000);
+  console.log("end do work");
+}
+doWork(callback);
+```
+
+我们知道消息队列和主线程循环机制保证了页面有条不紊地运行. 这里还需要补充一点, 那就是当循环系统在执行一个任务的时候, 都要为这个任务维护一个系统调用栈. 这个系统调用栈类似于 JavaScript 的调用栈, 只不过系统调用栈是 Chromium 的开发语言 C++ 来维护的.
+
+![消息循环系统调用栈记录](https://edge.yancey.app/beg/3ftb0md5-1650528631114.webp)
+
+这幅图记录了一个 Parse HTML 的任务执行过程, 其中黄色的条目表示执行 JavaScript 的过程, 其他颜色的条目表示浏览器内部系统的执行过程.
+
+通过该图你可以看出来, Parse HTML 任务在执行过程中会遇到一系列的子过程, 比如在解析页面的过程中遇到了 JavaScript 脚本, 那么就暂停解析过程去执行该脚本, 等执行完成之后, 再恢复解析过程. 然后又遇到了样式表, 这时候又开始解析样式表... 直到整个任务执行完成.
+
+需要说明的是, 整个 Parse HTML 是一个完整的任务, 在执行过程中的脚本解析、样式表解析都是该任务的子过程, 其下拉的长条就是执行过程中调用栈的信息.
+
+每个任务在执行过程中都有自己的调用栈, 那么同步回调就是在当前主函数的上下文中执行回调函数, 这个没有太多可讲的. 下面我们主要来看看异步回调过程, 异步回调是指回调函数在主函数之外执行, 一般有两种方式:
+
+- 第一种是把异步函数做成一个任务, 添加到信息队列尾部;
+- 第二种是把异步函数添加到微任务队列中, 这样就可以在当前任务的末尾处执行微任务了.
+
+### XMLHttpRequest 运作机制
+
+![XMLHttpRequest 运作机制](https://edge.yancey.app/beg/93zmowbx-1650530029418.webp)
+
+这里仅仅说下 xhr.send 发生的事情. 对照上面那张请求流程图, 以看到: 渲染进程会将请求发送给网络进程, 然后网络进程负责资源的下载, 等网络进程接收到数据之后, 就会利用 IPC 来通知渲染进程; 渲染进程接收到消息之后, 会将 xhr 的回调函数封装成任务并添加到消息队列中, 等主线程循环系统执行到该任务的时候, 就会根据相关的状态来调用对应的回调函数.
 
 ## 以三道题收尾
 
@@ -609,31 +662,31 @@ setTimeout(MyObj.showName,1000)
 
 ```js
 const p1 = new Promise((resolve, reject) => {
-  console.log('promise1');
+  console.log("promise1");
   resolve();
 })
   .then(() => {
-    console.log('then11');
+    console.log("then11");
     new Promise((resolve, reject) => {
-      console.log('promise2');
+      console.log("promise2");
       resolve();
     })
       .then(() => {
-        console.log('then21');
+        console.log("then21");
       })
       .then(() => {
-        console.log('then23');
+        console.log("then23");
       });
   })
   .then(() => {
-    console.log('then12');
+    console.log("then12");
   });
 
 const p2 = new Promise((resolve, reject) => {
-  console.log('promise3');
+  console.log("promise3");
   resolve();
 }).then(() => {
-  console.log('then31');
+  console.log("then31");
 });
 ```
 
@@ -659,24 +712,24 @@ const p2 = new Promise((resolve, reject) => {
 
 ```js
 const p1 = new Promise((resolve, reject) => {
-  console.log('promise1'); // 1
+  console.log("promise1"); // 1
   resolve();
 })
   .then(() => {
-    console.log('then11'); // 2
+    console.log("then11"); // 2
     return new Promise((resolve, reject) => {
-      console.log('promise2'); // 3
+      console.log("promise2"); // 3
       resolve();
     })
       .then(() => {
-        console.log('then21'); // 4
+        console.log("then21"); // 4
       })
       .then(() => {
-        console.log('then23'); // 5
+        console.log("then23"); // 5
       });
   })
   .then(() => {
-    console.log('then12'); //6
+    console.log("then12"); //6
   });
 ```
 
@@ -685,33 +738,31 @@ const p1 = new Promise((resolve, reject) => {
 依次为 ['sync1', 'promise', 'sync2', 'pro_then', 'setTimeout1', 'setTimeoutPromise', 'last_setTimeout', 'pro_timeout'], 注意 last_setTimeout 和 pro_timeout 的位置.
 
 ```ts
-
-console.log('sync1');
+console.log("sync1");
 
 setTimeout(function () {
-    console.log('setTimeout1')
+  console.log("setTimeout1");
 }, 0);
 
 var promise = new Promise(function (resolve, reject) {
-    setTimeout(function () {
-        console.log('setTimeoutPromise')
-    }, 0);
-    console.log('promise');
-    resolve();
+  setTimeout(function () {
+    console.log("setTimeoutPromise");
+  }, 0);
+  console.log("promise");
+  resolve();
 });
 
-
 promise.then(() => {
-    console.log('pro_then');
-    setTimeout(() => {
-        console.log('pro_timeout');
-    }, 0)
-})
+  console.log("pro_then");
+  setTimeout(() => {
+    console.log("pro_timeout");
+  }, 0);
+});
 
 setTimeout(function () {
-    console.log('last_setTimeout')
+  console.log("last_setTimeout");
 }, 0);
-console.log('sync2');
+console.log("sync2");
 ```
 
 ## 最后
