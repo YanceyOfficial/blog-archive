@@ -96,6 +96,10 @@
 
   - [wip - 前端性能面面观](./综合/前端性能面面观.md)
 
+- React 源码
+
+  - [深入"时间管理大师" —— React Scheduler](./React%20%E6%BA%90%E7%A0%81/%E6%B7%B1%E5%85%A5%22%E6%97%B6%E9%97%B4%E7%AE%A1%E7%90%86%E5%A4%A7%E5%B8%88%22%20%E2%80%94%E2%80%94%20React%20Scheduler.md)
+
 - Poems
 
   - [离殇赋](./Poems/离殇赋.md)
