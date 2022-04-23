@@ -8,7 +8,7 @@
 
 ![动图演示](https://edge.yancey.app/beg/3c05a686-5fd7-4410-9eb2-42a79c674973.gif)
 
-##　昨天的面试
+## 昨天的面试
 
 昨天面试问到“你是如何学习新知识的？“
 
@@ -407,7 +407,7 @@ class CountryChoice extends React.Component {
 }
 ```
 
-##　写在最后
+## 写在最后
 
 项目写的很丑，随着学习的深入还要进行迭代，加油吧。项目传到了[github](https://github.com/yanceyleo/currency-exchange-component-by-react)上了，没有劳驾 node 服务器，fork 下来直接打开 html 文件就能使用了。躲过了风头，服务器也重新开了，请戳这里=>[在线演示](https://api.leoyancey.com/currency_exchange/root.html)。
 
