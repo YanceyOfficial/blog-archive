@@ -99,11 +99,11 @@
 
 ### 构建 DOM 树
 
-因为浏览器无法直接理解和使用 HTML, 所以需要将 HTML 转换为浏览器能够理解的结构, 即 DOM 树. 在渲染引擎中，DOM 有三个层面的作用。
+因为浏览器无法直接理解和使用 HTML, 所以需要将 HTML 转换为浏览器能够理解的结构, 即 DOM 树. 在渲染引擎中, DOM 有三个层面的作用.
 
-- 从页面的视角来看，DOM 是生成页面的基础数据结构。
-- 从 JavaScript 脚本视角来看，DOM 提供给 JavaScript 脚本操作的接口，通过这套接口，JavaScript 可以对 DOM 结构进行访问，从而改变文档的结构、样式和内容。
-- 从安全视角来看，DOM 是一道安全防护线，一些不安全的内容在 DOM 解析阶段就被拒之门外了。
+- 从页面的视角来看, DOM 是生成页面的基础数据结构.
+- 从 JavaScript 脚本视角来看, DOM 提供给 JavaScript 脚本操作的接口, 通过这套接口, JavaScript 可以对 DOM 结构进行访问, 从而改变文档的结构, 样式和内容.
+- 从安全视角来看, DOM 是一道安全防护线, 一些不安全的内容在 DOM 解析阶段就被拒之门外了.
 
 ![DOM 树](https://edge.yancey.app/beg/qghxbk7j-1649864555613.webp)
 
@@ -113,61 +113,61 @@
 
 #### DOM 树的生成
 
-在渲染引擎内部，有一个叫 HTML 解析器（HTMLParser）的模块，它的职责就是负责将 HTML 字节流转换为 DOM 结构。HTML 解析器并不是等整个文档加载完成之后再解析的，而是网络进程加载了多少数据，HTML 解析器便解析多少数据。
+在渲染引擎内部, 有一个叫 HTML 解析器(HTMLParser)的模块, 它的职责就是负责将 HTML 字节流转换为 DOM 结构. HTML 解析器并不是等整个文档加载完成之后再解析的, 而是网络进程加载了多少数据, HTML 解析器便解析多少数据.
 
-网络进程接收到响应头之后，会根据响应头中的 content-type 字段来判断文件的类型，比如 content-type 的值是 “text/html”，那么浏览器就会判断这是一个 HTML 类型的文件，然后为该请求选择或者创建一个渲染进程。渲染进程准备好之后，网络进程和渲染进程之间会建立一个共享数据的管道，网络进程接收到数据后就往这个管道里面放，而渲染进程则从管道的另外一端不断地读取数据，并同时将读取的数据喂给 HTML 解析器。你可以把这个管道想象成一个“水管”，网络进程接收到的字节流像水一样倒进这个“水管”，而“水管”的另外一端是渲染进程的 HTML 解析器，它会动态接收字节流，并将其解析为 DOM。
+网络进程接收到响应头之后, 会根据响应头中的 content-type 字段来判断文件的类型, 比如 content-type 的值是 **text/html**, 那么浏览器就会判断这是一个 HTML 类型的文件, 然后为该请求选择或者创建一个渲染进程. 渲染进程准备好之后, 网络进程和渲染进程之间会建立一个共享数据的管道, 网络进程接收到数据后就往这个管道里面放, 而渲染进程则从管道的另外一端不断地读取数据, 并同时将读取的数据喂给 HTML 解析器. 你可以把这个管道想象成一个**水管**, 网络进程接收到的字节流像水一样倒进这个**水管**, 而**水管**的另外一端是渲染进程的 HTML 解析器, 它会动态接收字节流, 并将其解析为 DOM.
 
 上面说到代码从网络传输过来是字节流的形式, 字节流转换为 DOM 的流程如下图所示, 下面详细说明.
 
 ![字节流转换为 DOM](https://edge.yancey.app/beg/j904npad-1650741239021.webp)
 
-第一个阶段是通过分词器将字节流转换为 Token。V8 编译 JavaScript 过程中的第一步是做词法分析; 解析 HTML 也是一样的，需要通过分词器先将字节流转换为一个个 Token，分为 Tag Token 和文本 Token. 上述 HTML 代码通过词法分析生成的 Token 如下所示:
+第一个阶段是通过分词器将字节流转换为 Token. V8 编译 JavaScript 过程中的第一步是做词法分析; 解析 HTML 也是一样的, 需要通过分词器先将字节流转换为一个个 Token, 分为 Tag Token 和文本 Token. 上述 HTML 代码通过词法分析生成的 Token 如下所示:
 
 ![生成的 Token](https://edge.yancey.app/beg/w57hx1ms-1650741527117.webp)
 
-至于后续的第二个和第三个阶段是**同步**进行的，需要将 Token 解析为 DOM 节点，并将 DOM 节点添加到 DOM 树中。HTML 解析器维护了一个 Token 栈结构，该 Token 栈主要用来计算节点之间的父子关系，在第一个阶段中生成的 Token 会被按照顺序压到这个栈中。具体的处理规则如下所示:
+至于后续的第二个和第三个阶段是**同步**进行的, 需要将 Token 解析为 DOM 节点, 并将 DOM 节点添加到 DOM 树中. HTML 解析器维护了一个 Token 栈结构, 该 Token 栈主要用来计算节点之间的父子关系, 在第一个阶段中生成的 Token 会被按照顺序压到这个栈中. 具体的处理规则如下所示:
 
-- 如果压入到栈中的是 **StartTag Token**，HTML 解析器会为该 Token 创建一个 DOM 节点，然后将该节点加入到 DOM 树中，它的父节点就是栈中相邻的那个元素生成的节点。
-- 如果分词器解析出来是**Text Token**，那么会生成一个文本节点，然后将该节点加入到 DOM 树中，文本 Token 是不需要压入到栈中，它的父节点就是当前栈顶 Token 所对应的 DOM 节点。
-- 如果分词器解析出来的是 **EndTag Token**，比如是 EndTag div，HTML 解析器会查看 Token 栈顶的元素是否是 StarTag div，如果是，就将 StartTag div 从栈中弹出，表示该 div 元素解析完成。
+- 如果压入到栈中的是 **StartTag Token**, HTML 解析器会为该 Token 创建一个 DOM 节点, 然后将该节点加入到 DOM 树中, 它的父节点就是栈中相邻的那个元素生成的节点.
+- 如果分词器解析出来是**Text Token**, 那么会生成一个文本节点, 然后将该节点加入到 DOM 树中, 文本 Token 是不需要压入到栈中, 它的父节点就是当前栈顶 Token 所对应的 DOM 节点.
+- 如果分词器解析出来的是 **EndTag Token**, 比如是 EndTag div, HTML 解析器会查看 Token 栈顶的元素是否是 StarTag div, 如果是, 就将 StartTag div 从栈中弹出, 表示该 div 元素解析完成.
 
 ```html
 <html>
-<body>
-  <div>1</div>
-  <div>test</div>
-</body>
+  <body>
+    <div>1</div>
+    <div>test</div>
+  </body>
 </html>
 ```
 
 以上面这段代码为例:
 
-HTML 解析器开始工作时，会默认创建了一个根为 document 的空 DOM 结构，同时会将一个 StartTag document 的 Token 压入栈底。然后经过分词器解析出来的第一个 StartTag html Token 会被压入到栈中，并创建一个 html 的 DOM 节点，添加到 document 上.
+HTML 解析器开始工作时, 会默认创建了一个根为 document 的空 DOM 结构, 同时会将一个 StartTag document 的 Token 压入栈底. 然后经过分词器解析出来的第一个 StartTag html Token 会被压入到栈中, 并创建一个 html 的 DOM 节点, 添加到 document 上.
 
 然后按照同样的流程解析出来 StartTag body 和 StartTag div.
 
-接下来解析出来的是第一个 div 的文本 Token，渲染引擎会为该 Token 创建一个文本节点，并将该 Token 添加到 DOM 中，它的父节点就是当前 Token 栈顶元素对应的节点.
+接下来解析出来的是第一个 div 的文本 Token, 渲染引擎会为该 Token 创建一个文本节点, 并将该 Token 添加到 DOM 中, 它的父节点就是当前 Token 栈顶元素对应的节点.
 
-再接下来，分词器解析出来第一个 EndTag div，这时候 HTML 解析器会去判断当前栈顶的元素是否是 StartTag div，如果是则从栈顶弹出 StartTag div.
+再接下来, 分词器解析出来第一个 EndTag div, 这时候 HTML 解析器会去判断当前栈顶的元素是否是 StartTag div, 如果是则从栈顶弹出 StartTag div.
 
 ![HTML 解析器栈实例](https://edge.yancey.app/beg/4rfxbpru-1650742718924.jpeg)
 
-需要注意的是, 如果解析到 `<script>` 标签，渲染引擎判断这是一段脚本，此时 HTML 解析器就会暂停 DOM 的解析，因为接下来的 JavaScript 可能要修改当前已经生成的 DOM 结构。脚本执行完成之后，HTML 解析器恢复解析过程，继续解析后续的内容，直至生成最终的 DOM.
+需要注意的是, 如果解析到 `<script>` 标签, 渲染引擎判断这是一段脚本, 此时 HTML 解析器就会暂停 DOM 的解析, 因为接下来的 JavaScript 可能要修改当前已经生成的 DOM 结构. 脚本执行完成之后, HTML 解析器恢复解析过程, 继续解析后续的内容, 直至生成最终的 DOM.
 
-不管是内嵌 JavaScript 脚本还是通过 JavaScript 文件加载的. 其整个执行流程还是一样的: **执行到 JavaScript 标签时，暂停整个 DOM 的解析，执行 JavaScript 代码**. 不过通过 JavaScript 文件加载的，需要先下载这段 JavaScript 代码, 而 JavaScript 文件的下载过程会阻塞 DOM 解析，而通常下载又是非常耗时的，会受到网络环境、JavaScript 文件大小等因素的影响。因此 Chrome 做了一些优化, 比如**预解析操作**: 当渲染引擎收到字节流之后，会开启一个预解析线程，用来分析 HTML 文件中包含的 JavaScript、CSS 等相关文件，解析到相关文件之后，预解析线程会提前下载这些文件。
+不管是内嵌 JavaScript 脚本还是通过 JavaScript 文件加载的. 其整个执行流程还是一样的: **执行到 JavaScript 标签时, 暂停整个 DOM 的解析, 执行 JavaScript 代码**. 不过通过 JavaScript 文件加载的, 需要先下载这段 JavaScript 代码, 而 JavaScript 文件的下载过程会阻塞 DOM 解析, 而通常下载又是非常耗时的, 会受到网络环境, JavaScript 文件大小等因素的影响. 因此 Chrome 做了一些优化, 比如**预解析操作**: 当渲染引擎收到字节流之后, 会开启一个预解析线程, 用来分析 HTML 文件中包含的 JavaScript, CSS 等相关文件, 解析到相关文件之后, 预解析线程会提前下载这些文件.
 
-如果 JavaScript 文件中没有操作 DOM 相关代码，就可以将该 JavaScript 脚本设置为异步加载，通过 async 或 defer 来标记代码. async 和 defer 虽然都是异步的，不过还有一些差异，使用 async 标志的脚本文件一旦加载完成，会立即执行；而使用了 defer 标记的脚本文件，需要在 DOMContentLoaded 事件之前执行。具体可以看[关于 script 标签 async 和 defer 属性分析](https://www.yanceyleo.com/post/b6767e52-a557-45b1-8955-8ac5bd77ca02)这篇文章.
+如果 JavaScript 文件中没有操作 DOM 相关代码, 就可以将该 JavaScript 脚本设置为异步加载, 通过 async 或 defer 来标记代码. async 和 defer 虽然都是异步的, 不过还有一些差异, 使用 async 标志的脚本文件一旦加载完成, 会立即执行；而使用了 defer 标记的脚本文件, 需要在 DOMContentLoaded 事件之前执行. 具体可以看[关于 script 标签 async 和 defer 属性分析](https://www.yanceyleo.com/post/b6767e52-a557-45b1-8955-8ac5bd77ca02)这篇文章.
 
 ```html
-<script async type="text/javascript" src='foo.js'></script>
-<script defer type="text/javascript" src='foo.js'></script>
+<script async type="text/javascript" src="foo.js"></script>
+<script defer type="text/javascript" src="foo.js"></script>
 ```
 
-此外, JavaScript 脚本还是依赖样式表的, 不管该脚本是否操纵了 CSSOM，都会执行 CSS 文件下载，解析操作，再执行 JavaScript 脚本. 这是因为如果 JavaScript 代码里修改了样式, 它必须等到 CSSOM 就绪之后才能修改.
+此外, JavaScript 脚本还是依赖样式表的, 不管该脚本是否操纵了 CSSOM, 都会执行 CSS 文件下载, 解析操作, 再执行 JavaScript 脚本. 这是因为如果 JavaScript 代码里修改了样式, 它必须等到 CSSOM 就绪之后才能修改.
 
-因此, JavaScript 会阻塞 DOM 生成，而样式文件又会阻塞 JavaScript 的执行. 所以说一般把 CSS 放在最上面, script 放在 body 最下面.
+因此, JavaScript 会阻塞 DOM 生成, 而样式文件又会阻塞 JavaScript 的执行. 所以说一般把 CSS 放在最上面, script 放在 body 最下面.
 
-扩展一下: 渲染引擎还有一个安全检查模块叫 XSSAuditor，是用来检测词法安全的。在分词器解析出来 Token 之后，它会检测这些模块是否安全，比如是否引用了外部脚本，是否符合 CSP 规范，是否存在跨站点请求等。如果出现不符合规范的内容，XSSAuditor 会对该脚本或者下载任务进行拦截.
+扩展一下: 渲染引擎还有一个安全检查模块叫 XSSAuditor, 是用来检测词法安全的. 在分词器解析出来 Token 之后, 它会检测这些模块是否安全, 比如是否引用了外部脚本, 是否符合 CSP 规范, 是否存在跨站点请求等. 如果出现不符合规范的内容, XSSAuditor 会对该脚本或者下载任务进行拦截.
 
 ### 样式计算
 
@@ -202,12 +202,22 @@ CSS 样式主要有三种来源, 分别是:
 首先讲 CSS 继承, CSS 继承就是每个 DOM 节点都包含有父节点的样式. 比如下面这段代码:
 
 ```css
-
-body { font-size: 20pxl }
-p { color: blue; }
-span  { display: none }
-div { font-weight: bold; color: red; }
-div  p { color: green; }
+body {
+  font-size: 20pxl;
+}
+p {
+  color: blue;
+}
+span {
+  display: none;
+}
+div {
+  font-weight: bold;
+  color: red;
+}
+div p {
+  color: green;
+}
 ```
 
 这张样式表最终应用到 DOM 节点的效果如下图所示, 所有子节点都继承了父节点样式. 比如 body 节点的 font-size 属性是 20, 那 body 节点下面的所有节点的 font-size 都等于 20.
@@ -260,22 +270,31 @@ DOM 树还含有很多不可见的元素, 比如 head 标签, 还有使用了 `d
 
 其次, 需要剪裁(clip)的地方也会被创建为图层.
 
-下面这段代码, 宽高都是 200px, 但 div 里的字数很多, 肯定会超过 200*200 的面积, 这时候就产生了剪裁, 出现这种裁剪情况的时候, 渲染引擎会为文字部分单独创建一个层, 如果出现滚动条, 滚动条也会被提升为单独的层.
+下面这段代码, 宽高都是 200px, 但 div 里的字数很多, 肯定会超过 200\*200 的面积, 这时候就产生了剪裁, 出现这种裁剪情况的时候, 渲染引擎会为文字部分单独创建一个层, 如果出现滚动条, 滚动条也会被提升为单独的层.
 
 ```html
 <style>
-div {
-  width: 200px;
-  height: 200px;
-  overflow:auto;
-  background: gray;
-} 
+  div {
+    width: 200px;
+    height: 200px;
+    overflow: auto;
+    background: gray;
+  }
 </style>
 <body>
   <div>
-    <p>所以元素有了层叠上下文的属性或者需要被剪裁, 那么就会被提升成为单独一层, 你可以参看下图: </p>
-    <p>从上图我们可以看到, document层上有 A 和 B 层, 而 B 层之上又有两个图层. 这些图层组织在一起也是一颗树状结构. </p>
-    <p>图层树是基于布局树来创建的, 为了找出哪些元素需要在哪些层中, 渲染引擎会遍历布局树来创建层树(Update LayerTree). </p> 
+    <p>
+      所以元素有了层叠上下文的属性或者需要被剪裁, 那么就会被提升成为单独一层,
+      你可以参看下图:
+    </p>
+    <p>
+      从上图我们可以看到, document层上有 A 和 B 层, 而 B 层之上又有两个图层.
+      这些图层组织在一起也是一颗树状结构.
+    </p>
+    <p>
+      图层树是基于布局树来创建的, 为了找出哪些元素需要在哪些层中,
+      渲染引擎会遍历布局树来创建层树(Update LayerTree).
+    </p>
   </div>
 </body>
 ```
