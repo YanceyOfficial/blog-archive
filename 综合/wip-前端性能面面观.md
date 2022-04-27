@@ -198,3 +198,7 @@ Service Worker 的主要思想是在页面和网络之间增加一个拦截器, 
 另外, 由于 Service Worker 还需要会为多个页面提供服务, 所以还不能把 Service Worker 和单个页面绑定起来. 在目前的 Chrome 架构中, Service Worker 是运行在浏览器进程中的, 因为浏览器进程生命周期是最长的, 所以在浏览器的生命周期内, 能够为所有的页面提供服务.
 
 ![PWA](https://edge.yancey.app/beg/z3o4jq6k-1650722871655.webp)
+
+## 总结
+
+![前端性能优化](https://edge.yancey.app/beg/quaky10q-1650778952349.png)
