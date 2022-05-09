@@ -56,7 +56,7 @@
 
   - [JavaScript 核心原理解析](./JavaScript/JavaScript%20核心原理解析.md)
 
-  - [图解 V8 笔记.md](./JavaScript/图解%20V8%20笔记.md)
+  - [浅析 V8 原理.md](./JavaScript/浅析%20V8%20原理.md)
 
 - HTTP
 
