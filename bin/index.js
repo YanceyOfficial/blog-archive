@@ -30,11 +30,6 @@ const generateMenu = async () => {
 
     await fsPromises.writeFile(path.join(__dirname, "../README.md"), res);
   });
-
- 
-
-
-
 };
 
 generateMenu();
