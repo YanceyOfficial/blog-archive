@@ -77,14 +77,12 @@ delete o.name; // false
 下面这个例子, 正是由于 var y 所声明的那个标识符在函数 f() 创建(它自己的闭包)时就已经存在, 所以才阻止了 console.log(y)访问全局环境中的 y. 类似的, let x 所声明的那个 x 其实也已经存在 f() 函数的上下文环境中. 访问它之所以会抛出异常(Exception), 不是因为它不存在, 而是因为这个标识符被拒绝访问了(临时死区).
 
 ```ts
-
 var y = "outer";
 function f() {
   console.log(y); // undefined
   console.log(x); // throw a Exception
   let x = 100;
   var y = 100;
-  ...
 }
 ```
 
@@ -145,7 +143,7 @@ window.a; // 1
 window.b; // 2
 ```
 
-## `a.x = a = { n: 2}` 经典问题
+## a.x = a = { n: 2} 经典问题
 
 ```ts
 var a = { n: 1 },
@@ -272,7 +270,7 @@ finally {
 }
 ```
 
-在*重学前端*的课程学到了即便在 try 中 return 了, 还是会执行 finally 里面的代码, 这涉及 JavaScript 语句执行的完成状态(Completion Record), 如果在 try 或 try..finally 块中使用了 return, 那么这个 break 将发生于最后一行语句之后, 但是却是在 return 语句之前. 下面的代码会依次打印出 Hi, Here, 101. 换句话说, 虽然 try 里面有 return, 但到了 finally 语句的时候, 把 try 里面给 break 掉了, 这得以继续执行下面的语句. 因此, break 将语句的代码块理解为位置, 而不是理解为作用域 / 环境.
+在重学前端的课程学到了即便在 try 中 return 了, 还是会执行 finally 里面的代码, 这涉及 JavaScript 语句执行的完成状态(Completion Record), 如果在 try 或 try..finally 块中使用了 return, 那么这个 break 将发生于最后一行语句之后, 但是却是在 return 语句之前. 下面的代码会依次打印出 Hi, Here, 101. 换句话说, 虽然 try 里面有 return, 但到了 finally 语句的时候, 把 try 里面给 break 掉了, 这得以继续执行下面的语句. 因此, break 将语句的代码块理解为位置, 而不是理解为作用域 / 环境.
 
 ```ts
 var i = 100;
@@ -549,7 +547,7 @@ let tor = foo3();
 
 当 tor.next() 执行时, tor 所包括的 context 信息被压到栈顶执行, 当 tor.next() 退出时, 这个 context 就被从栈上移除.
 
-## 扩展: yield\*
+## 扩展: yield
 
 ```ts
 function* g1() {
