@@ -18,7 +18,7 @@ const generateMenu = async () => {
   ${fileNames
     .map(
       (fileName) =>
-        `- [${fileName.replace(/\.md?x/, "")}](./${encodeURI(dir)}/${encodeURI(
+        `- [${fileName.replace(/\.mdx?/, "")}](./${encodeURI(dir)}/${encodeURI(
           fileName
         )})`
     )
