@@ -1,7 +1,7 @@
 const path = require("path");
 const { promises: fsPromises } = require("fs");
 
-const ignores = ["bin", "LICENSE", "README.md", ".git"];
+const ignores = ["scripts", "LICENSE", "README.md", ".git"];
 
 const generateMenu = async () => {
   const dirs = await fsPromises.readdir(path.join(__dirname, "../"));
