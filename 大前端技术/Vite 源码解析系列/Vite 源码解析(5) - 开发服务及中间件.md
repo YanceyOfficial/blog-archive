@@ -82,14 +82,14 @@ async function getCertificate(cacheDir: string) {
 ## resolveHttpServer
 
 ```ts
-// 一个三方库, 用于创建中间件
+// 一个三方库,用于把中间件和 server 关联起来, 最基本的支持 req, res, next, use, handle 等等
 const middlewares = connect() as Connect.Server;
 const httpServer = middlewareMode
   ? null
   : await resolveHttpServer(serverConfig, middlewares, httpsOptions);
 ```
 
-下面是创建 http server, 如果是 http, 就直接用 `node:http` 的 `createServer`; 否则就是 https, 那么优先用 `node:http2`, 因为我们知道 http2 强制使用 https 的, 当然如果是代理, 就用 `node:https`. 看了一下 [issue](https://github.com/vitejs/vite/issues/484) 是这样解释的:
+下面是创建 http server, 如果是 http, 就直接用 `node:http` 的 `createServer`; 否则就是 https, 那么优先用 `node:http2`, 因为我们知道 http2 强制使用 https 的; 当然如果是代理, 就得用 `node:https`. 看了一下 [issue](https://github.com/vitejs/vite/issues/484) 是这样解释的:
 
 > http-proxy (The underlying module which vite uses for proxy) does not support http2. You cannot use https with proxy as vite is now using Http2.
 
@@ -186,7 +186,7 @@ export function createWebSocketServer(
       // 因为 ws 没提供 https 的 server, 需要自己起一个
       httpsServer = createHttpsServer(httpsOptions, (req, res) => {
         // 426 Upgrade Required 表示服务器拒绝处理客户端使用当前协议发送的请求, 但是可以接受其使用升级后的协议发送的请求
-        // 不过 STATUS_CODES[statusCode] 这个操作没搞懂, 我给提 pr 那哥们留了个 comment, 先留个 TODO:
+        // 不过 STATUS_CODES[statusCode] 这个操作没搞懂, 肯定不是 undefiend 啊? 我给提 pr 那哥们留了个 comment, 先留个 TODO:
         const statusCode = 426;
         const body = STATUS_CODES[statusCode];
         if (!body)
@@ -238,10 +238,11 @@ export function createWebSocketServer(
       if (!listeners?.size) return;
       // getSocketClient 这个函数下面有解释, 就是给 client 封装一层, 保证发送数据的一致性
       const client = getSocketClient(socket);
-      // 遍历监听器集合, 逐一调用
+      // 遍历监听器集合, 逐一执行
       listeners.forEach((listener) => listener(parsed.data, client));
     });
     socket.send(JSON.stringify({ type: "connected" }));
+    // 如果编译出错了啥的, 也把错误暴露给前端
     if (bufferedError) {
       socket.send(JSON.stringify(bufferedError));
       bufferedError = null;
@@ -295,8 +296,8 @@ export function createWebSocketServer(
   // connected client.
   let bufferedError: ErrorPayload | null = null;
 
-  // 下面大家就太熟悉了, 一个典型的发布-订阅模型
-  // 我们就不多说了
+  // 下面大家就太熟悉了, 一个典型发布-订阅设计模式的事件监听器
+  // 尤雨溪确实好这口, vue 源码里我记得也有个类似的东西, 我们就不多说了
   return {
     on: ((event: string, fn: () => void) => {
       if (wsServerEvents.includes(event)) wss.on(event, fn);
@@ -373,10 +374,13 @@ export function createWebSocketServer(
 }
 ```
 
-## c
+## chokidar
+
+在 server 搭建好后, 就需要使用 chokidar 监听文件变化, 来触发 hmr.
 
 ```ts
 const { ignored = [], ...watchOptions } = serverConfig.watch || {};
+// chokidar 实例
 const watcher = chokidar.watch(path.resolve(root), {
   ignored: [
     "**/node_modules/**",
@@ -388,4 +392,297 @@ const watcher = chokidar.watch(path.resolve(root), {
   disableGlobbing: true,
   ...watchOptions,
 }) as FSWatcher;
+
+// 监听文件变化
+watcher.on("change", async (file) => {
+  file = normalizePath(file);
+  // 如果是 package.json 的变化, 需要更新 packageCache 的数据
+  if (file.endsWith("/package.json")) {
+    return invalidatePackageData(packageCache, file);
+  }
+  // invalidate module graph cache on file change
+  // 当有源码文件变化, 重塑模块依赖图
+  moduleGraph.onFileChange(file);
+  if (serverConfig.hmr !== false) {
+    try {
+      // 并进行 hmr, 这个我们下一章主讲
+      await handleHMRUpdate(file, server);
+    } catch (err) {
+      ws.send({
+        type: "error",
+        err: prepareError(err),
+      });
+    }
+  }
+});
+```
+
+## server 实例
+
+至此我们就跑起来一个服务, 下面是它最终的实例, 这里面的大部分方法都跟 hmr 有关, 我们只是简单贴一下, 下一章重点来讲 hmr. 至于 ssr, 由于官方还不稳定, 等稳定了后面再填坑.
+
+```ts
+const server: ViteDevServer = {
+  config, // 配置
+  middlewares, // 中间件
+  httpServer, // http 服务
+  watcher, // chokidar
+  pluginContainer: container, // 插件容器
+  ws, // ws 模块
+  moduleGraph, // 模块依赖图
+  ssrTransform(code: string, inMap: SourceMap | null, url: string) {
+    return ssrTransform(code, inMap, url, {
+      json: { stringify: server.config.json?.stringify },
+    });
+  },
+  transformRequest(url, options) {
+    // 当有 bundle 发生变化时, 转换成请求
+    return transformRequest(url, server, options);
+  },
+  transformIndexHtml: null!, // to be immediately set
+  async ssrLoadModule(url, opts?: { fixStacktrace?: boolean }) {
+    await updateCjsSsrExternals(server);
+    return ssrLoadModule(
+      url,
+      server,
+      undefined,
+      undefined,
+      opts?.fixStacktrace
+    );
+  },
+  ssrFixStacktrace(e) {
+    if (e.stack) {
+      const stacktrace = ssrRewriteStacktrace(e.stack, moduleGraph);
+      rebindErrorStacktrace(e, stacktrace);
+    }
+  },
+  ssrRewriteStacktrace(stack: string) {
+    return ssrRewriteStacktrace(stack, moduleGraph);
+  },
+  listen(port?: number, isRestart?: boolean) {
+    return startServer(server, port, isRestart);
+  },
+  async close() {
+    if (!middlewareMode) {
+      process.off("SIGTERM", exitProcess);
+      if (process.env.CI !== "true") {
+        process.stdin.off("end", exitProcess);
+      }
+    }
+
+    await Promise.all([
+      watcher.close(),
+      ws.close(),
+      container.close(),
+      closeHttpServer(),
+    ]);
+  },
+  printUrls() {
+    if (httpServer) {
+      printCommonServerUrls(httpServer, config.server, config);
+    } else {
+      throw new Error("cannot print server URLs in middleware mode.");
+    }
+  },
+  async restart(forceOptimize?: boolean) {
+    if (!server._restartPromise) {
+      server._forceOptimizeOnRestart = !!forceOptimize;
+      server._restartPromise = restartServer(server).finally(() => {
+        server._restartPromise = null;
+        server._forceOptimizeOnRestart = false;
+      });
+    }
+    return server._restartPromise;
+  },
+
+  _ssrExternals: null,
+  _restartPromise: null,
+  _importGlobMap: new Map(),
+  _forceOptimizeOnRestart: false,
+  _pendingRequests: new Map(),
+};
+```
+
+## configureServer
+
+由于 vite 的插件系统提供了 `configureServer` 钩子, configureServer 钩子将在内部中间件被安装前调用, 所以自定义的中间件将会默认会比内部中间件早运行. 如果你想注入一个在内部中间件 之后 运行的中间件, 你可以从 configureServer 返回一个函数, 将会在内部中间件安装后被调用.
+
+```ts
+// apply server configuration hooks from plugins
+const postHooks: ((() => void) | void)[] = [];
+for (const plugin of config.plugins) {
+  if (plugin.configureServer) {
+    postHooks.push(await plugin.configureServer(server));
+  }
+}
+```
+
+## middleware 总览
+
+解析来 vite 将执行一票内置中间件, 我们先看个概览, 下面逐一学习.
+
+```ts
+// Internal middlewares ------------------------------------------------------
+
+// request timer
+// 在 debug 模式统计一次请求耗费的时间
+if (process.env.DEBUG) {
+  middlewares.use(timeMiddleware(root));
+}
+
+// cors (enabled by default)
+// 处理跨域
+const { cors } = serverConfig;
+if (cors !== false) {
+  middlewares.use(corsMiddleware(typeof cors === "boolean" ? {} : cors));
+}
+
+// proxy
+// 处理代理
+const { proxy } = serverConfig;
+if (proxy) {
+  middlewares.use(proxyMiddleware(httpServer, proxy, config));
+}
+
+// base
+// base 是开发或生产环境服务的公共基础路径, 默认是  '/', 如果用户设置了其他路径, 需要藉此进行调整
+if (config.base !== "/") {
+  middlewares.use(baseMiddleware(server));
+}
+
+// open in editor support
+// 一般前端框架在报错的时候, 会在浏览器出个弹窗, 弹窗展示错误堆栈(行数, 列数, 路径)
+// 你点击错误, 这个中间件帮助你打开编辑器, 并定位到那一行
+// (其实挺鸡肋的)
+middlewares.use("/__open-in-editor", launchEditorMiddleware());
+
+// serve static files under /public
+// this applies before the transform middleware so that these files are served
+// as-is without transforms.
+// 保护 public 文件夹下的文件不被编译到
+if (config.publicDir) {
+  middlewares.use(
+    servePublicMiddleware(config.publicDir, config.server.headers)
+  );
+}
+
+// main transform middleware
+// 转换(src 下的)源码 / 资源
+middlewares.use(transformMiddleware(server));
+
+// serve static files
+middlewares.use(serveRawFsMiddleware(server));
+middlewares.use(serveStaticMiddleware(root, server));
+
+const isMiddlewareMode = middlewareMode && middlewareMode !== "html";
+
+// spa fallback
+if (config.spa && !isMiddlewareMode) {
+  middlewares.use(spaFallbackMiddleware(root));
+}
+
+// run post config hooks
+// This is applied before the html middleware so that user middleware can
+// serve custom content instead of index.html.
+// 执行后置自定义 server 钩子
+postHooks.forEach((fn) => fn && fn());
+
+if (config.spa && !isMiddlewareMode) {
+  // transform index.html
+  middlewares.use(indexHtmlMiddleware(server));
+}
+
+if (!isMiddlewareMode) {
+  // handle 404s
+  // Keep the named function. The name is visible in debug logs via `DEBUG=connect:dispatcher ...`
+  middlewares.use(function vite404Middleware(_, res) {
+    res.statusCode = 404;
+    res.end();
+  });
+}
+
+// error handler
+middlewares.use(errorMiddleware(server, !!middlewareMode));
+```
+
+### spaFallbackMiddleware
+
+这个中间件的重点是 [connect-history-api-fallback](https://github.com/bripkens/connect-history-api-fallback) 这个库. 我们知道对于单页应用, 路由实际都是假的, 因此你刷新一下页面, 就到 404 了, 而这个库的目的就是在刷新后, 重写路由到 index.html 上, 这样就不会导致资源丢失了.
+
+```ts
+import fs from "fs";
+import path from "path";
+import history from "connect-history-api-fallback";
+import type { Connect } from "types/connect";
+import { createDebugger } from "../../utils";
+
+export function spaFallbackMiddleware(
+  root: string
+): Connect.NextHandleFunction {
+  const historySpaFallbackMiddleware = history({
+    logger: createDebugger("vite:spa-fallback"),
+    // support /dir/ without explicit index.html
+    rewrites: [
+      {
+        from: /\/$/,
+        to({ parsedUrl }: any) {
+          const rewritten =
+            decodeURIComponent(parsedUrl.pathname) + "index.html";
+
+          if (fs.existsSync(path.join(root, rewritten))) {
+            return rewritten;
+          } else {
+            return `/index.html`;
+          }
+        },
+      },
+    ],
+  });
+
+  // Keep the named function. The name is visible in debug logs via `DEBUG=connect:dispatcher ...`
+  return function viteSpaFallbackMiddleware(req, res, next) {
+    return historySpaFallbackMiddleware(req, res, next);
+  };
+}
+```
+
+顺便提一嘴, 在最终线上, 你也要在 nginx 配置好路由重写, 否则也会 404.
+
+```shell
+try_files {path} /index.html
+```
+
+### indexHtmlMiddleware
+
+顾名思义, 这个就是处理 index.html 的. 上面我们在讲 spaFallbackMiddleware 时知道, 所有前端路由都被处理成 `/index.html`
+
+```ts
+export function indexHtmlMiddleware(
+  server: ViteDevServer
+): Connect.NextHandleFunction {
+  // Keep the named function. The name is visible in debug logs via `DEBUG=connect:dispatcher ...`
+  return async function viteIndexHtmlMiddleware(req, res, next) {
+    if (res.writableEnded) {
+      return next();
+    }
+
+    const url = req.url && cleanUrl(req.url);
+    // spa-fallback always redirects to /index.html
+    if (url?.endsWith(".html") && req.headers["sec-fetch-dest"] !== "script") {
+      const filename = getHtmlFilename(url, server);
+      if (fs.existsSync(filename)) {
+        try {
+          let html = fs.readFileSync(filename, "utf-8");
+          html = await server.transformIndexHtml(url, html, req.originalUrl);
+          return send(req, res, html, "html", {
+            headers: server.config.server.headers,
+          });
+        } catch (e) {
+          return next(e);
+        }
+      }
+    }
+    next();
+  };
+}
 ```
