@@ -649,3 +649,5 @@ export async function createPluginContainer(
   return container;
 }
 ```
+
+![rollup 插件生命周期钩子](https://edge.yancey.app/beg/5fzy4rc1-1656144195620.png)
