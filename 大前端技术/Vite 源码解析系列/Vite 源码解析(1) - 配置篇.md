@@ -1,4 +1,12 @@
-# Vite 源码解析(2) - 配置篇
+# Vite 源码解析(1) - 配置篇
+
+> 欢迎来到
+
+## 引子
+
+本篇假设你已经使用过 vite, 对 vite 配置, 插件机制有一定了解. 并且对 esbuild, rollup 的配置有一定了解.
+
+## resolveConfig
 
 `createServer` 中调用的第一个函数是 `resolveConfig`, 也就是解析用户配置. 和其他的构建工具一样, vite 也提供 `vite.config.js` 来作为它的配置文件, 因此 vite 首要目标是要读取和解析配置文件. vite 的配置分为共享配置, 开发服务器配置, 构建选项配置, 依赖优化选项配置, ssr 选项配置和 worker 配置.
 
