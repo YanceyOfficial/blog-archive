@@ -296,7 +296,7 @@ export function createWebSocketServer(
   // connected client.
   let bufferedError: ErrorPayload | null = null;
 
-  // 下面大家就太熟悉了, 一个典型发布-订阅设计模式的事件监听器
+  // 下面大家就太熟悉了, 一个典型 EventEmitter
   // 尤雨溪确实好这口, vue 源码里我记得也有个类似的东西, 我们就不多说了
   return {
     on: ((event: string, fn: () => void) => {
@@ -505,7 +505,7 @@ const server: ViteDevServer = {
 
 ## configureServer
 
-由于 vite 的插件系统提供了 `configureServer` 钩子, configureServer 钩子将在内部中间件被安装前调用, 所以自定义的中间件将会默认会比内部中间件早运行. 如果你想注入一个在内部中间件 之后 运行的中间件, 你可以从 configureServer 返回一个函数, 将会在内部中间件安装后被调用.
+由于 vite 的插件系统提供了 `configureServer` 钩子, configureServer 钩子将在内部中间件被安装前调用, 所以自定义的中间件将会默认会比内部中间件早运行. 如果你想注入一个在内部中间件之后运行的中间件, 你可以从 configureServer 返回一个函数, 将会在内部中间件安装后被调用.
 
 ```ts
 // apply server configuration hooks from plugins
@@ -654,7 +654,7 @@ try_files {path} /index.html
 
 ### indexHtmlMiddleware
 
-顾名思义, 这个就是处理 index.html 的. 上面我们在讲 spaFallbackMiddleware 时知道, 所有前端路由都被处理成 `/index.html`
+顾名思义, 这个就是处理 index.html 的. 上面我们在讲 spaFallbackMiddleware 时知道, 所有前端路由都被处理成 `/index.html`. 因此这个中间件首先找到 index.html 的绝对路径, 然后读取它. 再通过 `transformIndexHtml` 将其转换后发送给前端.
 
 ```ts
 export function indexHtmlMiddleware(
@@ -668,6 +668,10 @@ export function indexHtmlMiddleware(
 
     const url = req.url && cleanUrl(req.url);
     // spa-fallback always redirects to /index.html
+    // 所有前端路由都被处理成 `/index.html`
+    // 此外, 这里很严谨地判断了 sec-fetch-dest, 这是一个由浏览器发起的请求头
+    // 由于是 sec(security) 开头, 客户端是无法篡改的, 这个请求头明确告知客户端需要什么类型的文件
+    // 详情可以看 https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Mode
     if (url?.endsWith(".html") && req.headers["sec-fetch-dest"] !== "script") {
       const filename = getHtmlFilename(url, server);
       if (fs.existsSync(filename)) {
@@ -685,4 +689,29 @@ export function indexHtmlMiddleware(
     next();
   };
 }
+```
+
+因此这个中间件最核心的就是 `transformIndexHtml` 函数. 我们回想 `createServer`, 里面有一段代码如下所示:
+
+```ts
+server.transformIndexHtml = createDevHtmlTransformFn(server);
+```
+
+让我们学习下 `createDevHtmlTransformFn` 函数.
+
+```ts
+export function createDevHtmlTransformFn(
+  server: ViteDevServer
+): (url: string, html: string, originalUrl: string) => Promise<string> {
+  const [preHooks, postHooks] = resolveHtmlTransforms(server.config.plugins)
+  return (url: string, html: string, originalUrl: string): Promise<string> => {
+    return applyHtmlTransforms(html, [...preHooks, devHtmlHook, ...postHooks], {
+      path: url,
+      filename: getHtmlFilename(url, server),
+      server,
+      originalUrl
+    })
+  }
+}
+···
 ```
