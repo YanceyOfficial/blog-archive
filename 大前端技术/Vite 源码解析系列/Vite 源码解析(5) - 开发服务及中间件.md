@@ -551,7 +551,7 @@ if (config.base !== "/") {
 }
 
 // open in editor support
-// 一般前端框架在报错的时候, 会在浏览器出个弹窗, 弹窗展示错误堆栈(行数, 列数, 路径)
+// 这个库是 vite 直接从 react-dev-utils 里拿的, 用于前端框架在报错的时候, 会在浏览器出个弹窗, 展示错误堆栈(行数, 列数, 路径)
 // 你点击错误, 这个中间件帮助你打开编辑器, 并定位到那一行
 // (其实挺鸡肋的)
 middlewares.use("/__open-in-editor", launchEditorMiddleware());
@@ -595,6 +595,7 @@ if (config.spa && !isMiddlewareMode) {
 if (!isMiddlewareMode) {
   // handle 404s
   // Keep the named function. The name is visible in debug logs via `DEBUG=connect:dispatcher ...`
+  // 简单地把状态码设置为 404
   middlewares.use(function vite404Middleware(_, res) {
     res.statusCode = 404;
     res.end();
@@ -602,8 +603,18 @@ if (!isMiddlewareMode) {
 }
 
 // error handler
+// 返回一个状态码为 500 的错误 html 页面
 middlewares.use(errorMiddleware(server, !!middlewareMode));
 ```
+
+关于前几个中间件, `timeMiddleware`, `corsMiddleware`, `proxyMiddleware`, `baseMiddleware`, `launchEditorMiddleware`, 以及 `vite404Middleware`, `errorMiddleware` 就不多说, 很常见也很通用, 直接看注释即可.
+
+我们主要来分析下面两组:
+
+- 跟 index.html 有关的: `transformMiddleware`,`spaFallbackMiddleware`, `indexHtmlMiddleware`
+- 跟静态文件有关的: `servePublicMiddleware`, `serveRawFsMiddleware`, `serveStaticMiddleware`
+
+## 跟 index.html 相关的中间件
 
 ### spaFallbackMiddleware
 
@@ -654,7 +665,54 @@ try_files {path} /index.html
 
 ### indexHtmlMiddleware
 
-顾名思义, 这个就是处理 index.html 的. 上面我们在讲 spaFallbackMiddleware 时知道, 所有前端路由都被处理成 `/index.html`. 因此这个中间件首先找到 index.html 的绝对路径, 然后读取它. 再通过 `transformIndexHtml` 将其转换后发送给前端.
+在讲这个中间件之前, 我们先看看在 public 文件夹下初始化的 index.html 文件是这样婶的:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/src/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+但是我们在浏览器审查元素, 它变成了如下的样子:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script type="module" src="/@vite/client"></script>
+    <script type="module">
+      import RefreshRuntime from "/@react-refresh";
+      RefreshRuntime.injectIntoGlobalHook(window);
+      window.$RefreshReg$ = () => {};
+      window.$RefreshSig$ = () => (type) => type;
+      window.__vite_plugin_react_preamble_installed__ = true;
+    </script>
+
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/src/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+之所以增加了两个 script 标签, 就是由 `indexHtmlMiddleware` 做到的, 它通过拦截 index.html, 然后根据传入的 hooks(plugin), 将 index.html 进行一番改造, 比如注入 `vite/client`, `react-fast-refresh` 等等.
+
+上面我们在讲 spaFallbackMiddleware 时知道, 所有前端路由都被处理成 `/index.html`. 因此这个中间件首先找到 index.html 的绝对路径, 然后读取它. 再通过 `transformIndexHtml` 将其转换后, 通过 `send` 发送给前端.
 
 ```ts
 export function indexHtmlMiddleware(
@@ -669,14 +727,15 @@ export function indexHtmlMiddleware(
     const url = req.url && cleanUrl(req.url);
     // spa-fallback always redirects to /index.html
     // 所有前端路由都被处理成 `/index.html`
-    // 此外, 这里很严谨地判断了 sec-fetch-dest, 这是一个由浏览器发起的请求头
-    // 由于是 sec(security) 开头, 客户端是无法篡改的, 这个请求头明确告知客户端需要什么类型的文件
-    // 详情可以看 https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Mode
+    // 此外, 这里很严谨地判断了 sec-fetch-dest, 这是一个由浏览器发起的请求头, 这个请求头明确告知客户端需要什么类型的文件
+    // 由于是 sec(security) 开头, 客户端是无法篡改的, 详情可以看 https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Mode
     if (url?.endsWith(".html") && req.headers["sec-fetch-dest"] !== "script") {
       const filename = getHtmlFilename(url, server);
       if (fs.existsSync(filename)) {
         try {
+          // 获取 index.html 的内容
           let html = fs.readFileSync(filename, "utf-8");
+          // 转换 html
           html = await server.transformIndexHtml(url, html, req.originalUrl);
           return send(req, res, html, "html", {
             headers: server.config.server.headers,
@@ -691,27 +750,394 @@ export function indexHtmlMiddleware(
 }
 ```
 
-因此这个中间件最核心的就是 `transformIndexHtml` 函数. 我们回想 `createServer`, 里面有一段代码如下所示:
+回想 `createServer` 函数, 有一段这样的代码:
 
 ```ts
 server.transformIndexHtml = createDevHtmlTransformFn(server);
 ```
 
-让我们学习下 `createDevHtmlTransformFn` 函数.
+可见, 重点就是 `createDevHtmlTransformFn` 个函数了, 它首先用 `resolveHtmlTransforms` 函数, 根据 enforce 拿到前置和后置 hooks. 然后通过 `applyHtmlTransforms` 方法处理 index.html 的代码. 下面我们细说这两个函数.
 
 ```ts
 export function createDevHtmlTransformFn(
   server: ViteDevServer
 ): (url: string, html: string, originalUrl: string) => Promise<string> {
-  const [preHooks, postHooks] = resolveHtmlTransforms(server.config.plugins)
+  const [preHooks, postHooks] = resolveHtmlTransforms(server.config.plugins);
   return (url: string, html: string, originalUrl: string): Promise<string> => {
     return applyHtmlTransforms(html, [...preHooks, devHtmlHook, ...postHooks], {
       path: url,
-      filename: getHtmlFilename(url, server),
+      filename: getHtmlFilename(url, server), // 绝对路径
       server,
-      originalUrl
-    })
-  }
+      originalUrl,
+    });
+  };
 }
-···
 ```
+
+下面列出了 `plugin.transformIndexHtml` 的函数签名. 可见它要么是个函数, 要么是个对象: 如果是函数的话就放在 postHooks 中; 如果是个对象, 会根据 `enforce` 属性决定它应该放在 preHooks 还是 postHooks 中.
+
+```ts
+export type IndexHtmlTransform =
+  | IndexHtmlTransformHook
+  | {
+      enforce?: "pre" | "post";
+      transform: IndexHtmlTransformHook;
+    };
+```
+
+```ts
+export function resolveHtmlTransforms(
+  plugins: readonly Plugin[]
+): [IndexHtmlTransformHook[], IndexHtmlTransformHook[]] {
+  const preHooks: IndexHtmlTransformHook[] = [];
+  const postHooks: IndexHtmlTransformHook[] = [];
+
+  for (const plugin of plugins) {
+    const hook = plugin.transformIndexHtml;
+    if (hook) {
+      if (typeof hook === "function") {
+        postHooks.push(hook);
+      } else if (hook.enforce === "pre") {
+        preHooks.push(hook.transform);
+      } else {
+        postHooks.push(hook.transform);
+      }
+    }
+  }
+
+  return [preHooks, postHooks];
+}
+```
+
+比如是个 react 项目, 它会引入 `@vitejs/plugin-react-refresh` 这个 plugin, 然后经过一系列操作, 在 index.html 注入以下代码, 因为这个 plugin 有个 `preambleCode` 字符串, 这个字符串正是 `@react-refresh` 的代码.
+
+```html
+<head>
+  ...
+
+  <script type="module" src="/@vite/client"></script>
+  <script type="module">
+    import RefreshRuntime from "/@react-refresh";
+    RefreshRuntime.injectIntoGlobalHook(window);
+    window.$RefreshReg$ = () => {};
+    window.$RefreshSig$ = () => (type) => type;
+    window.__vite_plugin_react_preamble_installed__ = true;
+  </script>
+
+  ...
+</head>
+```
+
+接下来我们看一下 `applyHtmlTransforms`, 它根据上面已经排序好的 hooks 依次执行, 它返回的是 `IndexHtmlTransformResult`. 我们先看一下相关 hook 的签名.
+
+```ts
+export type IndexHtmlTransformHook = (
+  html: string,
+  ctx: IndexHtmlTransformContext
+) => IndexHtmlTransformResult | void | Promise<IndexHtmlTransformResult | void>;
+
+export type IndexHtmlTransformResult =
+  | string
+  | HtmlTagDescriptor[]
+  | {
+      html: string;
+      tags: HtmlTagDescriptor[];
+    };
+
+export interface HtmlTagDescriptor {
+  tag: string;
+  attrs?: Record<string, string | boolean | undefined>;
+  children?: string | HtmlTagDescriptor[];
+  /**
+   * default: 'head-prepend'
+   */
+  injectTo?: "head" | "body" | "head-prepend" | "body-prepend";
+}
+```
+
+`IndexHtmlTransformResult` 有可能是字符串, 数组或者对象:
+
+- 如果是字符串, 那么直接赋值给最终 html 字符串
+- 如果是数组, 那就先赋值给 tags 变量, 等待处理
+- 如果是对象, 那就把 html 属性赋值给 html 变量, tags 属性赋值给 tags 变量, 等待处理
+
+接下来就要对 tags 进行遍历, 根据 tag 的不同的类型, 也就是 `"head" | "body" | "head-prepend" | "body-prepend"`, 先放到不同的数组中, 然后通过 `injectToHead` 和 `injectToBody` 这两个函数, 将新增的标签及其内容添加到 html 中.
+
+```ts
+export async function applyHtmlTransforms(
+  html: string,
+  hooks: IndexHtmlTransformHook[],
+  ctx: IndexHtmlTransformContext
+): Promise<string> {
+  for (const hook of hooks) {
+    const res = await hook(html, ctx);
+    if (!res) {
+      continue;
+    }
+    if (typeof res === "string") {
+      html = res;
+    } else {
+      let tags: HtmlTagDescriptor[];
+      if (Array.isArray(res)) {
+        tags = res;
+      } else {
+        html = res.html || html;
+        tags = res.tags;
+      }
+
+      const headTags: HtmlTagDescriptor[] = [];
+      const headPrependTags: HtmlTagDescriptor[] = [];
+      const bodyTags: HtmlTagDescriptor[] = [];
+      const bodyPrependTags: HtmlTagDescriptor[] = [];
+
+      for (const tag of tags) {
+        if (tag.injectTo === "body") {
+          bodyTags.push(tag);
+        } else if (tag.injectTo === "body-prepend") {
+          bodyPrependTags.push(tag);
+        } else if (tag.injectTo === "head") {
+          headTags.push(tag);
+        } else {
+          headPrependTags.push(tag);
+        }
+      }
+
+      html = injectToHead(html, headPrependTags, true);
+      html = injectToHead(html, headTags);
+      html = injectToBody(html, bodyPrependTags, true);
+      html = injectToBody(html, bodyTags);
+    }
+  }
+
+  return html;
+}
+```
+
+关于 `injectToHead` 和 `injectToBody` 我们就不多讲了, 大抵就是把下面这个对象, 变成 `<script src="/@vite/client" type='module'></script>`, 然后插入到指定位置.
+
+```ts
+const o = {
+  tag: "script",
+  attrs: {
+    type: "module",
+    src: "/@vite/client",
+  },
+  injectTo: "head-prepend",
+};
+```
+
+### transformMiddleware
+
+`transformMiddleware` 比较复杂, 大体来讲就是当浏览器成功加载了 index.html 之后, 肯定涉及一些源码的拉取; 此外, 用户交互也可能会涉及(比如切换了懒加载路由, 新页面肯定要下载对应的资源).
+
+vite 会通过原生 ESM 的方式请求源码文件, 但由于源码肯定不能被浏览器直接使用的(比如 tsx), 那这个中间件的目的就是拦截这些请求, 将这个被请求文件通过 esbuild 编译成浏览器支持的文件; 并会为该文件创建模块对象, 设置模块之间的依赖关系等等.
+
+此外, 它还充分利用 http 的缓存机制, 来保证未过期文件的重复利用, 以提高速度.
+
+```ts
+export function transformMiddleware(
+  server: ViteDevServer
+): Connect.NextHandleFunction {
+  const {
+    config: { root, logger },
+    moduleGraph,
+  } = server;
+
+  // Keep the named function. The name is visible in debug logs via `DEBUG=connect:dispatcher ...`
+  return async function viteTransformMiddleware(req, res, next) {
+    // 拉取数据肯定是 GET 请求, 如果不是直接放掉
+    // 此外, 如果资源是 ['/', '/favicon.ico'], 也不要通过这里处理, 因为 '/' 就是 index.html, 它已经被上面 indexHtmlMiddleware 处理了
+    // favicon.ico 不用多说, 给浏览器用的, 没必要处理
+    if (req.method !== "GET" || knownIgnoreList.has(req.url!)) {
+      return next();
+    }
+
+    let url: string;
+    try {
+      // 我们知道 vite 为了比较资源的新鲜度, 会给资源的 url 附上一个时间戳 query
+      // removeTimestampQuery 这个函数就是把 &t=xxxxxxxxxxxxx 干掉
+      // 我们知道 rollup 的插件机制有虚拟模块的概念, 按照约定如果你用了虚拟模块, 为了防止它被其他插件处理, 需要加上 \0
+      // 而一个合法 url 是不能存在 \0 的, 因此 vite 把它转成了 __x00__
+      // 所以在 decodeURI 的时候需要把它还原成 \0
+      url = decodeURI(removeTimestampQuery(req.url!)).replace(
+        NULL_BYTE_PLACEHOLDER,
+        "\0"
+      );
+    } catch (e) {
+      return next(e);
+    }
+
+    // 干掉 url 的 query 和 hash
+    const withoutQuery = cleanUrl(url);
+
+    try {
+      const isSourceMap = withoutQuery.endsWith(".map");
+      // since we generate source map references, handle those requests here
+      // 首先要分析 sourcemap
+      if (isSourceMap) {
+        if (getDepsOptimizer(server.config)?.isOptimizedDepUrl(url)) {
+          // If the browser is requesting a source map for an optimized dep, it
+          // means that the dependency has already been pre-bundled and loaded
+          const mapFile = url.startsWith(FS_PREFIX)
+            ? fsPathFromId(url)
+            : normalizePath(
+                ensureVolumeInPath(path.resolve(root, url.slice(1)))
+              );
+          try {
+            const map = await fs.readFile(mapFile, "utf-8");
+            return send(req, res, map, "json", {
+              headers: server.config.server.headers,
+            });
+          } catch (e) {
+            // Outdated source map request for optimized deps, this isn't an error
+            // but part of the normal flow when re-optimizing after missing deps
+            // Send back an empty source map so the browser doesn't issue warnings
+            const dummySourceMap = {
+              version: 3,
+              file: mapFile.replace(/\.map$/, ""),
+              sources: [],
+              sourcesContent: [],
+              names: [],
+              mappings: ";;;;;;;;;",
+            };
+            return send(req, res, JSON.stringify(dummySourceMap), "json", {
+              cacheControl: "no-cache",
+              headers: server.config.server.headers,
+            });
+          }
+        } else {
+          const originalUrl = url.replace(/\.map($|\?)/, "$1");
+          const map = (await moduleGraph.getModuleByUrl(originalUrl, false))
+            ?.transformResult?.map;
+          if (map) {
+            return send(req, res, JSON.stringify(map), "json", {
+              headers: server.config.server.headers,
+            });
+          } else {
+            return next();
+          }
+        }
+      }
+
+      // check if public dir is inside root dir
+      // 检查 /public 是否在 / 之内
+      // 老实巴交写代码, 没想到有什么反面例子...
+      const publicDir = normalizePath(server.config.publicDir);
+      const rootDir = normalizePath(server.config.root);
+      if (publicDir.startsWith(rootDir)) {
+        const publicPath = `${publicDir.slice(rootDir.length)}/`;
+        // warn explicit public paths
+        if (url.startsWith(publicPath)) {
+          let warning: string;
+
+          if (isImportRequest(url)) {
+            const rawUrl = removeImportQuery(url);
+
+            warning =
+              "Assets in public cannot be imported from JavaScript.\n" +
+              `Instead of ${colors.cyan(
+                rawUrl
+              )}, put the file in the src directory, and use ${colors.cyan(
+                rawUrl.replace(publicPath, "/src/")
+              )} instead.`;
+          } else {
+            warning =
+              `files in the public directory are served at the root path.\n` +
+              `Instead of ${colors.cyan(url)}, use ${colors.cyan(
+                url.replace(publicPath, "/")
+              )}.`;
+          }
+
+          logger.warn(colors.yellow(warning));
+        }
+      }
+
+      // 接下来最重要的, 就是客户端请求了哪些类型的资源
+      if (
+        isJSRequest(url) || // 判断是否请求 js 文件, /\.((j|t)sx?|mjs|vue|marko|svelte|astro)($|\?)/
+        isImportRequest(url) || // url 上挂有 import 参数的, vite 会对热更新时请求的文件等挂上 import 参数, /(\?|&)import=?(?:&|$)/
+        isCSSRequest(url) || // 判断是否请求 css 文件, `\\.(css|less|sass|scss|styl|stylus|pcss|postcss)($|\\?)`
+        isHTMLProxy(url) // url 上挂有 html-proxy 参数的,  /(\?|&)html-proxy\b/
+      ) {
+        // strip ?import
+        // 干掉 import 参数
+        url = removeImportQuery(url);
+        // Strip valid id prefix. This is prepended to resolved Ids that are
+        // not valid browser import specifiers by the importAnalysis plugin.
+        // 如果 url 以 /@id/ 开头，则去掉 /@id/, 上面说了, 这个前缀跟 rollup 插件规范有关
+        url = unwrapId(url);
+
+        // for CSS, we need to differentiate between normal CSS requests and
+        // imports
+        if (
+          isCSSRequest(url) &&
+          !isDirectRequest(url) &&
+          req.headers.accept?.includes("text/css")
+        ) {
+          url = injectQuery(url, "direct");
+        }
+
+        // check if we can return 304 early
+        const ifNoneMatch = req.headers["if-none-match"];
+        if (
+          ifNoneMatch &&
+          (await moduleGraph.getModuleByUrl(url, false))?.transformResult
+            ?.etag === ifNoneMatch
+        ) {
+          isDebug && debugCache(`[304] ${prettifyUrl(url, root)}`);
+          res.statusCode = 304;
+          return res.end();
+        }
+
+        // resolve, load and transform using the plugin container
+        const result = await transformRequest(url, server, {
+          html: req.headers.accept?.includes("text/html"),
+        });
+        if (result) {
+          const type = isDirectCSSRequest(url) ? "css" : "js";
+          const isDep =
+            DEP_VERSION_RE.test(url) ||
+            getDepsOptimizer(server.config)?.isOptimizedDepUrl(url);
+          return send(req, res, result.code, type, {
+            etag: result.etag,
+            // allow browser to cache npm deps!
+            cacheControl: isDep ? "max-age=31536000,immutable" : "no-cache",
+            headers: server.config.server.headers,
+            map: result.map,
+          });
+        }
+      }
+    } catch (e) {
+      if (e?.code === ERR_OPTIMIZE_DEPS_PROCESSING_ERROR) {
+        // Skip if response has already been sent
+        if (!res.writableEnded) {
+          res.statusCode = 504; // status code request timeout
+          res.end();
+        }
+        // This timeout is unexpected
+        logger.error(e.message);
+        return;
+      }
+      if (e?.code === ERR_OUTDATED_OPTIMIZED_DEP) {
+        // Skip if response has already been sent
+        if (!res.writableEnded) {
+          res.statusCode = 504; // status code request timeout
+          res.end();
+        }
+        // We don't need to log an error in this case, the request
+        // is outdated because new dependencies were discovered and
+        // the new pre-bundle dependendencies have changed.
+        // A full-page reload has been issued, and these old requests
+        // can't be properly fullfilled. This isn't an unexpected
+        // error but a normal part of the missing deps discovery flow
+        return;
+      }
+      return next(e);
+    }
+
+    next();
+  };
+}
+```
+
+## 跟静态文件相关的中间件
