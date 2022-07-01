@@ -932,7 +932,7 @@ const o = {
 
 vite 会通过原生 ESM 的方式请求源码文件, 但由于源码肯定不能被浏览器直接使用的(比如 tsx), 那这个中间件的目的就是拦截这些请求, 将这个被请求文件通过 esbuild 编译成浏览器支持的文件; 并会为该文件创建模块对象, 设置模块之间的依赖关系等等.
 
-此外, 它还充分利用 http 的缓存机制, 来保证未过期文件的重复利用, 以提高速度.
+此外, 它还充分利用 http 的缓存机制, 来保证未过期文件的重复利用, 以提高速度. 关于 http 缓存可以看我的文章 [\[HTTP 系列\] 第 3 篇 —— HTTP 缓存那些事](https://www.yanceyleo.com/post/89731d8e-5510-4094-8962-462b127ed5d0).
 
 ```ts
 export function transformMiddleware(
@@ -956,7 +956,7 @@ export function transformMiddleware(
     try {
       // 我们知道 vite 为了比较资源的新鲜度, 会给资源的 url 附上一个时间戳 query
       // removeTimestampQuery 这个函数就是把 &t=xxxxxxxxxxxxx 干掉
-      // 我们知道 rollup 的插件机制有虚拟模块的概念, 按照约定如果你用了虚拟模块, 为了防止它被其他插件处理, 需要加上 \0
+      // 此外, 我们知道 rollup 的插件机制有虚拟模块的概念, 按照约定如果你用了虚拟模块, 为了防止它被其他插件处理, 需要加上 \0
       // 而一个合法 url 是不能存在 \0 的, 因此 vite 把它转成了 __x00__
       // 所以在 decodeURI 的时候需要把它还原成 \0
       url = decodeURI(removeTimestampQuery(req.url!)).replace(
@@ -1021,7 +1021,7 @@ export function transformMiddleware(
 
       // check if public dir is inside root dir
       // 检查 /public 是否在 / 之内
-      // 老实巴交写代码, 没想到有什么反面例子...
+      // 老实巴交写代码的话, 实在没想到有什么反面例子...
       const publicDir = normalizePath(server.config.publicDir);
       const rootDir = normalizePath(server.config.root);
       if (publicDir.startsWith(rootDir)) {
@@ -1052,15 +1052,14 @@ export function transformMiddleware(
         }
       }
 
-      // 接下来最重要的, 就是客户端请求了哪些类型的资源
+      // 接下来最重要的, 就是拦截客户端请求了哪些类型的资源
       if (
         isJSRequest(url) || // 判断是否请求 js 文件, /\.((j|t)sx?|mjs|vue|marko|svelte|astro)($|\?)/
         isImportRequest(url) || // url 上挂有 import 参数的, vite 会对热更新时请求的文件等挂上 import 参数, /(\?|&)import=?(?:&|$)/
         isCSSRequest(url) || // 判断是否请求 css 文件, `\\.(css|less|sass|scss|styl|stylus|pcss|postcss)($|\\?)`
         isHTMLProxy(url) // url 上挂有 html-proxy 参数的,  /(\?|&)html-proxy\b/
       ) {
-        // strip ?import
-        // 干掉 import 参数
+        // strip ?import, 干掉 import 参数
         url = removeImportQuery(url);
         // Strip valid id prefix. This is prepended to resolved Ids that are
         // not valid browser import specifiers by the importAnalysis plugin.
@@ -1078,6 +1077,7 @@ export function transformMiddleware(
         }
 
         // check if we can return 304 early
+        // 找出有没有与 if-none-match 匹配的 etag, 如果有直接返回协商缓存
         const ifNoneMatch = req.headers["if-none-match"];
         if (
           ifNoneMatch &&
@@ -1090,17 +1090,23 @@ export function transformMiddleware(
         }
 
         // resolve, load and transform using the plugin container
+        // 对于没有命中协商缓存的, 那就需要进行一波代码编译了
+        // 这个我们下面详细说
         const result = await transformRequest(url, server, {
           html: req.headers.accept?.includes("text/html"),
         });
         if (result) {
           const type = isDirectCSSRequest(url) ? "css" : "js";
+          // 我们知道 vite 会给 node_moudles 的三方依赖进行预构建
+          // 前端在请求三方依赖资源时, 会加上 t={browserHash},
+          // 或者资源有 depsCacheDirPrefix 前缀, 就认为是依赖
           const isDep =
             DEP_VERSION_RE.test(url) ||
             getDepsOptimizer(server.config)?.isOptimizedDepUrl(url);
           return send(req, res, result.code, type, {
             etag: result.etag,
             // allow browser to cache npm deps!
+            // 如果是依赖的话直接强缓存写死, 下次再请求到这个三方依赖, 直接强缓存返回!
             cacheControl: isDep ? "max-age=31536000,immutable" : "no-cache",
             headers: server.config.server.headers,
             map: result.map,
@@ -1137,6 +1143,82 @@ export function transformMiddleware(
 
     next();
   };
+}
+```
+
+#### transformRequest
+
+```ts
+export function transformRequest(
+  url: string,
+  server: ViteDevServer,
+  options: TransformOptions = {}
+): Promise<TransformResult | null> {
+  const cacheKey = (options.ssr ? "ssr:" : options.html ? "html:" : "") + url;
+
+  // This module may get invalidated while we are processing it. For example
+  // when a full page reload is needed after the re-processing of pre-bundled
+  // dependencies when a missing dep is discovered. We save the current time
+  // to compare it to the last invalidation performed to know if we should
+  // cache the result of the transformation or we should discard it as stale.
+  //
+  // A module can be invalidated due to:
+  // 1. A full reload because of pre-bundling newly discovered deps
+  // 2. A full reload after a config change
+  // 3. The file that generated the module changed
+  // 4. Invalidation for a virtual module
+  //
+  // For 1 and 2, a new request for this module will be issued after
+  // the invalidation as part of the browser reloading the page. For 3 and 4
+  // there may not be a new request right away because of HMR handling.
+  // In all cases, the next time this module is requested, it should be
+  // re-processed.
+  //
+  // We save the timestamp when we start processing and compare it with the
+  // last time this module is invalidated
+  const timestamp = Date.now();
+
+  const pending = server._pendingRequests.get(cacheKey);
+  if (pending) {
+    return server.moduleGraph
+      .getModuleByUrl(removeTimestampQuery(url), options.ssr)
+      .then((module) => {
+        if (!module || pending.timestamp > module.lastInvalidationTimestamp) {
+          // The pending request is still valid, we can safely reuse its result
+          return pending.request;
+        } else {
+          // Request 1 for module A     (pending.timestamp)
+          // Invalidate module A        (module.lastInvalidationTimestamp)
+          // Request 2 for module A     (timestamp)
+
+          // First request has been invalidated, abort it to clear the cache,
+          // then perform a new doTransform.
+          pending.abort();
+          return transformRequest(url, server, options);
+        }
+      });
+  }
+
+  const request = doTransform(url, server, options, timestamp);
+
+  // Avoid clearing the cache of future requests if aborted
+  let cleared = false;
+  const clearCache = () => {
+    if (!cleared) {
+      server._pendingRequests.delete(cacheKey);
+      cleared = true;
+    }
+  };
+
+  // Cache the request and clear it once processing is done
+  server._pendingRequests.set(cacheKey, {
+    request,
+    timestamp,
+    abort: clearCache,
+  });
+  request.then(clearCache, clearCache);
+
+  return request;
 }
 ```
 
