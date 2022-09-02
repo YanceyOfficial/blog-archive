@@ -1,10 +1,6 @@
 # Vite 源码解析(1) - 配置篇
 
-> 欢迎来到
-
-## 引子
-
-本篇假设你已经使用过 vite, 对 vite 配置, 插件机制有一定了解. 并且对 esbuild, rollup 的配置有一定了解.
+> 欢迎来到 Vite 源码解析系列. Vite 作为新时代的打包神器, 缝合了, 哦不, 集成了 ES Module, bundleless, esbulid, rollup 等优秀思想和特性. 本系列假设你已经使用过 Vite, 对 Vite 配置, 插件机制有一定了解. 并且对 esbuild, rollup 的配置有一定了解.
 
 ## resolveConfig
 

@@ -959,6 +959,7 @@ export function transformMiddleware(
       // 此外, 我们知道 rollup 的插件机制有虚拟模块的概念, 按照约定如果你用了虚拟模块, 为了防止它被其他插件处理, 需要加上 \0
       // 而一个合法 url 是不能存在 \0 的, 因此 vite 把它转成了 __x00__
       // 所以在 decodeURI 的时候需要把它还原成 \0
+      // 一个现实的例子是 /@id/__x00__react/jsx-dev-runtime'
       url = decodeURI(removeTimestampQuery(req.url!)).replace(
         NULL_BYTE_PLACEHOLDER,
         "\0"

@@ -4,7 +4,7 @@
 
 ## ModuleGraph 实例
 
-在 createServer 中, 我们看到会创建一个 ModuleGraph 实例, 并把它作为参数传递到 `createPluginContainer`(我们下一章重点来讲 vite 的插件机制) 函数中, 供一些插件实验. 此外, 该实例也会传递到 `devServer`(我们下下章重点来讲 vite 的开发服务及中间件机制) 对象中, 供后续的 HMR 等使用.
+在 createServer 中, 我们看到会创建一个 ModuleGraph 实例, 并把它作为参数传递到 `createPluginContainer`(我们下一章重点来讲 vite 的插件机制) 函数中, 供一些插件使用. 此外, 该实例也会传递到 `devServer`(我们下下章重点来讲 vite 的开发服务及中间件机制) 对象中, 供后续的 HMR 等使用.
 
 ```ts
 const moduleGraph: ModuleGraph = new ModuleGraph((url, ssr) =>
@@ -63,7 +63,7 @@ export class ModuleNode {
 }
 ```
 
-## ModuleGraph 各个属性一览
+## ModuleGraph 各个属性, 方法一览
 
 ```ts
 export class ModuleGraph {
@@ -116,6 +116,8 @@ export class ModuleGraph {
 
 ## getModuleByUrl
 
+根据一个 url 获取对应的 ModuleNode.
+
 ```ts
 export class ModuleGraph {
   async getModuleByUrl(
@@ -130,7 +132,7 @@ export class ModuleGraph {
 
 ## getModuleById
 
-`idToModuleMap` 是
+根据一个 id 获取对应的 ModuleNode. id 为模块的绝对路径(可能带着 hash 和 query)
 
 ```ts
 export class ModuleGraph {
@@ -143,6 +145,8 @@ export class ModuleGraph {
 ```
 
 ## getModulesByFile
+
+根据一个 file 获取对应的 ModuleNode 集合. file 为模块的绝对路径(不带 hash 和 query).
 
 ```ts
 export class ModuleGraph {
@@ -179,9 +183,12 @@ export class ModuleGraph {
   ): void {
     // Save the timestamp for this invalidation, so we can avoid caching the result of possible already started
     // processing being done for this module
+    // lastInvalidationTimestamp 上面说了, 是最后失效的时间, 如果你的模块时间戳超过它, 说明就过期了
+    // 所以把当前模块时间戳赋值给 lastInvalidationTimestamp, 那这个模块就过期了
     mod.lastInvalidationTimestamp = timestamp;
     // Don't invalidate mod.info and mod.meta, as they are part of the processing pipeline
     // Invalidating the transform result is enough to ensure this module is re-processed next time it is requested
+    // 把经过插件转换后的结果废弃掉
     mod.transformResult = null;
     mod.ssrTransformResult = null;
     invalidateSSRModule(mod, seen);
@@ -190,6 +197,8 @@ export class ModuleGraph {
 ```
 
 ## invalidateAll
+
+没啥说的, 循环废掉当前 id 下的所有模块.
 
 ```ts
 export class ModuleGraph {
@@ -321,8 +330,11 @@ export class ModuleGraph {
   // 1. remove the HMR timestamp query (?t=xxxx)
   // 2. resolve its extension so that urls with or without extension all map to
   // the same module
+  // 1. 去掉热更新带着的 import=xxxx 和 ?t=xxxxxx 参数
+  // 2. 解析其扩展名，以便带有或不带有扩展名的 url 都映射到同一个模块
   async resolveUrl(url: string, ssr?: boolean): Promise<ResolvedUrl> {
     url = removeImportQuery(removeTimestampQuery(url));
+    // resolveId 是 rollup 插件体系的, 它就是获取当前模块在文件系统的绝对路径, 下一章讲插件会说到
     const resolved = await this.resolveId(url, !!ssr);
     const resolvedId = resolved?.id || url;
     const ext = extname(cleanUrl(resolvedId));
