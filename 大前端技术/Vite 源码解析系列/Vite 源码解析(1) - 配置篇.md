@@ -2,6 +2,144 @@
 
 > 欢迎来到 Vite 源码解析系列. Vite 作为新时代的打包神器, 缝合了, 哦不, 集成了 ES Module, bundleless, esbulid, rollup 等优秀思想和特性. 本系列假设你已经使用过 Vite, 对 Vite 配置, 插件机制有一定了解. 并且对 esbuild, rollup 的配置有一定了解.
 
+## createServer
+
+在讲 vite 如何处理用户配置参数时, 我们先大概总览一下 `createServer` 函数, 这个函数是 vite 处理整个开发
+
+- 获取 config 配置
+- 创建 http 服务器 httpServer
+- 创建 WebSocket 服务器 ws
+- 通过 chokidar 创建监听器 watcher
+- 创建一个兼容 rollup 钩子函数的对象 container
+- 创建模块依赖图实例 moduleGraph
+- 声明 server 对象
+- 注册 watcher 回调
+- 执行插件中的 configureServer 钩子函数(注册用户定义的前置中间件), 并收集用户定义的后置中间件
+- 注册中间件
+- 注册用户定义的后置中间件
+- 注册转换 html 文件的中间件和未找到文件的 404 中间件
+- 重写 httpServer.listen
+- 返回 server 对象
+
+```ts
+export async function createServer(inlineConfig) {
+  // 获取 config 配置
+  const config = await resolveConfig(inlineConfig, "serve", "development");
+
+  // 获取项目根路径
+  const root = config.root;
+
+  // 获取本地服务器相关的配置
+  const serverConfig = config.server;
+
+  // 创建中间件实例
+  const middlewares = connect() as Connect.Server;
+
+  // 创建 http 服务器
+  const httpServer = await resolveHttpServer(
+    serverConfig,
+    middlewares,
+    httpsOptions
+  );
+
+  // 创建 WebSocket 服务器
+  const ws = createWebSocketServer(httpServer, config, httpsOptions);
+
+  // ignored: 忽略监听的文件;
+  // watchOptions: 对应 server.watch 配置, 传递给 chokidar 的文件系统监视器选项
+  const { ignored = [], ...watchOptions } = serverConfig.watch || {};
+  // 通过 chokidar 监听文件
+  const watcher = chokidar.watch(path.resolve(root), {
+    ignored: [
+      "**/node_modules/**",
+      "**/.git/**",
+      ...(Array.isArray(ignored) ? ignored : [ignored]),
+    ],
+    ignoreInitial: true,
+    ignorePermissionErrors: true,
+    disableGlobbing: true,
+    ...watchOptions,
+  }) as FSWatcher;
+  // 获取 所有插件
+  const plugins = config.plugins;
+  // 创建插件容器, 是一个对象, 对象的属性是 vite 支持的 rollup 的钩子函数, 后面会介绍
+  // 比如 options, resolveId, load, transform
+  const container = await createPluginContainer(config, watcher);
+  // 创建Vite 的 ModuleGraph 实例, 后面也会介绍
+  const moduleGraph = new ModuleGraph(container);
+  // 声明 server 对象
+  const server: ViteDevServer = {
+    config, // 包含命令行传入的配置 和 配置文件的配置
+    middlewares,
+    get app() {
+      return middlewares;
+    },
+    httpServer, // http 服务器
+    watcher, // 通过 chokidar 监听文件
+    pluginContainer: container, // vite 支持的 rollup 的钩子函数
+    ws, // WebSocket 服务器
+    moduleGraph, // ModuleGraph 实例
+    transformWithEsbuild,
+    transformRequest(url, options) {},
+    listen(port?: number, isRestart?: boolean) {},
+    _optimizeDepsMetadata: null,
+    _isRunningOptimizer: false,
+    _registerMissingImport: null,
+    _pendingReload: null,
+    _pendingRequests: Object.create(null),
+  };
+  // 被监听文件发生变化时触发
+  watcher.on("change", async (file) => {});
+  // 添加文件时触发
+  watcher.on("add", (file) => {});
+  watcher.on("unlink", (file) => {});
+  // 执行插件中的 configureServer 钩子函数
+  // configureServer: https://vitejs.cn/guide/api-plugin.html#configureserver
+  const postHooks: ((() => void) | void)[] = [];
+  for (const plugin of plugins) {
+    if (plugin.configureServer) {
+      // configureServer 可以注册前置中间件, 就是在内部中间件之前执行; 也可以注册后置中间件
+      // 如果configureServer 返回一个函数, 这个函数内部就是注册后置中间件, 并将这些函数收集到 postHooks 中
+      postHooks.push(await plugin.configureServer(server));
+    }
+  }
+  // 接下来就是注册中间件
+  // base
+  if (config.base !== "/") {
+    middlewares.use(baseMiddleware(server));
+  }
+  // ...
+  // 主要转换中间件
+  middlewares.use(transformMiddleware(server));
+  // ...
+  // 如果请求路径是 /结尾, 则将路径修改为 /index.html
+  if (!middlewareMode || middlewareMode === "html") {
+    middlewares.use(spaFallbackMiddleware(root));
+  }
+  // 调用用户定义的后置中间件
+  postHooks.forEach((fn) => fn && fn());
+
+  if (!middlewareMode || middlewareMode === "html") {
+    // 如果请求的url是 html 则调用插件中所有的 transformIndexHtml 钩子函数, 转换html, 并将转换后的 html 代码发送给客户端
+    middlewares.use(indexHtmlMiddleware(server));
+    // handle 404s
+    middlewares.use(function vite404Middleware(_, res) {
+      res.statusCode = 404;
+      res.end();
+    });
+  }
+  if (!middlewareMode && httpServer) {
+    // 重写 httpServer.listen, 在服务器启动前预构建
+    const listen = httpServer.listen.bind(httpServer);
+    httpServer.listen = (async (port: number, ...args: any[]) => {}) as any;
+  } else {
+    // ...
+  }
+
+  return server;
+}
+```
+
 ## resolveConfig
 
 `createServer` 中调用的第一个函数是 `resolveConfig`, 也就是解析用户配置. 和其他的构建工具一样, vite 也提供 `vite.config.js` 来作为它的配置文件, 因此 vite 首要目标是要读取和解析配置文件. vite 的配置分为共享配置, 开发服务器配置, 构建选项配置, 依赖优化选项配置, ssr 选项配置和 worker 配置.
@@ -19,8 +157,8 @@ export async function resolveConfig(
   let mode = inlineConfig.mode || defaultMode;
 
   const configEnv = {
-    mode, // 环境，开发环境下是 development
-    command, // 命令，开发环境下是 serve
+    mode, // 环境, 开发环境下是 development
+    command, // 命令, 开发环境下是 serve
   };
 
   let { configFile } = config; // 配置文件路径
@@ -132,7 +270,7 @@ try {
       fs.unlinkSync(resolvedPath + ".js"); // 删除
       debug(`TS + native esm config loaded in ${getTime()}`, fileUrl);
     } else {
-      // 使用 Function 来避免被 TS/Rollup 编译掉附加一个查询，
+      // 使用 Function 来避免被 TS/Rollup 编译掉附加一个查询,
       // 以便我们在服务器重启的情况下强制重新加载新配置
 
       // using Function to avoid this from being compiled away by TS/Rollup
@@ -277,7 +415,7 @@ async function bundleConfigFile(
       },
       {
         // 在加载时注入一些额外代码
-        // 需要注意的是, 由于 __filename，__dirname 以及 import.meta.url 被这个 plugin 替换了.
+        // 需要注意的是, 由于 __filename, __dirname 以及 import.meta.url 被这个 plugin 替换了.
         // 如果使用这些名称作为变量名可能会导致代码报错.
         name: "inject-file-scope-variables",
         setup(build) {
@@ -468,7 +606,7 @@ apply?: 'serve' | 'build' | ((config: UserConfig, env: ConfigEnv) => boolean)
 
 接下来是 `sortUserPlugins` 函数, 由于 vite plugin 提供了 `enforce` 参数, 该参数的值可以是 `pre` 或 `post`, 这个函数就是用来给插件排排坐.
 
-最后就好说了, 就是遍历所有合法的, 已排序的好插件数组, 逐一执行每个插件的 `config` 函数, 并注入 configEnv, 因为 config 钩子函数可以修改配置项, 并返回新的配置项, 拿到新的配置项之后，让新的配置项和老的配置项合并.
+最后就好说了, 就是遍历所有合法的, 已排序的好插件数组, 逐一执行每个插件的 `config` 函数, 并注入 configEnv, 因为 config 钩子函数可以修改配置项, 并返回新的配置项, 拿到新的配置项之后, 让新的配置项和老的配置项合并.
 
 需要注意的是, [`config`](https://vitejs.dev/guide/api-plugin.html#config) 函数在解析 vite 配置前调用. 钩子接收原始用户配置(命令行选项指定的会与配置文件合并)和一个描述配置环境的变量.
 
@@ -561,7 +699,7 @@ const createResolver: ResolvedConfig["createResolver"] = (options) => {
 
 - `import.meta.env.DEV`: {boolean} 应用是否运行在开发环境 (永远与 `import.meta.env.PROD` 相反).
 
-和 create-react-app 一样, vite 也支持用户自建的环境变量文件, 与内置的进行合并或者替换. 其中优先级也是 `.env.xxx.local` > `.env.xxx` > `.env.local` > `.env`, 并且为了防止意外地将一些环境变量泄漏到客户端，只有以 `VITE_` 为前缀的变量才会暴露给经过 vite 处理的代码. 关于环境变量的文档可以参考官网 [env-variables-and-modes](https://vitejs.dev/guide/env-and-mode.html#env-variables-and-modes).
+和 create-react-app 一样, vite 也支持用户自建的环境变量文件, 与内置的进行合并或者替换. 其中优先级也是 `.env.xxx.local` > `.env.xxx` > `.env.local` > `.env`, 并且为了防止意外地将一些环境变量泄漏到客户端, 只有以 `VITE_` 为前缀的变量才会暴露给经过 vite 处理的代码. 关于环境变量的文档可以参考官网 [env-variables-and-modes](https://vitejs.dev/guide/env-and-mode.html#env-variables-and-modes).
 
 ```ts
 // load .env files
@@ -911,10 +1049,10 @@ const resolved: ResolvedConfig = {
   ), // vite.config.js 中非第三方包的导入, 比如自定义插件
   inlineConfig, // 命令行中的配置
   root: resolvedRoot, // 项目根目录
-  base: BASE_URL, // 公共基础路径， /my-app/index.html
+  base: BASE_URL, // 公共基础路径,  /my-app/index.html
   resolve: resolveOptions, // 文件解析时的相关配置
   publicDir: resolvedPublicDir, // 静态资源服务的文件夹
-  cacheDir, // 缓存目录，默认 node_modules/.vite
+  cacheDir, // 缓存目录, 默认 node_modules/.vite
   command, // serve | build
   mode, // development | production
   ssr,

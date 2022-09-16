@@ -38,7 +38,7 @@ export class ModuleNode {
   info?: ModuleInfo; // 模块信息, 来自 rollup, 有 ast, 源码字符串等, 详情: https://rollupjs.org/guide/en/#thisgetmoduleinfo
   meta?: Record<string, any>; // 自定义的元信息
   importers = new Set<ModuleNode>(); // 导入当前模块的模块的集合
-  importedModules = new Set<ModuleNode>(); // 当前模块的导入模块集合
+  importedModules = new Set<ModuleNode>(); // 当前模块的导入模块集合(或者说谁用到)
   acceptedHmrDeps = new Set<ModuleNode>(); // 接收的热更新依赖的集合, 我们放在热更新那一章来讲
   isSelfAccepting?: boolean; // 是否为模块自更新
   transformResult: TransformResult | null = null; // 通过插件构建后的结果
@@ -67,10 +67,10 @@ export class ModuleNode {
 
 ```ts
 export class ModuleGraph {
-  urlToModuleMap: Map<string, ModuleNode>; //  key 为 url, value 为 ModuleNode 的集合
+  urlToModuleMap: Map<string, ModuleNode>; //  key 为相对路径, value 为 ModuleNode 的集合
   idToModuleMap: Map<string, ModuleNode>; // key 为模块的绝对路径(但可能带着 hash 和 query), value 为 ModuleNode 的集合
   fileToModulesMap: Map<string, Set<ModuleNode>>; // key 为模块的绝对路径(不带 hash 和 query), value 为 ModuleNode 的集合
-  safeModulesPath: Set<string>; // 哪些模块是允许
+  safeModulesPath: Set<string>; // 哪些模块是安全模块, 后面讲 importAnalysis 插件时再做讲解
 
   constructor(
     private resolveId: (
@@ -114,9 +114,25 @@ export class ModuleGraph {
 }
 ```
 
+## urlToModuleMap
+
+![urlToModuleMap](https://edge.yancey.app/beg/a06erl0e-1662381583472.png)
+
+## idToModuleMap
+
+![idToModuleMap](https://edge.yancey.app/beg/mkavjro0-1662371863129.png)
+
+## fileToModulesMap
+
+![fileToModulesMap](https://edge.yancey.app/beg/aabdi50e-1662380041318.png)
+
+## safeModulesPath
+
+![safeModulesPath](https://edge.yancey.app/beg/976f0ng8-1662380109196.png)
+
 ## getModuleByUrl
 
-根据一个 url 获取对应的 ModuleNode.
+根据一个 url 获取对应的 ModuleNode. url 为模块的相对路径.
 
 ```ts
 export class ModuleGraph {
@@ -158,6 +174,8 @@ export class ModuleGraph {
 
 ## onFileChange
 
+当文件发生变化时, 就把旧的文件批量过期掉.
+
 ```ts
 export class ModuleGraph {
   onFileChange(file: string): void {
@@ -173,6 +191,8 @@ export class ModuleGraph {
 ```
 
 ## invalidateModule
+
+将模块过期, 思路很简单, 把时间改了即可.
 
 ```ts
 export class ModuleGraph {
@@ -214,6 +234,8 @@ export class ModuleGraph {
 
 ## updateModuleInfo
 
+当导入关系发生变化时, 需要更新模块之间的关系. 这也是 ModuleGraph 最重要的一个方法.
+
 ```ts
 export class ModuleGraph {
   /**
@@ -222,36 +244,54 @@ export class ModuleGraph {
    * returned as a Set.
    */
   async updateModuleInfo(
-    mod: ModuleNode,
-    importedModules: Set<string | ModuleNode>,
-    acceptedModules: Set<string | ModuleNode>,
-    isSelfAccepting: boolean,
+    mod: ModuleNode, // 当前模块对应的 ModuleNode 对象
+    importedModules: Set<string | ModuleNode>, // 当前模块导入的模块
+    acceptedModules: Set<string | ModuleNode>, // 当前模块接收热更新模块的合集
+    isSelfAccepting: boolean, // 如果是自身更新则为 true
     ssr?: boolean
   ): Promise<Set<ModuleNode> | undefined> {
     mod.isSelfAccepting = isSelfAccepting;
+    // 先把 importedModules(当前模块导入的模块集合) 保存一份
     const prevImports = mod.importedModules;
+
+    // 创建一个空的 Set
     const nextImports = (mod.importedModules = new Set());
+
+    // 不再导入的模块集合
     let noLongerImported: Set<ModuleNode> | undefined;
+
     // update import graph
+
+    // 遍历新的导入的 modules
     for (const imported of importedModules) {
       const dep =
         typeof imported === "string"
           ? await this.ensureEntryFromUrl(imported, ssr)
           : imported;
+
+      // 将当前模块(mod)添加到被导入模块(dep) 的 importer 上
       dep.importers.add(mod);
+
+      // 把这个被导入的模块(dep) 添加到 nextImports 中
       nextImports.add(dep);
     }
     // remove the importer from deps that were imported but no longer are.
     prevImports.forEach((dep) => {
+      // 如果 nextImports 中没有这个 dep
       if (!nextImports.has(dep)) {
+        // 反过来说明 dep 没在当前模块中导入, 所以把 dep 的 importers 删除掉当前 mod
         dep.importers.delete(mod);
+
+        // 如果 dep 的 importers 为空
         if (!dep.importers.size) {
+          // 说明 dep 没有被任何模块导入, 于是把它归类到 noLongerImported 中
           // dependency no longer imported
           (noLongerImported || (noLongerImported = new Set())).add(dep);
         }
       }
     });
     // update accepted hmr deps
+    // 将 import.meta.hot.accept() 中设置的模块添加到 mod.acceptedModules 中
     const deps = (mod.acceptedHmrDeps = new Set());
     for (const accepted of acceptedModules) {
       const dep =
@@ -260,6 +300,8 @@ export class ModuleGraph {
           : accepted;
       deps.add(dep);
     }
+
+    // 返回不再被任何模块导入的模块的集合
     return noLongerImported;
   }
 }
@@ -267,31 +309,48 @@ export class ModuleGraph {
 
 ## ensureEntryFromUrl
 
+目的就是如果找到这个模块, 就把这个模块返回, 否则创建一个新的 ModuleNode, 并放置到 urlToModuleMap, idToModuleMap, fileToModulesMap.
+
 ```ts
 export class ModuleGraph {
   async ensureEntryFromUrl(rawUrl: string, ssr?: boolean): Promise<ModuleNode> {
     const [url, resolvedId, meta] = await this.resolveUrl(rawUrl, ssr);
     let mod = this.urlToModuleMap.get(url);
+
+    // 如果没获取 mod
     if (!mod) {
+      // new 一个新的 ModuleNode
       mod = new ModuleNode(url);
       if (meta) mod.meta = meta;
+      // 加入到 urlToModuleMap
       this.urlToModuleMap.set(url, mod);
       mod.id = resolvedId;
+      // 加入到 idToModuleMap
       this.idToModuleMap.set(resolvedId, mod);
+
+      // 清除掉 hash, query 作为 file
       const file = (mod.file = cleanUrl(resolvedId));
       let fileMappedModules = this.fileToModulesMap.get(file);
+
+      // 如果没有 fileMappedModules Set
       if (!fileMappedModules) {
+        // 初始化一个
         fileMappedModules = new Set();
         this.fileToModulesMap.set(file, fileMappedModules);
       }
+      // 否则添加进去即可
       fileMappedModules.add(mod);
     }
+
+    // 返回 mod
     return mod;
   }
 }
 ```
 
 ## createFileOnlyEntry
+
+对于像 @import 这种也要放在模块依赖图中.
 
 ```ts
 export class ModuleGraph {
@@ -346,7 +405,3 @@ export class ModuleGraph {
   }
 }
 ```
-
-## 总结
-
-xxx
