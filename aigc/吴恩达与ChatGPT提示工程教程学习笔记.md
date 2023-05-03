@@ -8,7 +8,7 @@
 
 基础语言模型是指只在大规模文本语料中进行了预训练的模型, 未经过指令和下游任务微调, 以及人类反馈等任何对齐优化. 它主要用于**预测下一个单词**.
 
-比如你的提示词是 "Once upon a time, there was a unicorn", 基础语言模型可能会给你返回 "that lived in a magical forest with all her unicorn frinds".
+比如你的提示词是 "Once upon a time, there was a unicorn", 基础语言模型可能会给你返回 "that lived in a magical forest with all her unicorn friends".
 
 再比如你的提示词是 "What is the capital of France?", 它可能会给你返回 "What is France's largest city? What is France's population? What is the currency of France?"
 
@@ -42,7 +42,7 @@
 
 ![Starship](https://edge.yancey.app/beg/pxpsr024-1682861286776.png)
 
-再举个例子, 也是我在开发 rs_openai 是常干的事情, 就是让 ChatGPT 帮忙生成 Rust 结构体.
+再举个例子, 也是我在开发 [rs_openai](https://crates.io/crates/rs_openai) 是常干的事情, 就是让 ChatGPT 帮忙生成 Rust 结构体.
 
 ```bash
 Generate the json string delimited by triple quotes into rust structs with serde and default.
@@ -106,4 +106,36 @@ struct Usage {
 
 ![Screenshot 2023-04-30 at 21.40.42.png](https://edge.yancey.app/beg/khplnqui-1682862064317.png)
 
-### Give the model time to think
+#### Tactic 2: Ask for structured output
+
+如下面的例子, 如果不提供输出结构, 它默认给出了一个 list 形式, 而如果你主动要求一个结构化的输出, 如 JSON, HTML 等等, 这样的好处是数据在你在代码中直接可用.
+
+![Screenshot 2023-05-01 at 00.00.04.png](https://edge.yancey.app/beg/b7qza93v-1682870423116.png)
+
+#### Tactic 3: Check whether conditions are satisfied
+
+如果任务中的假设不一定被满足, 我们可以告诉模型先检查这些假设, 如果不满足, 我们指出这一点, 并在完成任务的过程中停止.
+
+下面这个例子中, 如果指定文本是按步骤来的, 那就转换成 Step 的形式, 否则简单的返回 **No steps provided.**
+
+第一个例子来阐述泡茶的步骤, 显然能够被转换成 Step 的形式. 并且我们看到它识别出了文本中的 **If you like**, 因此在 Step 5 标明了 Optional, 太牛逼了.
+
+![Screenshot 2023-05-01 at 00.21.36.png](https://edge.yancey.app/beg/4min1988-1682871722526.png)
+
+第二段话仅仅是描写天气和风景的文本, 不是步骤的形式, 那么模型直接识别 falsy 的部分, 简单返回 **No steps provided.** 即可.
+
+![Screenshot 2023-05-01 at 00.21.49.png](https://edge.yancey.app/beg/emlz3z7r-1682871728569.png)
+
+#### Tactic 4: "Few-shot" prompting
+
+这个策略的意思是: 在要求模型做你想让它做的实际任务之前, 给予模型一个明确的, 成功的例子, 让模型照着这个例子输出新的文本, 从而达到一致性.
+
+下面这个例子, 我们想让模型输出 **Answer: XXXX** 这样一种格式, 并且语气要跟示例一中的 Answer 一致. 首先喂给模型一个例子, **Question: 如何促进拉新**, Answer 就是从网上抄的一段互联网黑话. 在输出中, 我们看到 ChatGPT 返回了我们想要的格式, 并且模仿了互联网黑化的语气解释了**如何保证留存**这一话题.
+
+![Screenshot 2023-05-01 at 00.48.16.png](https://edge.yancey.app/beg/7e223817-1682873311723.png)
+
+### Give the model time to "think"
+
+第二个原则给予模型更多的思考时间. 如果一个模型急于得出不正确的结论而出现推理错误, 你应该尝试重新设计询问, 以便在模型提供最终答案之前请求一系列相关推理
+
+#### Tactic 1: Specify the steps required to complete a task4k
