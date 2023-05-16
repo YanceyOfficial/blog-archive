@@ -329,3 +329,92 @@ Actual solution:
 比如下面这个例子, 我捏造了 BMW 旗下有一款叫做库里南的跑车, 它仍能够一本正经的胡说八道, 因此尽量保证模型不一本正经的胡说八道之前, 先保证你的 Prompt 不一本正经的胡说八道.
 
 ![Model Limitations](https://edge.yancey.app/beg/yp0djq31-1684224838949.png)
+
+## Iterative Prompt Develelopment
+
+没有人能够保证第一次写的 Prompt 就可以得到的想要的结果, 一如没人能保证一次算法模型训练就能达到想要的效果. Prompts 的设计亦如此, 如果第一次没达到效果, 那就在此基础上迭代优化, 总会得到想要的效果.
+
+让我们举一个例子来描述如何反复迭代一个 Prompt, 让它最终能为我们使用. 下面这个例子提供了了一个椅子的说明书, 我们想让模型依据技术规格为之写一个营销文案.
+
+```bash
+Your task is to help a marketing team create a description for a retail website of a product based on a technical fact sheet.
+
+Write a product description based on the information provided in the technical specifications delimited by triple quotes.
+
+Technical specifications:
+
+"""
+OVERVIEW
+- Part of a beautiful family of mid-century inspired office furniture,
+including filing cabinets, desks, bookcases, meeting tables, and more.
+- Several options of shell color and base finishes.
+- Available with plastic back and front upholstery (SWC-100)
+or full upholstery (SWC-110) in 10 fabric and 6 leather options.
+- Base finish options are: stainless steel, matte black,
+gloss white, or chrome.
+- Chair is available with or without armrests.
+- Suitable for home or business settings.
+- Qualified for contract use.
+
+CONSTRUCTION
+- 5-wheel plastic coated aluminum base.
+- Pneumatic chair adjust for easy raise/lower action.
+
+DIMENSIONS
+- WIDTH 53 CM | 20.87”
+- DEPTH 51 CM | 20.08”
+- HEIGHT 80 CM | 31.50”
+- SEAT HEIGHT 44 CM | 17.32”
+- SEAT DEPTH 41 CM | 16.14”
+
+OPTIONS
+- Soft or hard-floor caster options.
+- Two choices of seat foam densities:
+ medium (1.8 lb/ft3) or high (2.8 lb/ft3)
+- Armless or 8 position PU armrests
+
+MATERIALS
+SHELL BASE GLIDER
+- Cast Aluminum with modified nylon PA6/PA66 coating.
+- Shell thickness: 10 mm.
+SEAT
+- HD36 foam
+
+COUNTRY OF ORIGIN
+- Italy
+"""
+```
+
+![image.png](https://edge.yancey.app/beg/2kx7pco0-1684227900995.png)
+
+第一次迭代, 效果还不错, 按照技术规格书详细描述了这把椅子. 但问题是太长了. 我们尝试一次迭代, 在 Prompt 上加上一句 `Use at most 50 words.`, 再看一下效果, 发现还不错.
+
+```bash
+Your task is to help a marketing team create a description for a retail website of a product based on a technical fact sheet.
+
+Write a product description based on the information provided in the technical specifications delimited by triple quotes.
+
+Use at most 50 words.
+
+...
+```
+
+![image.png](https://edge.yancey.app/beg/g3szrb7o-1684229240237.png)
+
+但我们通过 `string.split(' ').length` 可以看出这段话足足有 67 个单词, 并没有满足我们设想的最多 50 个单词的要求. 这里需要知道的是, 大语言模型并不能很精确的按单词数量输出答案. 所以你可以换一些近似的修辞, 如 `Use at 3 sentences.` 或者 `Use at most 280 characters.` 多次尝试总会有一个接近你想要的效果.
+
+让我们继续迭代, 假设我们的产品介绍语是面向家具零售商, 他们更关注技术参数以及材质.
+
+```bash
+Your task is to help a marketing team create a description for a retail website of a product based on a technical fact sheet.
+
+Write a product description based on the information provided in the technical specifications delimited by triple quotes.
+
+The description is intended for furniture retailers, so should be technical in nature and focus on the materials the product is constructed from.
+
+Use at most 50 words.
+```
+
+![image.png](https://edge.yancey.app/beg/h17sggl5-1684230864905.png)
+
+我们看到, 这段描述语更倾向于描述产品的规格, 因此效果是不错的.
