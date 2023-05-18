@@ -322,7 +322,7 @@ Actual solution:
 
 ![Instruct the model to work out its own solution before rushing to a conclusion Optmization](https://edge.yancey.app/beg/tssyyev7-1684211154354.png)
 
-## Model Limitations
+### Model Limitations
 
 尽管语言模型在训练过程中已经接触了大量的知识, 但在其训练过程中, 它并没有完美的记住它所看到的信息, 因此它对一些知识边界并不了解, 这意味着它可能回答一些晦涩难懂的问题, 并且可以编造一些听起来有道理但实际上并不真实的事情. 我们把这些由模型编造的想法称之为幻觉(Hallucination).
 
@@ -417,4 +417,80 @@ Use at most 50 words.
 
 ![image.png](https://edge.yancey.app/beg/h17sggl5-1684230864905.png)
 
-我们看到, 这段描述语更倾向于描述产品的规格, 因此效果是不错的.
+这段描述语更倾向于描述产品的规格, 因此效果是不错的. 当然我们可以更进一步迭代, 让模型根据要求生成一个 HTML 的结构:
+
+- 首先写一段给家具零售商的技术规格描述, 结尾标注上产品 ID
+- 在描述后面写一个关于产品尺寸大小的 HTML 表格, 表格有两列, 第一列是尺寸名(如长, 宽, 高, 深度), 第二列是数值, 用英寸表示.
+
+```bash
+Your task is to help a marketing team create a description for a retail website of a product based on a technical fact sheet.
+
+Write a product description based on the information provided in the technical specifications delimited by triple quotes.
+
+The description is intended for furniture retailers, so should be technical in nature and focus on the materials the product is constructed from.
+
+At the end of the description, include every 7-character Product ID in the technical specification.
+
+After the description, include a table that gives the product's dimensions. The table should have two columns.
+
+In the first column include the name of the dimension.
+
+In the second column include the measurements in inches only.
+
+Give the table the title 'Product Dimensions'.
+
+Format everything as HTML that can be used in a website.
+
+Place the description in a <div> element.
+
+...
+```
+
+![image.png](https://edge.yancey.app/beg/novgupfl-1684297928838.png)
+
+最终的结果看起来还不错, 这启发我们要想达到一个完成一个不错的 Prompt, 是一个持续迭代的过程, 不可能一次性就能做到完美, 当效果不符合预期时, 可以尝试分析下哪些描述写的不好, 并试图基于模型一个更清晰的定义.
+
+Iterative Process
+
+- Try something
+- Analyze where the result does not give what you want
+- Clarify instructions, give more time to think
+- Refine prompts with a batch of examples
+
+## Summarize
+
+文本总结是 nlp 领域的另一个亮点, 它能够把一个长文本精炼到几句话甚至一句话. 试想这么一个场景, 我们每天能够收到大量的用户调研信息, 如果能把这些调研信息加以总结和聚类, 是可以大幅降低产运分析成本.
+
+比如我们有下面一段用户对宝马七系的评价, 要求**生成一篇产品评论的简短摘要，摘要不超过 30 个单词**。
+
+```bash
+型号: 宝马7系 2023款 735Li M运动套装
+
+最满意: 这个宝马已经是我想了很久的款，为了买它还专门跑了省城。这个车动力确实很好，我提车开回来的时候在成都市区有点堵车，但是不管是方向灵动性还是加速超车性能，这个车都可以说是我开过的车里数一数一的。而且到现在为止，油耗也只有13个多，还是比较满意的，应该过了磨合期还要低一些。外观非常满意，从侧身看过去，车子程修长型，高调的修身感，让整个车子看上去都很高端大气。
+
+最不满意: 比较不满意的点基本都是些小问题。例如新车提了车内还是有些味道的，首开的时候高速上我都是开了点窗户的。再一个就是遇到过两三次降速的过程中有顿挫感的时候。其他的就都是满意项。
+
+空间: 这个车子内部不止前排位置元收，后排位置也一样不局限人，后排的扶手功能充实，方便实用，也让后面的位置一分为二，显得更大气。我身高体重偏中等，坐后面还有两拳宽的样子头部空间也预留得不错。后备箱放东西的能力也可以，至少正常家用或者商务足够。
+
+驾驶感受: 3.0T发动机的加持之下，这C车的动力是很好的，特别是我我第一次开这个车回去的时候一上告诉油门一踩那个劲一下就上来了，反应之迅速。加上足够快的提速性，几乎是瞬间就能感受到推背感的强烈。但是这个车的隔音效果一般，特别是胎噪声比较大。然后在降速的时候遇到过顿挫感。档位这些的实体键做得很高端，使用起来舒适感也挺强。
+
+油耗: 油耗我是满意的，一个五米多车长，还很重的车，在磨合期内能到13个油左右我是觉得挺不错了。
+
+外观: 外观好看，时尚，科技感满满。看看车尾这个有棱有角的设计很霸气，颇有点大师风范。车头不必细说，家族式设计。
+
+内饰: 用料很良心，这个要好评。颜色搭配很亮眼，特别是局部的木纹肌理感。中控台设计最好看，加上高档屏幕，非常亮眼。
+
+性价比: 性价比还不错吧，这么价位没什么优惠力度，但是能接受。
+
+配置: 倒车影像啊，车机系统啊，屏幕啊，隐形把手啊，都是高端配置的提现。
+```
+
+整体的摘要如下, 效果还是不错的.
+
+![image.png](https://edge.yancey.app/beg/5jmdt38w-1684301668002.png)
+
+当然你可以突出这篇摘要的目的, 比如**生成一篇产品评论的简短摘要给发动机研发团队，摘要不超过 30 个单词**, 它就会更强调跟动力油耗相关, 如: 宝马 7 系 2023 款 735Li M 运动套装，动力无可挑剔，油耗满意，外观高端大气，后排空间宽敞，配置高端。唯一不足是一些小问题。
+
+再比如可以给用于定价团队, 它会更强调与价格相关的术语, 如: 这篇评论高度赞扬了宝马 7 系 2023 款的强劲引擎、燃油效率、宽敞的内部空间和高端的设计。评论者注意到了一些小问题，但总体认为这辆车的价值足以抵消其价格。
+
+除了生成摘要, 还可以从指定的段落中**提取**信息, 比如**提取这篇评论有关产品设计的信息**, 它可能给你反馈如: 设计部门应该对外观和内饰设计感到满意，尤其是流畅而高端的外观，优质材料和引人注目的颜色组合。
