@@ -8,11 +8,11 @@
 
 基础语言模型是指只在大规模文本语料中进行了预训练的模型, 未经过指令和下游任务微调, 以及人类反馈等任何对齐优化. 它主要用于**预测下一个单词**.
 
-比如你的提示词是 "Once upon a time, there was a unicorn", 基础语言模型可能会给你返回 "that lived in a magical forest with all her unicorn friends".
+比如你的提示词是 "Once upon a time, there was a unicorn", 基础语言模型可能会给你输出 "that lived in a magical forest with all her unicorn friends".
 
-再比如你的提示词是 "What is the capital of France?", 它可能会给你返回 "What is France's largest city? What is France's population? What is the currency of France?"
+再比如你的提示词是 "What is the capital of France?", 它可能会给你输出 "What is France's largest city? What is France's population? What is the currency of France?"
 
-事实上, 我们仅仅想得到 "Paris", 但为什么会输出上面的结果呢? 因为基础语言模型的作用是预测并补全, 并非指令性的回答, 因此对于这个返回, 它可能学到的是**一段关于法国知识小测验的列表**.
+事实上, 我们仅仅想得到 "Paris", 但为什么会输出上面的结果呢? 因为基础语言模型的作用是预测并补全, 并非指令性的回答, 因此对于这个输出, 它可能学到的是**一段关于法国知识小测验的列表**.
 
 而 Instruction(指令) 是指通过自然语言形式对任务进行描述, 它在基础语言模型的基础上进一步训练, 用输入和输入进一步微调, 这些输入和输出都是指令.
 
@@ -116,13 +116,13 @@ struct Usage {
 
 如果任务中的假设不一定被满足, 我们可以告诉模型先检查这些假设, 如果不满足, 我们指出这一点, 并在完成任务的过程中停止.
 
-下面这个例子中, 如果指定文本是按步骤来的, 那就转换成 Step 的形式, 否则简单的返回 **No steps provided.**
+下面这个例子中, 如果指定文本是按步骤来的, 那就转换成 Step 的形式, 否则简单的输出 **No steps provided.**
 
 第一个例子来阐述泡茶的步骤, 显然能够被转换成 Step 的形式. 并且我们看到它识别出了文本中的 **If you like**, 因此在 Step 5 标明了 Optional, 太牛逼了.
 
 ![Ask for structured output phrase 1](https://edge.yancey.app/beg/4min1988-1682871722526.png)
 
-第二段话仅仅是描写天气和风景的文本, 不是步骤的形式, 那么模型直接识别 falsy 的部分, 简单返回 **No steps provided.** 即可.
+第二段话仅仅是描写天气和风景的文本, 不是步骤的形式, 那么模型直接识别 falsy 的部分, 简单输出 **No steps provided.** 即可.
 
 ![Ask for structured output phrase 2](https://edge.yancey.app/beg/emlz3z7r-1682871728569.png)
 
@@ -130,7 +130,7 @@ struct Usage {
 
 这个策略的意思是: 在要求模型做你想让它做的实际任务之前, 给予模型一个明确的, 成功的例子, 让模型照着这个例子输出新的文本, 从而达到一致性.
 
-下面这个例子, 我们想让模型输出 **Answer: XXXX** 这样一种格式, 并且语气要跟示例一中的 Answer 一致. 首先喂给模型一个例子, **Question: 如何促进拉新**, Answer 就是从网上抄的一段互联网黑话. 在输出中, 我们看到 ChatGPT 返回了我们想要的格式, 并且模仿了互联网黑化的语气解释了**如何保证留存**这一话题.
+下面这个例子, 我们想让模型输出 **Answer: XXXX** 这样一种格式, 并且语气要跟示例一中的 Answer 一致. 首先喂给模型一个例子, **Question: 如何促进拉新**, Answer 就是从网上抄的一段互联网黑话. 在输出中, 我们看到 ChatGPT 输出了我们想要的格式, 并且模仿了互联网黑化的语气解释了**如何保证留存**这一话题.
 
 !["Few-shot" prompting](https://edge.yancey.app/beg/7e223817-1682873311723.png)
 
@@ -494,3 +494,202 @@ Iterative Process
 再比如可以给用于定价团队, 它会更强调与价格相关的术语, 如: 这篇评论高度赞扬了宝马 7 系 2023 款的强劲引擎、燃油效率、宽敞的内部空间和高端的设计。评论者注意到了一些小问题，但总体认为这辆车的价值足以抵消其价格。
 
 除了生成摘要, 还可以从指定的段落中**提取**信息, 比如**提取这篇评论有关产品设计的信息**, 它可能给你反馈如: 设计部门应该对外观和内饰设计感到满意，尤其是流畅而高端的外观，优质材料和引人注目的颜色组合。
+
+## Inferring
+
+除了能够总结和提取, LLM 模型的另一大用途就是推断, 比如上面那段关于宝马七系产品的用户反馈, 模型可以推断用户对于这个产品整体感情是正向的还是负向的. 如:
+
+```bash
+请识别出如下产品反馈的用户情感, 该反馈使用三个反引号分隔.
+
+"""
+...
+
+型号: 宝马7系 2023款 735Li M运动套装
+
+...
+"""
+```
+
+最终给予的结果是满意, 是符合预期的.
+
+![image.png](https://edge.yancey.app/beg/trx4ngnu-1684394800917.png)
+
+当然很多时候, 我们绝不仅仅只分析一个用户的情感, 当我们需要分析一系列用户产品反馈时, 最好能让模型给予一个特定的输出, 比如:
+
+```bash
+请识别出如下产品反馈的用户情感, 该反馈使用三个反引号分隔. 如果用户满意输出 1, 否则输出 0.
+
+"""
+...
+
+型号: 宝马7系 2023款 735Li M运动套装
+
+...
+"""
+```
+
+最终给予的结果是 1, 这样我们就很轻松的计算出这一批用户反馈中, 正向的占比是多少, 负向的占比又是多少.
+
+上述做法中, 模型只是给予了一种非黑即白的反馈, 有时候你需要在这个用户反馈中推断出几个关键词, 可以像下面这样做:
+
+```bash
+找出如下用户产品反馈所表达的情绪列表, 不超过 5 项, 将答案用逗号分开, 该用户产品反馈使用三个反引号分隔.
+
+"""
+...
+
+型号: 宝马7系 2023款 735Li M运动套装
+
+...
+"""
+```
+
+它给予了如下 5 个关键词, 整体效果是不错的.
+
+![image.png](https://edge.yancey.app/beg/bxzjx8ec-1684395521130.png)
+
+此外, 你还可以预置一种情绪, 来让模型判断是否有这种情绪:
+
+```bash
+请识别出如下产品反馈的情感, 用户是否对该产品感到生气, 该反馈使用三个反引号分隔.
+
+"""
+...
+
+型号: 宝马7系 2023款 735Li M运动套装
+
+...
+"""
+```
+
+它给予的反馈是情感积极, 没有生气的情绪, 这在客服系统是很有用的, 用于整体把控用户的情绪, 来派发不同的话术.
+
+![image.png](https://edge.yancey.app/beg/1vfajfka-1684395870900.png)
+
+除了推断情绪, 还可以推断一段文本的主题(或者说关键词), 我们仍然用宝马七系这个例子:
+
+```bash
+确定以下文本中正在讨论的五个主题, 每个主题不超过 10 个字, 并把主题词存储到一个 Rust Vec 中. 该文本由三个反引号分隔.
+
+"""
+...
+
+型号: 宝马7系 2023款 735Li M运动套装
+
+...
+"""
+```
+
+![image.png](https://edge.yancey.app/beg/f9olyv4u-1684403031609.png)
+
+## Transforming
+
+文本转换是另一个重要的功能, 常见的如文本翻译, 文本拼写/语法检查, 文本语调转换, 文本格式转换.
+
+### Translation
+
+很多开发者开始通过 ChatGPT 来构建翻译应用, 我们看看如何写好一个翻译的 Prompt.
+
+下面这个例子是把这段日语文本翻译成中文繁体和英语.
+
+![image.png](https://edge.yancey.app/beg/8tuo6aq6-1684410891241.png)
+
+你也可以尝试询问它是什么语言.
+
+![image.png](https://edge.yancey.app/beg/mpg95mf6-1684411058493.png)
+
+### Tone Transformation
+
+它还可以进行文本语调转换, 比如调整语言的正式性和非正式性, 这块对于写邮件很有帮助.
+
+![image.png](https://edge.yancey.app/beg/26ahb2pg-1684414202490.png)
+
+### Format Conversion
+
+我们在 Tactic 1: Uses delimiters 那里通过一段 JSON 字符串转换成 Rust structs, 这就是所谓的格式转换, 这里就不赘述了.
+
+### Spellcheck/Grammar check
+
+最后我们在看一下拼写/语法检查, 从事实上来讲, ChatGPT 的出现, 直接把 [Grammarly](https://www.grammarly.com/) 这类平台干倒闭了, 让我们看看怎么写好一个拼写/语法检查的 Prompt.
+
+很简单, 你可以直接告诉他**将这段文本校正成正确的版本**即可, 当然为了充分考虑边界情况, 在文本没有语法错误时, 输出 "No errros found".
+
+![image.png](https://edge.yancey.app/beg/z5mnvlae-1684416352082.png)
+
+此外, 你可以做一些很酷的事情, 比如下面这段话, 让模型修正之后得到如下反馈.
+
+![image.png](https://edge.yancey.app/beg/889v0ky3-1684468836875.png)
+
+你可以通过一些三方库, 比如 redlines, 就可以得到如下效果:
+
+![image.png](https://edge.yancey.app/beg/t2zhp8vy-1684468779459.png)
+
+## Expanding
+
+文本扩写是将一较短的文本进行扩写, 如一套指示或者主题列表, 并让大语言模型生成一段较长的文本, 比如一封文件或者一篇关于某个主题的文章, 也可能根据几个关键词, 让模型帮忙头脑风暴.
+
+下面这个例子, 我们让模型扮演客服 AI 助理, 使用简洁且专业的语调回复用户的反馈邮件, 邮件开头要表达对用户反馈的感谢. 然后分析用户这篇反馈的情绪是正向的还是负向的:
+
+- 如果是正向的, 表达感谢并正常扩写邮件, 来对他们的评论进行感谢
+- 如果是负向的, 表达抱歉并引导客户联系客服
+
+最终的署名是 AI customer agent
+
+```bash
+You are a customer service AI assistant.
+Your task is to send an email reply to a valued customer.
+Given the customer email delimited by """, Generate a reply to thank the customer for their review.
+Firstly, inffer the sentiment of the email.
+If the sentiment is positive or neutral, thank them for their review.
+If the sentiment is negative, apologize and suggest that they can reach out to customer service.
+Make sure to use specific details from the review.
+Write in a and professional tone.
+Sign the email as `AI customer agent`.
+
+Customer review:
+
+...
+```
+
+首先我们挑选一个正向的反馈:
+
+```bash
+Worth the money!!!
+
+This phone was purchased for my wife after I had purchase an iPhone 13 Pro, 256GB, from the Apple Store. My wife was not sure about purchasing a refurb phone but this was from Amazon so she gave it a try. She has been very happy with the purchase. Her friends were surprised with the phone being in such nice shape and were amazed my wife got double the memory for less money than their IPhone Purchase price from different carriers.
+
+The battery is fine. There are no scratches. Everything works as it did on my Apple Store phone. This is unlocked and all we had to do is insert the SIM from my wife’s old android phone to go live and use the IPhone. We did go down to our carrier’s store and get an updated, current SIM when it was convenient.
+
+When I upgrade I think I will go with an Amazon refurbished IPhone next time which can cost less money. My wife is happy!! What more can I say?
+```
+
+下面是最终的邮件效果, 整体看起来是很不错的.
+
+![image.png](https://edge.yancey.app/beg/sg8b6h95-1684472335686.png)
+
+然后我们在来一个相对负向的反馈:
+
+```bash
+I got this phone but when I try set it up, it’s making me do the latest iOS update.
+Since this is an unlocked phone, I assumed it would have came with the latest update. I cannot get strong enough internet to update it as I work at sea on a cruise ship and all the stops we go to, I get off for a few hours for wifi and still it won’t install the update.
+I am extremely disappointed by this as i was so excited for the phone, now I have nothing.
+```
+
+基本上也是符合预期的, 首先表达歉意, 然后引导联系客服.
+
+![image.png](https://edge.yancey.app/beg/0z8gs5zb-1684472772698.png)
+
+### Temperature
+
+我们知道 OpenAI 为我们提供了诸多 API, 其中创建聊天也是如此: [Create chat completion](https://platform.openai.com/docs/api-reference/chat/create). 我们常用的参数最主要就 prompt, 这里我们介绍另外一个参数: Temperature.
+
+这个参数的取值在 0 - 2 之间, 默认是 1, 如果取较高的值将使输出更加随机, 而较低的值将使输出更加集中和确定. 下面给出了一个事例, 假设你输入 **my facorite food is**, 它预测的下一个词可能是 pizza, sushi, tacos, 其中 pizza 比例为 53%, sushi 次之, tacos 更少.
+
+如果你使用 `Temperature = 0`, 在多次请求后, 它都会给你输出 pizza, 因为这是**最可预测的**.
+
+随着 Temperature 变大, 每次拿到的数据就会越随机, 可以看下面这张图.
+
+![image.png](https://edge.yancey.app/beg/kj7eq0uj-1684501382385.png)
+
+因此, 如果你想构建一个稳定, 可预测的系统, 比如上述邮件助理系统, 我们肯定希望从格式, 内容上更加一致, 那就把 Temperature 调小; 如果你希望模型能提供更多有创意的东西, 就可以将它调的大一些, 当然从人类的角度来讲, 此时的模型会变的不稳定且容易分心.
