@@ -693,3 +693,317 @@ I am extremely disappointed by this as i was so excited for the phone, now I hav
 ![image.png](https://edge.yancey.app/beg/kj7eq0uj-1684501382385.png)
 
 因此, 如果你想构建一个稳定, 可预测的系统, 比如上述邮件助理系统, 我们肯定希望从格式, 内容上更加一致, 那就把 Temperature 调小; 如果你希望模型能提供更多有创意的东西, 就可以将它调的大一些, 当然从人类的角度来讲, 此时的模型会变的不稳定且容易分心.
+
+## ChatBot
+
+最后, 也是我们最感兴趣的 ChatBot, 我们从 System 和 Context 两个角度来阐述如何构建高效的聊天机器人.
+
+### System
+
+ChatGPT 的 API 中 messages 参数接受一个数组, 它支持传入多个消息, 如:
+
+```python
+messages =  [  
+  {'role':'system', 'content':'You are friendly chatbot.'},    
+  {'role':'user', 'content':'Hi, my name is Isa'}  
+]
+```
+
+其中 `role` 参数支持 `system`, `user`, or `assistant` 三种枚举, 一般我们的角色就是 user, 但在一些特定的场景, 提前预置 `system` 可以给整个聊天定一个基调, 比如 `You are an assistant that speaks like Shakespeare.`, 那它后续就会以莎士比亚的口吻来回答, 这在一些特定客服环境很有用.
+
+### Context
+
+我们在使用 ChatGPT 网页端的时候会发现他有记忆功能, 也就是说你在某个回话中已经交流过的内容, 会作为新的会话的参考. 比如我们询问模型一个问题, 我对它回答的结果不满意, 它会基于上面已给出的答案进行优化和修改. 这个技术便叫做 Context.
+
+比如我有如下 prompt, 在没有上下文的情况下, 显然模型不知道我的名字, 于是它给出了 I'm sorry, but as a chatbot, I don't have access to your name unless you tell me what it is. 这样的回答.
+
+```python
+messages =  [  
+{'role':'system', 'content':'You are friendly chatbot.'},    
+{'role':'user', 'content':'Yes,  can you remind me, What is my name?'}  
+]
+```
+
+但如果我们给出足够的上下文, 如下这个例子, 模型就能知道你的名字: Of course! Your name is Isa. It's a pleasure to assist you, Isa.
+
+```python
+messages =  [  
+{'role':'system', 'content':'You are friendly chatbot.'},
+{'role':'user', 'content':'Hi, my name is Isa'},
+{'role':'assistant', 'content': "Hi Isa! It's nice to meet you. Is there anything I can help you with today?"},
+{'role':'user', 'content':'Yes, you can remind me, What is my name?'}  
+]
+```
+
+因此, 我们在设计 ChatBot 时, 也可以在每次提交时, 带上前几个会话的上下文信息. 不过由于有 token 数量限制, 你带的历史上下文信息多了, 可能就会报错, 因此需要具体问题具体分析, 比如带上最新三个到五个历史回会话. 抑或通过 [langchain](https://python.langchain.com/en/latest/index.html) 这样的库进行精细化分割.
+
+### Example
+
+下面举一个例子, 比如让 Bot 扮演一个卖披萨的机器人:
+
+1. 首先问侯客户, 然后收集订单, 接下来询问客户堂食还是外卖.
+2. 等到收集完订单后对订单做一个总结, 并询问客户是否需要其他的.
+3. 如果客户选择外卖, 询问客户地址信息.
+4. 最后计算金额.
+
+```python
+[ {'role':'system', 'content':"""
+You are OrderBot, an automated service to collect orders for a pizza restaurant. \
+You first greet the customer, then collects the order, \
+and then asks if it's a pickup or delivery. \
+You wait to collect the entire order, then summarize it and check for a final \
+time if the customer wants to add anything else. \
+If it's a delivery, you ask for an address. \
+Finally you collect the payment.\
+Make sure to clarify all options, extras and sizes to uniquely \
+identify the item from the menu.\
+You respond in a short, very conversational friendly style. \
+The menu includes \
+pepperoni pizza  12.95, 10.00, 7.00 \
+cheese pizza   10.95, 9.25, 6.50 \
+eggplant pizza   11.95, 9.75, 6.75 \
+fries 4.50, 3.50 \
+greek salad 7.25 \
+Toppings: \
+extra cheese 2.00, \
+mushrooms 1.50 \
+sausage 3.00 \
+canadian bacon 3.50 \
+AI sauce 1.50 \
+peppers 1.00 \
+Drinks: \
+coke 3.00, 2.00, 1.00 \
+sprite 3.00, 2.00, 1.00 \
+bottled water 5.00 \
+"""} ] 
+```
+
+![pintu-fulicat.com-1686632795722.jpg](https://edge.yancey.app/beg/g2g590am-1686632837399.jpg)
+
+当然更进一步, 你可以将上面的订单结果生成 JSON 代码, 那就完全可以替代人类完成询问 - 下单 - 入库等一系列流程了. 当然为了让输出更加可预测, 我们可以选择将 temperature 设置得足够小.
+
+![image.png](https://edge.yancey.app/beg/04pnbnp2-1686636342767.png)
+
+## Conclusion
+
+在这门课中, 我们学到了 prompt 的两个基准原则:
+
+- Write clear and specific instructions
+- Give the model time to "think"
+
+接着我们学到了 Iterative Prompt Develelopment, 即没有人能一次就写出完美的 prompt, 二十需要通过不断迭代和优化, 使结果更好的为我们利用.
+
+此外, 我们学到了 LLM 模型的一些能力, 如总结, 推断, 转换, 扩写.
+
+最后我们学到了如何通过 system 和 context 两大原则建立一个定制化的订单机器人.
+
+## Appendix: Implement stream in JavaScript
+
+最后作为附录, 奉上如何使用 ChatGPT 的 stream 模式构建你的用户交互.
+
+```ts
+import { FC, useState } from 'react'
+import classNames from 'classnames'
+import ReactMarkdown from 'react-markdown'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { oneDark as mdCodeTheme } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import rehypeMathjax from 'rehype-mathjax'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Button from '@mui/material/Button'
+import Input from '@mui/material/Input'
+
+export interface OpenAIChatDelta {
+  role?: string
+  content?: string
+}
+
+export interface OpenAIChatChoice {
+  delta: OpenAIChatDelta
+  index: number
+  finish_reason: string | null
+}
+
+export interface OpenAIChatResponse {
+  id: string
+  object: string
+  created: number
+  model: string
+  choices: OpenAIChatChoice[]
+}
+
+const ChatGPT: FC = () => {
+  const [prompt, setPrompt] = useState('')
+  const [anwser, setAnwser] = useState<string>('')
+
+  const resolveData = async (
+    reader: ReadableStreamDefaultReader<Uint8Array>
+  ): Promise<void> => {
+    const { done, value } = await reader.read()
+
+    if (done) {
+      return reader.releaseLock()
+    }
+
+    const decoder = new TextDecoder('utf-8')
+    const chunk = decoder.decode(value, { stream: true })
+    const chunks: OpenAIChatResponse[] = chunk
+      .split('data:')
+      .map((data) => {
+        const trimData = data.trim()
+        if (trimData === '') return undefined
+        if (trimData === '[DONE]') return undefined
+        return JSON.parse(data.trim())
+      })
+      .filter((data) => data)
+    chunks.forEach((data) => {
+      const token = data.choices[0].delta.content
+
+      if (token !== undefined) {
+        setAnwser((prevState) => prevState + token)
+      }
+    })
+
+    return resolveData(reader)
+  }
+
+  const resolveError = async (
+    reader: ReadableStreamDefaultReader<Uint8Array>
+  ) => {
+    const { value } = await reader.read()
+    const decoder = new TextDecoder('utf-8')
+    const chunk = decoder.decode(value, { stream: true })
+    const errorData = JSON.parse(chunk)
+    console.log(errorData)
+    return
+  }
+
+  const createChatCompletion = async () => {
+    const chat = await fetch('https://api.openai.com/v1/chat/completions', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_SECRET_KEY}`
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        model: 'gpt-3.5-turbo',
+        stream: true
+      })
+    })
+
+    const reader = chat.body?.getReader()
+    if (!reader) return
+
+    if (chat.status !== 200) {
+      resolveError(reader)
+    }
+
+    await resolveData(reader)
+
+    reader.releaseLock()
+  }
+
+  return (
+    <section>
+      <section className="flex">
+        <Input
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          sx={{
+            width: 400,
+            marginRight: 2
+          }}
+        />
+        <Button
+          variant="contained"
+          onClick={createChatCompletion}
+          disabled={!prompt.trim()}
+        >
+          Search
+        </Button>
+      </section>
+      {anwser && (
+        <Card sx={{ maxWidth: 800, marginTop: 2, marginBottom: 2 }}>
+          <CardContent>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm, remarkMath]}
+              rehypePlugins={[rehypeMathjax]}
+              components={{
+                code({ inline, className, children }) {
+                  const match = /language-(\w+)/.exec(className || '')
+                  return !inline ? (
+                    <SyntaxHighlighter
+                      style={mdCodeTheme}
+                      language={match ? match[1] : ''}
+                      PreTag="div"
+                      customStyle={{ borderRadius: 0, margin: 0 }}
+                    >
+                      {String(children).replace(/\n$/, '')}
+                    </SyntaxHighlighter>
+                  ) : (
+                    <code className={classNames('font-semibold', className)}>
+                      `{children}`
+                    </code>
+                  )
+                },
+                p({ className, children }) {
+                  return (
+                    <p className={classNames(className, 'mb-4')}>{children}</p>
+                  )
+                },
+                pre({ className, children }) {
+                  return (
+                    <pre className={classNames(className, 'mb-4 text-sm')}>
+                      {children}
+                    </pre>
+                  )
+                },
+                ol({ className, children }) {
+                  return (
+                    <ol
+                      className={classNames(className, 'mb-4 pl-4 list-disc')}
+                    >
+                      {children}
+                    </ol>
+                  )
+                },
+                ul({ className, children }) {
+                  return (
+                    <ul
+                      className={classNames(
+                        className,
+                        'mb-4 pl-4 list-decimal'
+                      )}
+                    >
+                      {children}
+                    </ul>
+                  )
+                },
+                li({ className, children }) {
+                  return (
+                    <li className={classNames(className, 'mb-4')}>
+                      {children}
+                    </li>
+                  )
+                }
+              }}
+            >
+              {anwser}
+            </ReactMarkdown>
+          </CardContent>
+        </Card>
+      )}
+    </section>
+  )
+}
+
+export default ChatGPT
+```
