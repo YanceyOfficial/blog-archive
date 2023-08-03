@@ -1,6 +1,6 @@
 # Introducing Hyper Chat
 
-> Recently, taking advantage of the trend of AIGC, we have created a chatbot based on OpenAI and Azure OpenAI Service using Tauri. The official version has been released and is available for download and use at https://hyperchat.yancey.app/. The code is available at https://github.com/orgs/HyperChatBot, and we welcome collaboration and optimization.
+> Recently, taking advantage of the trend of AIGC, we have created a chatbot based on OpenAI and Azure OpenAI Service using Tauri. The official version has been released and is available for download and use at <https://hyperchat.yancey.app/>. The code is available at <https://github.com/orgs/HyperChatBot>, and we welcome collaboration and optimization.
 
 ## Functions
 
