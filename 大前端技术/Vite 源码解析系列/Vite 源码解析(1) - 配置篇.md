@@ -112,7 +112,7 @@ export async function createServer(inlineConfig) {
   // 主要转换中间件
   middlewares.use(transformMiddleware(server));
   // ...
-  // 如果请求路径是 /结尾, 则将路径修改为 /index.html
+  // 如果请求路径是 / 结尾, 则将路径修改为 /index.html
   if (!middlewareMode || middlewareMode === "html") {
     middlewares.use(spaFallbackMiddleware(root));
   }
@@ -1100,3 +1100,5 @@ const resolved: ResolvedConfig = {
 9. 执行 `resolvePlugins`, 合并用户配置的 plugin 和内部已有的 plugin
 10. 依次执行排好序的插件的 `configResolved` 函数(该函数在解析 vite 配置后调用. 使用这个钩子读取和存储最终解析的配置)
 11. 返回最终 resolved
+
+Vite 运行 Dev 命令后只做了两件事情, 一是启动了本地服务器并注册了一些中间件; 二是使用 ESbuild 预构建模块. 之后就一直躺着, 直到浏览器以 http 方式发来 ESM 规范的模块请求时, Vite 才开始按需编译被请求的模块. 相对于 Webpack 启动后会做一堆事情, 经历一条很长的编译打包链条, 从入口开始需要逐步经历语法解析, 依赖收集, 代码转译, 打包合并, 代码优化, 最终将高版本的, 离散的源码编译打包成低版本, 高兼容性的产物代码.

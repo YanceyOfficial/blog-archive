@@ -1,4 +1,4 @@
-# Vite 源码解析(5) - 开发服务篇
+# Vite 源码解析(4) - 开发服务篇
 
 > 我们在解析完配置, 创建了插件容器之后, 要想运行一个开发环境, 并且持续的给客户端发送热更新 module, 开发服务是必不可少的, 本篇我们来讲一讲 vite 的开发 server 环境, 中间件机制, 以及如何监听文件的改动, 并通过 ws 发送给客户端的. 值得注意的是, 早期 vite 用的 koa 一把梭, 到了后面开始自己卷了个开发服务, 整体大同小异, 下面我们来逐一分析下.
 
@@ -131,7 +131,7 @@ export async function resolveHttpServer(
 const ws = createWebSocketServer(httpServer, config, httpsOptions);
 ```
 
-当我们改动源码时, chokidar 会监听到文件变化, 然后交给 rollup 去做编译, 当编译完成后就要通知到前端进行热更新, 那么我们就需要一个 websocket 的服务, vite 使用了 [ws](https://github.com/websockets/ws) 这个库, 而 `createWebSocketServer` 基本就是 ws 的封装.
+当我们改动源码时, chokidar 会监听到文件变化, 然后交给 esbuild 去做编译, 当编译完成后就要通知到前端进行热更新, 那么我们就需要一个 websocket 的服务, vite 使用了 [ws](https://github.com/websockets/ws) 这个库, 而 `createWebSocketServer` 基本就是 ws 的封装.
 
 当然要补充一个小知识, 就是 ws 的开启需要用 http 做为引导, http 返回 101 状态码后方可升级成 ws.
 
@@ -224,7 +224,7 @@ export function createWebSocketServer(
       if (!customListeners.size) return;
 
       // 拿到解析后的数据, 校验合法性
-      // parsed 就是当源码改了, chokidar 通过 rollup 改完之后, 发送给 ws 的数据
+      // parsed 就是当源码改了, chokidar 通过 esbuild 改完之后, 发送给 ws 的数据
       let parsed: any;
       try {
         parsed = JSON.parse(String(raw));
@@ -1224,3 +1224,11 @@ export function transformRequest(
 ```
 
 ## 跟静态文件相关的中间件
+
+## 总结
+
+当我们访问 localhost:3000 时, 会被中间件指向 /index.html, 并向 /index.html 中注入热更新相关的代码. 最后返回这个 HTML. 当浏览器加载这个 HTML 时, 通过原生 ESM 的方式请求 js 文件; 会被 transformMiddleware 中间件拦截, 这个中间件做的事就是将这个被请求文件转换成浏览器支持的文件; 并会为该文件创建模块对象, 设置模块之前的引用关系.
+
+这也是 Vite 冷启动快的原因之一, Vite 在启动过程中不会编译源码, 只会对依赖进行预构建. 当我们访问某个文件时, 会拦截并通过 ESBuild 将资源编译成浏览器能够识别的文件类型最后返回给浏览器.
+
+而且这期间还会设置对比缓存和强制缓存, 并缓存编译过的文件代码.

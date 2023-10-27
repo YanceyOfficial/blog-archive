@@ -393,7 +393,7 @@ export class ModuleGraph {
   // 2. 解析其扩展名，以便带有或不带有扩展名的 url 都映射到同一个模块
   async resolveUrl(url: string, ssr?: boolean): Promise<ResolvedUrl> {
     url = removeImportQuery(removeTimestampQuery(url));
-    // resolveId 是 rollup 插件体系的, 它就是获取当前模块在文件系统的绝对路径, 下一章讲插件会说到
+    // resolveId 是 rollup 插件体系的, 它就是moduleGraph获取当前模块在文件系统的绝对路径, 下一章讲插件会说到
     const resolved = await this.resolveId(url, !!ssr);
     const resolvedId = resolved?.id || url;
     const ext = extname(cleanUrl(resolvedId));
