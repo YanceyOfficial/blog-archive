@@ -80,6 +80,8 @@
   - [正则表达式系列](./%E6%8A%80%E6%9C%AF%E6%9D%82%E8%B0%88/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E7%B3%BB%E5%88%97.md)
   - [用 Travis CI 打造大前端持续集成和自动化部署](./%E6%8A%80%E6%9C%AF%E6%9D%82%E8%B0%88/%E7%94%A8%20Travis%20CI%20%E6%89%93%E9%80%A0%E5%A4%A7%E5%89%8D%E7%AB%AF%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E5%92%8C%E8%87%AA%E5%8A%A8%E5%8C%96%E9%83%A8%E7%BD%B2.md)
   - [Introducing Hyper Chat](./%E6%8A%80%E6%9C%AF%E6%9D%82%E8%B0%88/Introducing%20Hyper%20Chat.md)
+  - [How to manually install Electron in your APP](./%E6%8A%80%E6%9C%AF%E6%9D%82%E8%B0%88/How%20to%20manually%20install%20Electron%20in%20your%20APP.md)
+  - [How to deploy Nest.js microservices using Kubernetes](./%E6%8A%80%E6%9C%AF%E6%9D%82%E8%B0%88/How%20to%20deploy%20Nest.js%20microservices%20using%20Kubernetes.md)
 
 - AIGC
   - [吴恩达与 ChatGPT 提示工程教程学习笔记](./aigc/%E5%90%B4%E6%81%A9%E8%BE%BE%E4%B8%8EChatGPT%E6%8F%90%E7%A4%BA%E5%B7%A5%E7%A8%8B%E6%95%99%E7%A8%8B%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.md)
